@@ -1,0 +1,141 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table user {
+  id String [pk]
+  firstNme String [not null]
+  lastName String [not null]
+  email String [unique, not null]
+  username String [unique, not null]
+  password String [not null]
+  signupDate DateTime [default: `now()`]
+  isActive Boolean [not null, default: false]
+  isSuperuser Boolean [not null, default: false]
+  createdAt DateTime
+  updatedAt DateTime
+  userRole UserRole [not null]
+  userRight UserRight [not null]
+  posts Post [not null]
+  postVotes PostVote [not null]
+  Comment Comment [not null]
+  commentVotes CommentVote [not null]
+}
+
+Table role {
+  id String [pk]
+  name String [not null]
+  createdAt DateTime
+  updatedAt DateTime
+  userRole UserRole [not null]
+}
+
+Table right {
+  id String [pk]
+  name String [not null]
+  createdAt DateTime
+  updatedAt DateTime
+  userRight UserRight [not null]
+}
+
+Table user_role {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  roleId String [not null]
+  role Role [not null]
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table user_right {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  rightId String [not null]
+  right Right [not null]
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table Post {
+  id String [pk]
+  text String [not null]
+  votes Int [not null, default: 0]
+  authorId String [not null]
+  author User [not null]
+  postVotes PostVote [not null]
+  comments Comment [not null]
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table PostVote {
+  userId String [not null]
+  postId String [not null]
+  votingStatus VotingStatus [not null]
+  user User [not null]
+  post Post [not null]
+
+  indexes {
+    (userId, postId) [unique]
+  }
+}
+
+Table Comment {
+  id String [pk]
+  text String [not null]
+  votes Int [not null, default: 0]
+  creatorId String [not null]
+  postId String
+  repliedToId String
+  commentVote CommentVote [not null]
+  user User [not null]
+  post Post
+  parentComment Comment
+  comments Comment [not null]
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table CommentVote {
+  userId String [not null]
+  commentId String [not null]
+  votingStatus VotingStatus [not null]
+  user User [not null]
+  comment Comment [not null]
+
+  indexes {
+    (userId, commentId) [unique]
+  }
+}
+
+Enum VotingStatus {
+  neutral
+  upvoted
+  downvoted
+}
+
+Ref: UserRole.userId > User.id
+
+Ref: UserRole.roleId > Role.id
+
+Ref: UserRight.userId > User.id
+
+Ref: UserRight.rightId > Right.id
+
+Ref: Post.authorId > User.id
+
+Ref: PostVote.userId > User.id
+
+Ref: PostVote.postId > Post.id
+
+Ref: Comment.creatorId > User.id
+
+Ref: Comment.postId > Post.id
+
+Ref: Comment.repliedToId - Comment.id
+
+Ref: CommentVote.userId > User.id
+
+Ref: CommentVote.commentId > Comment.id

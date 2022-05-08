@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(uuid())
+  firstNme    String
+  lastName    String
+  email       String      @unique
+  username    String      @unique
+  password    String
+  signupDate  DateTime?   @default(now()) @db.Timestamp(6)
+  isActive    Boolean     @default(false)
+  isSuperuser Boolean     @default(false)
+  createdAt   DateTime?   @db.Timestamp()
+  updatedAt   DateTime?   @updatedAt @db.Timestamp()
+  userRole    UserRole[]  @relation("User_UserRole")
+  userRight   UserRight[] @relation("User_UserRight")
+  posts       Post[]
+
+  postVotes    PostVote[]
+  Comment      Comment[]
+  commentVotes CommentVote[]
+  @@map("user")
+}
+
+model Role {
+  id        String     @id @default(uuid())
+  name      String
+  createdAt DateTime?  @db.Timestamp()
+  updatedAt DateTime?  @updatedAt @db.Timestamp()
+  userRole  UserRole[] @relation("Role_UserRole")
+
+  @@map("role")
+}
+
+model Right {
+  id        String      @id @default(uuid())
+  name      String
+  createdAt DateTime?   @db.Timestamp()
+  updatedAt DateTime?   @updatedAt @db.Timestamp()
+  userRight UserRight[] @relation("Right_UserRight")
+
+  @@map("right")
+}
+
+model UserRole {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation("User_UserRole", fields: [userId], references: [id])
+  roleId    String
+  role      Role      @relation("Role_UserRole", fields: [roleId], references: [id])
+  createdAt DateTime? @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@map("user_role")
+}
+
+model UserRight {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation("User_UserRight", fields: [userId], references: [id])
+  rightId   String
+  right     Right     @relation("Right_UserRight", fields: [rightId], references: [id])
+  createdAt DateTime? @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@map("user_right")
+}
+
+model Post {
+  id        String     @id @default(uuid())
+  text      String
+  votes     Int        @default(0)
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id])
+  postVotes PostVote[]
+  comments  Comment[]
+  createdAt DateTime?  @db.Timestamp()
+  updatedAt DateTime?  @updatedAt @db.Timestamp()
+}
+
+model PostVote {
+  userId       String
+  postId       String
+  votingStatus VotingStatus
+  user         User         @relation(fields: [userId], references: [id])
+  post         Post         @relation(fields: [postId], references: [id])
+
+  @@unique(fields: [userId, postId], name: "UserAndPostIds")
+}
+
+model Comment {
+  id            String        @id @default(uuid())
+  text          String
+  votes         Int           @default(0)
+  creatorId     String
+  postId        String?
+  repliedToId   String?
+  commentVote   CommentVote[]
+  user          User          @relation(fields: [creatorId], references: [id])
+  post          Post?         @relation(fields: [postId], references: [id])
+  parentComment Comment?      @relation(name: "CommentToComment", fields: [repliedToId], references: [id])
+  comments      Comment[]     @relation(name: "CommentToComment")
+  createdAt     DateTime?     @db.Timestamp()
+  updatedAt     DateTime?     @updatedAt @db.Timestamp()
+}
+
+model CommentVote {
+  userId       String
+  commentId    String
+  votingStatus VotingStatus
+  user         User         @relation(fields: [userId], references: [id])
+  comment      Comment      @relation(fields: [commentId], references: [id])
+
+  @@unique(fields: [userId, commentId], name: "UserAndCommentIds")
+}
+
+enum VotingStatus {
+  neutral
+  upvoted
+  downvoted
+}
