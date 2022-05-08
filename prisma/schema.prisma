@@ -15,35 +15,31 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(uuid())
-  firstName   String
-  lastName    String
-  email       String      @unique
-  username    String      @unique
-  password    String
-  signupDate  DateTime?   @default(now()) @db.Timestamp(6)
-  isActive    Boolean     @default(false)
-  isSuperuser Boolean     @default(false)
-  createdAt   DateTime?   @db.Timestamp()
-  updatedAt   DateTime?   @updatedAt @db.Timestamp()
-  userRole    UserRole[]  @relation("User_UserRole")
-  userRight   UserRight[] @relation("User_UserRight")
-  posts       Post[]
-
+  id           String        @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String        @unique
+  username     String        @unique
+  password     String
+  isActive     Boolean       @default(false)
+  isSuperuser  Boolean       @default(false)
+  createdAt    DateTime?     @db.Timestamp()
+  updatedAt    DateTime?     @updatedAt @db.Timestamp()
+  posts        Post[]
   postVotes    PostVote[]
-  Comment      Comment[]
+  comment      Comment[]
   commentVotes CommentVote[]
-  @@map("user")
+  UserRole     UserRole[]
+  RoleRight    RoleRight[]
 }
 
 model Role {
-  id        String     @id @default(uuid())
+  id        String      @id @default(uuid())
   name      String
-  createdAt DateTime?  @db.Timestamp()
-  updatedAt DateTime?  @updatedAt @db.Timestamp()
-  userRole  UserRole[] @relation("Role_UserRole")
-
-  @@map("role")
+  createdAt DateTime?   @db.Timestamp()
+  updatedAt DateTime?   @updatedAt @db.Timestamp()
+  UserRole  UserRole[]
+  RoleRight RoleRight[]
 }
 
 model Right {
@@ -51,33 +47,31 @@ model Right {
   name      String
   createdAt DateTime?   @db.Timestamp()
   updatedAt DateTime?   @updatedAt @db.Timestamp()
-  userRight UserRight[] @relation("Right_UserRight")
-
-  @@map("right")
+  RoleRight RoleRight[]
 }
 
 model UserRole {
   id        String    @id @default(uuid())
   userId    String
-  user      User      @relation("User_UserRole", fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
   roleId    String
-  role      Role      @relation("Role_UserRole", fields: [roleId], references: [id])
+  role      Role      @relation(fields: [roleId], references: [id])
   createdAt DateTime? @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
-
-  @@map("user_role")
 }
 
-model UserRight {
+model RoleRight {
   id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation("User_UserRight", fields: [userId], references: [id])
+  roleId    String
+  role      Role      @relation(fields: [roleId], references: [id])
   rightId   String
-  right     Right     @relation("Right_UserRight", fields: [rightId], references: [id])
+  right     Right     @relation(fields: [rightId], references: [id])
   createdAt DateTime? @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
 
-  @@map("user_right")
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+  @@unique([roleId, rightId], name: "roldId_rightId")
 }
 
 model Company {

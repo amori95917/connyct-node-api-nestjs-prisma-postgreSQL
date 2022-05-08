@@ -2,43 +2,43 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
-Table user {
+Table User {
   id String [pk]
   firstName String [not null]
   lastName String [not null]
   email String [unique, not null]
   username String [unique, not null]
   password String [not null]
-  signupDate DateTime [default: `now()`]
   isActive Boolean [not null, default: false]
   isSuperuser Boolean [not null, default: false]
   createdAt DateTime
   updatedAt DateTime
-  userRole UserRole [not null]
-  userRight UserRight [not null]
   posts Post [not null]
   postVotes PostVote [not null]
-  Comment Comment [not null]
+  comment Comment [not null]
   commentVotes CommentVote [not null]
+  UserRole UserRole [not null]
+  RoleRight RoleRight [not null]
 }
 
-Table role {
+Table Role {
   id String [pk]
   name String [not null]
   createdAt DateTime
   updatedAt DateTime
-  userRole UserRole [not null]
+  UserRole UserRole [not null]
+  RoleRight RoleRight [not null]
 }
 
-Table right {
+Table Right {
   id String [pk]
   name String [not null]
   createdAt DateTime
   updatedAt DateTime
-  userRight UserRight [not null]
+  RoleRight RoleRight [not null]
 }
 
-Table user_role {
+Table UserRole {
   id String [pk]
   userId String [not null]
   user User [not null]
@@ -48,12 +48,37 @@ Table user_role {
   updatedAt DateTime
 }
 
-Table user_right {
+Table RoleRight {
   id String [pk]
-  userId String [not null]
-  user User [not null]
+  roleId String [not null]
+  role Role [not null]
   rightId String [not null]
   right Right [not null]
+  createdAt DateTime
+  updatedAt DateTime
+  User User
+  userId String
+
+  indexes {
+    (roleId, rightId) [unique]
+  }
+}
+
+Table Company {
+  id String [pk]
+  name String [not null]
+  legalName String [not null]
+  registrationNumber String [not null]
+  establishedDate DateTime [not null]
+  companyStage CompanyStage [not null]
+  description String [not null]
+  mission String
+  vision String
+  ownership Ownership [not null]
+  branches Int [not null, default: 0]
+  numberOfemployees Int [not null, default: 1]
+  transactions Float [not null]
+  isActive Boolean [not null]
   createdAt DateTime
   updatedAt DateTime
 }
@@ -110,6 +135,19 @@ Table CommentVote {
   }
 }
 
+Enum CompanyStage {
+  startup
+  scaleup
+}
+
+Enum Ownership {
+  sole
+  partnership
+  corporate
+  limitedLiabilityCompany
+  nonProfit
+}
+
 Enum VotingStatus {
   neutral
   upvoted
@@ -120,9 +158,11 @@ Ref: UserRole.userId > User.id
 
 Ref: UserRole.roleId > Role.id
 
-Ref: UserRight.userId > User.id
+Ref: RoleRight.roleId > Role.id
 
-Ref: UserRight.rightId > Right.id
+Ref: RoleRight.rightId > Right.id
+
+Ref: RoleRight.userId > User.id
 
 Ref: Post.authorId > User.id
 
