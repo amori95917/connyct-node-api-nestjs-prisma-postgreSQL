@@ -10,6 +10,5 @@ CREATE TABLE "user" (
     "isSuperuser" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP,
     "updatedAt" TIMESTAMP,
-
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
