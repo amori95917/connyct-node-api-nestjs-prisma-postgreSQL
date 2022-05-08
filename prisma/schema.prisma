@@ -80,6 +80,30 @@ model UserRight {
   @@map("user_right")
 }
 
+model Company {
+  id                 String       @id @default(uuid())
+  name               String
+  legalName          String
+  registrationNumber String
+  establishedDate    DateTime
+  companyStage       CompanyStage
+  description        String
+  mission            String?
+  vision             String?
+  ownership          Ownership
+  // businessType BusinessType - industry
+  branches           Int          @default(0)
+  // may be apt to use range instead
+  numberOfemployees  Int          @default(1)
+  transactions       Float
+  isActive           Boolean
+
+  // follow, follower, posts, address, contacts, main products, company user with various role, rating, certifications
+  // response rate, response time, number of sales and so on
+  createdAt DateTime? @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+}
+
 model Post {
   id        String     @id @default(uuid())
   text      String
@@ -126,6 +150,20 @@ model CommentVote {
   comment      Comment      @relation(fields: [commentId], references: [id])
 
   @@unique(fields: [userId, commentId], name: "UserAndCommentIds")
+}
+
+enum CompanyStage {
+  startup
+  scaleup
+}
+
+enum Ownership {
+  sole
+  partnership
+  corporate
+  limitedLiabilityCompany
+  nonProfit
+  // will include other if needed
 }
 
 enum VotingStatus {
