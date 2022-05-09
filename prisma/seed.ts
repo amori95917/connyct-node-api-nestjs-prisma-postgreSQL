@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -22,8 +23,12 @@ const roles = [
 
 async function main() {
   console.log(`Start seeding ...`);
+  const hashedPassword = await bcrypt.hash(user.password, 10);
   const userInstance = await prisma.user.create({
-    data: user,
+    data: {
+      ...user,
+      password: hashedPassword,
+    },
   });
   console.log(`Created user with id: ${userInstance.id}`);
   console.log(`User Seeding finished.`);
