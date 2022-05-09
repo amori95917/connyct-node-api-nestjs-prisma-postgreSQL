@@ -6,7 +6,6 @@ type User {
   lastName: String!
   email: String!
   username: String!
-  password: String
   isActive: Boolean
   isSuperuser: Boolean
   createdAt: DateTime

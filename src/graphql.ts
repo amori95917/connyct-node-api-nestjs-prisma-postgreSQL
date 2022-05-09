@@ -27,7 +27,6 @@ export class User {
     lastName: string;
     email: string;
     username: string;
-    password?: Nullable<string>;
     isActive?: Nullable<boolean>;
     isSuperuser?: Nullable<boolean>;
     createdAt?: Nullable<DateTime>;
