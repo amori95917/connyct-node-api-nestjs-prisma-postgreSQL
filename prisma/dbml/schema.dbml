@@ -11,7 +11,7 @@ Table User {
   password String [not null]
   isActive Boolean [not null, default: false]
   isSuperuser Boolean [not null, default: false]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
   posts Post [not null]
   postVotes PostVote [not null]
@@ -33,7 +33,7 @@ Table Role {
 Table Right {
   id String [pk]
   name String [not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
   RoleRight RoleRight [not null]
 }
@@ -44,7 +44,7 @@ Table UserRole {
   user User [not null]
   roleId String [not null]
   role Role [not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
 
@@ -54,7 +54,7 @@ Table RoleRight {
   role Role [not null]
   rightId String [not null]
   right Right [not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
   User User
   userId String
@@ -79,7 +79,7 @@ Table Company {
   numberOfemployees Int [not null, default: 1]
   transactions Float [not null]
   isActive Boolean [not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
 
@@ -91,7 +91,7 @@ Table Post {
   author User [not null]
   postVotes PostVote [not null]
   comments Comment [not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
 
@@ -119,7 +119,7 @@ Table Comment {
   post Post
   parentComment Comment
   comments Comment [not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
 
@@ -136,22 +136,22 @@ Table CommentVote {
 }
 
 Enum CompanyStage {
-  startup
-  scaleup
+  STARTUP
+  SCALEUP
 }
 
 Enum Ownership {
-  sole
-  partnership
-  corporate
-  limitedLiabilityCompany
-  nonProfit
+  SOLE
+  PARTNERSHIP
+  CORPORATE
+  LIMITEDLIABILITYCOMPANY
+  NONPROFIT
 }
 
 Enum VotingStatus {
-  neutral
-  upvoted
-  downvoted
+  NEUTRAL
+  UPVOTED
+  DOWNVOTED
 }
 
 Ref: UserRole.userId > User.id

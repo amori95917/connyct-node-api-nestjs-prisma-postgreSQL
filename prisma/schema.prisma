@@ -23,8 +23,9 @@ model User {
   password     String
   isActive     Boolean       @default(false)
   isSuperuser  Boolean       @default(false)
-  createdAt    DateTime?     @db.Timestamp()
+  createdAt    DateTime?     @default(now())
   updatedAt    DateTime?     @updatedAt @db.Timestamp()
+  // lastLogin
   posts        Post[]
   postVotes    PostVote[]
   comment      Comment[]
@@ -45,7 +46,7 @@ model Role {
 model Right {
   id        String      @id @default(uuid())
   name      String
-  createdAt DateTime?   @db.Timestamp()
+  createdAt DateTime?   @default(now())
   updatedAt DateTime?   @updatedAt @db.Timestamp()
   RoleRight RoleRight[]
 }
@@ -56,7 +57,7 @@ model UserRole {
   user      User      @relation(fields: [userId], references: [id])
   roleId    String
   role      Role      @relation(fields: [roleId], references: [id])
-  createdAt DateTime? @db.Timestamp()
+  createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
@@ -66,7 +67,7 @@ model RoleRight {
   role      Role      @relation(fields: [roleId], references: [id])
   rightId   String
   right     Right     @relation(fields: [rightId], references: [id])
-  createdAt DateTime? @db.Timestamp()
+  createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
 
   User   User?   @relation(fields: [userId], references: [id])
@@ -94,7 +95,7 @@ model Company {
 
   // follow, follower, posts, address, contacts, main products, company user with various role, rating, certifications
   // response rate, response time, number of sales and so on
-  createdAt DateTime? @db.Timestamp()
+  createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
@@ -106,7 +107,7 @@ model Post {
   author    User       @relation(fields: [authorId], references: [id])
   postVotes PostVote[]
   comments  Comment[]
-  createdAt DateTime?  @db.Timestamp()
+  createdAt DateTime?  @default(now())
   updatedAt DateTime?  @updatedAt @db.Timestamp()
 }
 
@@ -132,7 +133,7 @@ model Comment {
   post          Post?         @relation(fields: [postId], references: [id])
   parentComment Comment?      @relation(name: "CommentToComment", fields: [repliedToId], references: [id])
   comments      Comment[]     @relation(name: "CommentToComment")
-  createdAt     DateTime?     @db.Timestamp()
+  createdAt     DateTime?     @default(now())
   updatedAt     DateTime?     @updatedAt @db.Timestamp()
 }
 
@@ -147,21 +148,21 @@ model CommentVote {
 }
 
 enum CompanyStage {
-  startup
-  scaleup
+  STARTUP
+  SCALEUP
 }
 
 enum Ownership {
-  sole
-  partnership
-  corporate
-  limitedLiabilityCompany
-  nonProfit
+  SOLE
+  PARTNERSHIP
+  CORPORATE
+  LIMITEDLIABILITYCOMPANY
+  NONPROFIT
   // will include other if needed
 }
 
 enum VotingStatus {
-  neutral
-  upvoted
-  downvoted
+  NEUTRAL
+  UPVOTED
+  DOWNVOTED
 }
