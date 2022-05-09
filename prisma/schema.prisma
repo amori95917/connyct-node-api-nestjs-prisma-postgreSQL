@@ -15,16 +15,16 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid())
+  id           String           @id @default(uuid())
   firstName    String
   lastName     String
-  email        String        @unique
-  username     String        @unique
+  email        String           @unique
+  username     String           @unique
   password     String
-  isActive     Boolean       @default(false)
-  isSuperuser  Boolean       @default(false)
-  createdAt    DateTime?     @default(now())
-  updatedAt    DateTime?     @updatedAt @db.Timestamp()
+  isActive     Boolean          @default(false)
+  isSuperuser  Boolean          @default(false)
+  createdAt    DateTime?        @default(now())
+  updatedAt    DateTime?        @updatedAt @db.Timestamp()
   // lastLogin
   posts        Post[]
   postVotes    PostVote[]
@@ -32,6 +32,7 @@ model User {
   commentVotes CommentVote[]
   UserRole     UserRole[]
   RoleRight    RoleRight[]
+  employee     CompanyEmployee? @relation("EmployeeUser")
 }
 
 model Role {
@@ -97,6 +98,16 @@ model Company {
   // response rate, response time, number of sales and so on
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  employees CompanyEmployee[] @relation("EmployeeCompany")
+}
+
+model CompanyEmployee {
+  id         String  @id @default(uuid())
+  employeeId String  @unique
+  employee   User    @relation("EmployeeUser", fields: [employeeId], references: [id])
+  companyId  String
+  company    Company @relation("EmployeeCompany", fields: [companyId], references: [id])
 }
 
 model Post {

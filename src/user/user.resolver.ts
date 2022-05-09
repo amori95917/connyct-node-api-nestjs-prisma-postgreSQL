@@ -1,15 +1,23 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UserService } from './user.service';
-import { CreateUserInput } from './dto/create-user.input';
-import { UpdateUserInput } from './dto/update-user.input';
+import { Prisma } from '@prisma/client';
+// import { CreateEmployeeInput } from './dto/create-employee.input';
 
 @Resolver('User')
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  // @Mutation('createUser')
-  // create(@Args('createUserInput') createUserInput: CreateUserInput) {
-  //   return this.userService.create(createUserInput);
+  @Mutation('createUser')
+  create(@Args('createUserInput') createUserInput: Prisma.UserCreateInput) {
+    return this.userService.createUser(createUserInput);
+  }
+
+  // @Mutation('createEmployee')
+  // createEmployee(
+  //   @Args('createUserInput') createEmployeeInput: CreateEmployeeInput,
+  // ) {
+  //   const { companyId, ...rest } = createEmployeeInput;
+  //   return this.userService.createEmployee(rest, companyId);
   // }
 
   @Query('users')
@@ -19,7 +27,7 @@ export class UserResolver {
 
   @Query('user')
   findOne(@Args('id') id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findOne({ id });
   }
 
   // @Mutation('updateUser')

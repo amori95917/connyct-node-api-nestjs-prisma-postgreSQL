@@ -19,6 +19,7 @@ Table User {
   commentVotes CommentVote [not null]
   UserRole UserRole [not null]
   RoleRight RoleRight [not null]
+  employee CompanyEmployee
 }
 
 Table Role {
@@ -81,6 +82,15 @@ Table Company {
   isActive Boolean [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
+  employees CompanyEmployee [not null]
+}
+
+Table CompanyEmployee {
+  id String [pk]
+  employeeId String [unique, not null]
+  employee User [not null]
+  companyId String [not null]
+  company Company [not null]
 }
 
 Table Post {
@@ -163,6 +173,10 @@ Ref: RoleRight.roleId > Role.id
 Ref: RoleRight.rightId > Right.id
 
 Ref: RoleRight.userId > User.id
+
+Ref: CompanyEmployee.employeeId - User.id
+
+Ref: CompanyEmployee.companyId > Company.id
 
 Ref: Post.authorId > User.id
 

@@ -1,24 +1,51 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
-import { CreateUserInput } from './dto/create-user.input';
-import { UpdateUserInput } from './dto/update-user.input';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  // create(createUserInput: CreateUserInput) {
-  //   return 'This action adds a new user';
+  async createUser(createUserInput: Prisma.UserCreateInput) {
+    // const password: string = await bcrypt.hash(createUserInput.password, 10);
+    this.prisma.user.create({
+      data: createUserInput,
+    });
+  }
+
+  // async createEmployee(
+  //   createUserInput: Prisma.UserCreateInput,
+  //   companyId: string,
+  // ) {
+  //   return await this.prisma.user.create({
+  //     data: { ...createUserInput, employees: { create: { companyId } } },
+  //   });
   // }
 
   async findAll() {
     return this.prisma.user.findMany();
   }
 
-  findOne(id: string) {
+  async findOne(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
     return this.prisma.user.findUnique({
+      where: userWhereUniqueInput,
+    });
+  }
+
+  async findUserById(id: string) {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
+
+  async findUsersByIds(authorIds: readonly string[]) {
+    return this.prisma.user.findMany({
       where: {
-        id,
+        id: {
+          in: [...authorIds],
+        },
       },
     });
   }

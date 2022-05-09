@@ -1,3 +1,5 @@
+# directive @isAuthenticated on QUERY | FIELD | MUTATION
+# directive @hasRole(roles: [String]) on QUERY | FIELD | MUTATION
 scalar DateTime
 
 type User {
@@ -28,6 +30,7 @@ input UpdateUserInput {
 }
 
 type Query {
+  # users: [User]! @isAuthenticated
   users: [User]!
   user(id: ID!): User
 }

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver } from '@nestjs/apollo';
+import { GraphQLModule, GraphQLISODateTime } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
-import { GraphQLISODateTime } from '@nestjs/graphql';
+import { prisma } from '@prisma/client';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -10,7 +11,8 @@ import { CommentModule } from './comment/comment.module';
 import { PostModule } from './post/post.module';
 import { AddressModule } from './address/address.module';
 // import { DatabaseModule } from './database/database.module';
-import { ApolloDriver } from '@nestjs/apollo';
+import { AuthModule } from './auth/auth.module';
+import directiveResolvers from './common/directives';
 
 @Module({
   imports: [
@@ -20,12 +22,22 @@ import { ApolloDriver } from '@nestjs/apollo';
       playground: true,
       plugings: [ApolloServerPluginLandingPageLocalDefault],
       resolvers: { DateTime: GraphQLISODateTime },
+      context: (req) => ({
+        ...req,
+        prisma,
+      }),
+      // context: (req) => ({
+      //   ...req,
+      //   prisma
+      // }),
+      directiveResolvers,
     }),
     UserModule,
     CompanyModule,
     CommentModule,
     PostModule,
     AddressModule,
+    AuthModule,
     // DatabaseModule,
   ],
   controllers: [],
