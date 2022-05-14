@@ -15,32 +15,38 @@ datasource db {
 }
 
 model User {
-  id           String           @id @default(uuid())
-  firstName    String
-  lastName     String
-  email        String           @unique
-  username     String           @unique
-  password     String
-  isActive     Boolean          @default(false)
-  isSuperuser  Boolean          @default(false)
-  createdAt    DateTime?        @default(now())
-  updatedAt    DateTime?        @updatedAt @db.Timestamp()
+  id            String           @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String           @unique
+  username      String           @unique
+  password      String
+  emailToken    String?          @map("email_token")
+  passwordToken String?          @map("password_token")
+  confirm       Boolean          @default(false)
+  isValid       Boolean          @default(false) @map("is_valid")
+  isActive      Boolean          @default(false)
+  isSuperuser   Boolean          @default(false)
+  createdAt     DateTime?        @default(now())
+  updatedAt     DateTime?        @updatedAt @db.Timestamp()
   // lastLogin
-  posts        Post[]
-  postVotes    PostVote[]
-  comment      Comment[]
-  commentVotes CommentVote[]
-  UserRole     UserRole[]
-  RoleRight    RoleRight[]
-  employee     CompanyEmployee? @relation("EmployeeUser")
+  posts         Post[]
+  postVotes     PostVote[]
+  comment       Comment[]
+  commentVotes  CommentVote[]
+  userRoles     UserRole[]
+  RoleRight     RoleRight[]
+  employee      CompanyEmployee? @relation("EmployeeUser")
+
+  @@unique([id, email])
 }
 
 model Role {
   id        String      @id @default(uuid())
-  name      String
+  name      String      @unique
   createdAt DateTime?   @db.Timestamp()
   updatedAt DateTime?   @updatedAt @db.Timestamp()
-  UserRole  UserRole[]
+  userRoles UserRole[]
   RoleRight RoleRight[]
 }
 

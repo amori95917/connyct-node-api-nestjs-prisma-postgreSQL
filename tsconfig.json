@@ -17,10 +17,11 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@/modules/*": [
-        "src/*"
-      ],
-    }
-  }
+    // "paths": {
+    //   "@/modules/*": [
+    //     "src/*"
+    //   ],
+    // }
+  },
+  "exclude": ["node_modules", "dist", "public", "emails-sends"]
 }

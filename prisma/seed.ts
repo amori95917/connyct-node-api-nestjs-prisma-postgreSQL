@@ -1,7 +1,17 @@
 import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 
+// import { Role } from 'src/modules/auth/enum/role.enum';
+
 const prisma = new PrismaClient();
+
+enum Role {
+  Admin = 'ADMIN',
+  User = 'USER',
+  Owner = 'OWNER',
+  Manager = 'MANAGER',
+  Editor = 'EDITOR',
+}
 
 // TODO: typing needed when graphql work starts
 const user = {
@@ -11,10 +21,13 @@ const user = {
   email: 'admin@gmail.com',
   password: 'Connyct@123',
   isActive: true,
-  isSuperuser: true,
+  isValid: true,
+  isSuperuser: true, // when using role this we might discard
+  confirm: true,
 };
 
 const roles = [
+  { name: 'ADMIN' },
   { name: 'OWNER' },
   { name: 'MANAGER' },
   { name: 'EDITOR' },
@@ -23,22 +36,25 @@ const roles = [
 
 async function main() {
   console.log(`Start seeding ...`);
+  const createAllRoles = await prisma.role.createMany({
+    data: roles,
+    skipDuplicates: true,
+  });
+  console.log('createAllRoles', createAllRoles);
+  console.log(`Role Seeding finished.`);
   const hashedPassword = await bcrypt.hash(user.password, 10);
+  const adminRole = await prisma.role.findUnique({
+    where: { name: Role.Admin },
+  });
   const userInstance = await prisma.user.create({
     data: {
       ...user,
       password: hashedPassword,
+      userRoles: { create: { roleId: adminRole.id } },
     },
   });
   console.log(`Created user with id: ${userInstance.id}`);
   console.log(`User Seeding finished.`);
-  for (const role of roles) {
-    const roleInstance = await prisma.role.create({
-      data: role,
-    });
-    console.log(`Created role with name: ${roleInstance.name}`);
-  }
-  console.log(`Role Seeding finished.`);
 }
 
 main()
