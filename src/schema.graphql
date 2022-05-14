@@ -10,8 +10,9 @@ type User {
   lastName: String!
   email: String!
   isValid: Boolean!
-  isAdmin: Boolean
+  isSuperuser: Boolean
   confirm: Boolean!
+  isAdmin: Boolean!
 }
 
 """

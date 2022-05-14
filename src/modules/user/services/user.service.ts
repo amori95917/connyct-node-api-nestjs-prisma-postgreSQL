@@ -126,6 +126,7 @@ export class UserService {
 
   async signUp(payload: SignupInput): Promise<User> {
     try {
+      console.log('payload', payload);
       const userId = v4();
       const emailToken = this.tokenService.generateTokenConfirm(
         Operations.EmailConfirm,
@@ -148,12 +149,19 @@ export class UserService {
       data.password,
     );
 
+    let role = null;
+    const { isCompanyAccount } = data;
+    if (isCompanyAccount) {
+      role = await this.prisma.role.findFirst({ where: { name: Role.Owner } });
+    }
     return await this.prisma.user.create({
       data: {
         ...data,
         email: data.email.toLowerCase(),
         password: hashedPassword,
-        userRoles: { create: { roleId: Role.User } },
+        ...(isCompanyAccount && {
+          userRoles: { create: { roleId: role.id } },
+        }),
       },
     });
   }

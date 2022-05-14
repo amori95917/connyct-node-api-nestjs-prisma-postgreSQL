@@ -35,4 +35,5 @@ export type UserDataInput = {
   passwordToken?: string;
   confirm?: boolean;
   isValid?: boolean;
+  isCompanyAccount?: boolean;
 };

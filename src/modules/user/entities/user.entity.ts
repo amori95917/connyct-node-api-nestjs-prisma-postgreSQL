@@ -27,7 +27,7 @@ export class User extends BaseEntity {
   roles: Role[];
 
   @Field({ nullable: true })
-  isAdmin?: boolean;
+  isSuperuser?: boolean;
 
   @Field()
   confirm: boolean;
