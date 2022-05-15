@@ -5,6 +5,30 @@ import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { BaseEntity } from '../../prisma/entities/base.entity';
 
 @ObjectType()
+export class GeneralCompany extends BaseEntity {
+  @Field()
+  name: string;
+
+  @Field()
+  legalName: string;
+
+  @Field()
+  registrationNumber: string;
+
+  @Field()
+  establishedDate: Date;
+
+  @Field()
+  businessType: string;
+
+  @Field()
+  ownership: string;
+
+  @Field()
+  companyStage: string;
+}
+
+@ObjectType()
 export class Company extends BaseEntity {
   @Field()
   name: string;

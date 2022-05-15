@@ -2,7 +2,7 @@ import { Field, InputType } from '@nestjs/graphql';
 import { IsUUID } from 'class-validator';
 
 @InputType()
-export class CreateGeneralCompanyInput {
+export class CreateCompanyGeneralInput {
   @Field()
   name: string;
 
@@ -26,7 +26,7 @@ export class CreateGeneralCompanyInput {
 }
 
 @InputType()
-export class CreateAddressCompanyInput {
+export class CreateCompanyAddressInput {
   @Field()
   @IsUUID('4')
   id: string;

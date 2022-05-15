@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Scope } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
 
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
@@ -6,6 +6,10 @@ import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination
 import { FilterListCompanies } from '../dto/filter-company.input';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  CreateCompanyAddressInput,
+  CreateCompanyGeneralInput,
+} from '../dto/company-input';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -45,5 +49,15 @@ export class CompanyService {
         cursor: Buffer.from(node.id).toString('base64'),
       })),
     };
+  }
+
+  async createCompanyGeneralInfo(generalCompany: CreateCompanyGeneralInput) {
+    console.log('generalCompany', generalCompany);
+    return await this.prisma.company.findFirst();
+  }
+
+  async createCompanyAddress(companyAddress: CreateCompanyAddressInput) {
+    console.log('generalCompany', companyAddress);
+    return await this.prisma.company.findFirst();
   }
 }

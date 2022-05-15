@@ -49,6 +49,19 @@ type Auth {
   user: User!
 }
 
+type GeneralCompany {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  legalName: String!
+  registrationNumber: String!
+  establishedDate: DateTime!
+  businessType: String!
+  ownership: String!
+  companyStage: String!
+}
+
 type Company {
   id: String!
   createdAt: DateTime!
@@ -145,6 +158,8 @@ type Mutation {
   requestConfirmEmail(data: RequestConfirmEmailInput!): Boolean!
   resetPassword(data: ResetPasswordInput!): Token!
   requestResetPassword(data: RequestResetPasswordInput!): Boolean!
+  createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): GeneralCompany!
+  createCompanyAddress(data: CreateCompanyAddressInput!): GeneralCompany!
 }
 
 input UpdateStatusUserInput {
@@ -192,4 +207,24 @@ input ResetPasswordInput {
 
 input RequestResetPasswordInput {
   email: String!
+}
+
+input CreateCompanyGeneralInput {
+  name: String!
+  legalName: String!
+  registrationNumber: String!
+  establishedDate: DateTime!
+  businessType: String!
+  ownership: String!
+  companyStage: String!
+}
+
+input CreateCompanyAddressInput {
+  id: String!
+  country: String!
+  city: String!
+  state: String
+  zipCode: String!
+  address1: String!
+  address2: String!
 }
