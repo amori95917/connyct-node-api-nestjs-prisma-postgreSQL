@@ -1,27 +1,34 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 @InputType()
 export class CreateCompanyGeneralInput {
   @Field()
+  @IsNotEmpty()
   name: string;
 
   @Field()
+  @IsNotEmpty()
   legalName: string;
 
   @Field()
+  @IsNotEmpty()
   registrationNumber: string;
 
   @Field()
+  @IsNotEmpty()
   establishedDate: Date;
 
   @Field()
+  @IsNotEmpty()
   businessType: string;
 
   @Field()
+  @IsNotEmpty()
   ownership: string; // probably better to use enum
 
   @Field()
+  @IsNotEmpty()
   companyStage: string;
 }
 

@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
+import { REQUEST } from '@nestjs/core';
 
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
@@ -15,7 +16,11 @@ import {
 export class CompanyService {
   private allowOperation: boolean;
 
-  constructor(@Inject(CONTEXT) private context, private prisma: PrismaService) {
+  constructor(
+    @Inject(REQUEST) private request,
+    @Inject(CONTEXT) private context,
+    private prisma: PrismaService,
+  ) {
     this.allowOperation = this.context?.req?.user?.isAdmin;
   }
 
@@ -51,9 +56,15 @@ export class CompanyService {
     };
   }
 
-  async createCompanyGeneralInfo(generalCompany: CreateCompanyGeneralInput) {
+  async createCompanyGeneralInfo(generalCompany: any) {
     console.log('generalCompany', generalCompany);
-    return await this.prisma.company.findFirst();
+    // TODO: Need a way to check if company already exists or not. Validation is needed
+    return await this.prisma.company.create({
+      data: {
+        ...generalCompany,
+        employees: { create: { employeeId: this.request?.user?.id } },
+      },
+    });
   }
 
   async createCompanyAddress(companyAddress: CreateCompanyAddressInput) {
