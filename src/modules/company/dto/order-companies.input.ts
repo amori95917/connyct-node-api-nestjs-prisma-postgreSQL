@@ -3,6 +3,7 @@ import { Field, InputType, registerEnumType } from '@nestjs/graphql';
 import { Order } from 'src/modules/prisma/resolvers/order/order';
 
 export enum CompaniesOrderBy {
+  name = 'name',
   legalName = 'legalName',
   createdAt = 'createdAt',
 }

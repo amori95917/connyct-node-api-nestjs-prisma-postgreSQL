@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { EmailModule } from './modules/email/email.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
+import { CompanyModule } from './modules/company/company.module';
 import { UserMiddleware } from './modules/user/middlewares/user.middleware';
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 
@@ -52,6 +53,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
     UserModule,
     AuthModule,
     EmailModule,
+    CompanyModule,
   ],
 })
 export class AppModule {

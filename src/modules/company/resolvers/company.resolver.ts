@@ -20,14 +20,14 @@ import { FilterListCompanies } from '../dto/filter-company.input';
 export class CompanyResolver {
   constructor(private readonly companyService: CompanyService) {}
 
-  @Roles(Role.Owner)
+  @Roles(Role.Admin)
   @Query(() => CompanyPaginated)
   async companies(
     @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
     paginate: PaginationArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { orderBy: 'username', direction: 'desc' },
+      defaultValue: { orderBy: 'name', direction: 'desc' },
     })
     order: OrderListCompanies,
     @Args('filter', { nullable: true })

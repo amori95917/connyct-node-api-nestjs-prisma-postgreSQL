@@ -9,9 +9,9 @@ export class FilterListCompanies {
   @Field(() => String, { defaultValue: null, nullable: true })
   omni?: string;
 
-  @Field(() => Boolean, {
-    defaultValue: null,
-    nullable: true,
-  })
-  isValid?: boolean;
+  // @Field(() => Boolean, {
+  //   defaultValue: null,
+  //   nullable: true,
+  // })
+  // isValid?: boolean;
 }

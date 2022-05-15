@@ -49,10 +49,42 @@ type Auth {
   user: User!
 }
 
+type Company {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  legalName: String!
+  registrationNumber: String!
+  establishedDate: DateTime!
+  businessType: String!
+  ownership: String!
+  companyStage: String!
+  country: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  address1: String!
+  address2: String!
+}
+
+type CompanyEdge {
+  cursor: String!
+  node: Company!
+}
+
+type CompanyPaginated {
+  edges: [CompanyEdge!]
+  nodes: [Company!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
   getUser(userId: String!): User!
+  companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
 }
 
 input PaginationArgs {
@@ -83,6 +115,22 @@ enum UsersOrderBy {
 input FilterListUsers {
   omni: String = null
   isValid: Boolean = null
+}
+
+input OrderListCompanies {
+  direction: OrderDirection!
+  orderBy: CompaniesOrderBy!
+}
+
+"""Order by: name, legalName, createdAt"""
+enum CompaniesOrderBy {
+  name
+  legalName
+  createdAt
+}
+
+input FilterListCompanies {
+  omni: String = null
 }
 
 type Mutation {
