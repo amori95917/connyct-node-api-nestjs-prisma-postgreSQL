@@ -23,7 +23,6 @@ import { FilterListUsers } from '../dto/filter-user.input';
 import { OrderListUsers } from '../dto/order-users.input';
 import { UpdateStatusUserInput, UpdateUserInput } from '../dto/user.input';
 import { User, UserPaginated } from '../entities/user.entity';
-import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
 
 @Resolver(() => User)
 export class UserResolver {

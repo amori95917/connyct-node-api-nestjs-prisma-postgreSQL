@@ -33,7 +33,7 @@ Table User {
 Table Role {
   id String [pk]
   name String [unique, not null]
-  createdAt DateTime
+  createdAt DateTime [default: `now()`]
   updatedAt DateTime
   userRoles UserRole [not null]
   RoleRight RoleRight [not null]
@@ -84,6 +84,7 @@ Table Company {
   mission String
   vision String
   ownership Ownership [not null]
+  addresses Address [not null]
   branches Int [not null, default: 0]
   numberOfemployees Int [not null, default: 1]
   transactions Float [not null]
@@ -91,6 +92,20 @@ Table Company {
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   employees CompanyEmployee [not null]
+}
+
+Table Address {
+  id String [pk]
+  country String [not null]
+  city String [not null]
+  state String [not null]
+  zipCode String [not null]
+  address1 String [not null]
+  address2 String [not null]
+  companyId String [unique, not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  Company Company [not null]
 }
 
 Table CompanyEmployee {
@@ -181,6 +196,8 @@ Ref: RoleRight.roleId > Role.id
 Ref: RoleRight.rightId > Right.id
 
 Ref: RoleRight.userId > User.id
+
+Ref: Address.companyId > Company.id
 
 Ref: CompanyEmployee.employeeId - User.id
 

@@ -44,7 +44,7 @@ model User {
 model Role {
   id        String      @id @default(uuid())
   name      String      @unique
-  createdAt DateTime?   @db.Timestamp()
+  createdAt DateTime?   @default(now())
   updatedAt DateTime?   @updatedAt @db.Timestamp()
   userRoles UserRole[]
   RoleRight RoleRight[]
@@ -93,6 +93,7 @@ model Company {
   mission            String?
   vision             String?
   ownership          Ownership
+  addresses          Address[]
   // businessType BusinessType - industry
   branches           Int          @default(0)
   // may be apt to use range instead
@@ -106,6 +107,20 @@ model Company {
   updatedAt DateTime? @updatedAt @db.Timestamp()
 
   employees CompanyEmployee[] @relation("EmployeeCompany")
+}
+
+model Address {
+  id        String    @id @default(uuid())
+  country   String
+  city      String
+  state     String
+  zipCode   String
+  address1  String
+  address2  String
+  companyId String    @unique
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+  Company   Company   @relation(fields: [companyId], references: [id])
 }
 
 model CompanyEmployee {

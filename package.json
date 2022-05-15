@@ -23,7 +23,8 @@
     "seed:db": "npx prisma db seed",
     "gen-typings": "ts-node ./src/config/generate-typings",
     "prisma:generate": "npx prisma generate --watch",
-    "dev": "concurrently \"yarn start:dev\" \"yarn gen-typings\" \"yarn prisma:generate\""
+    "dev": "concurrently \"yarn start:dev\" \"yarn gen-typings\" \"yarn prisma:generate\"",
+    "console": "prisma-repl"
   },
   "dependencies": {
     "@nestjs/apollo": "^10.0.11",
@@ -86,6 +87,7 @@
     "prettier": "^2.3.2",
     "prisma": "^3.14.0",
     "prisma-dbml-generator": "^0.9.0",
+    "prisma-repl": "^1.3.0",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
     "ts-jest": "28.0.1",
