@@ -1,0 +1,24 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Debug Connyct API",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "args": [
+        "${workspaceFolder}/connyct-node-api/src/main.ts"
+      ],
+      // "program": "${workspaceFolder}/connyct-node-api/src/modules/auth/guards/roles.guard.ts",
+      "outFiles": [
+        "${workspaceFolder}/connyct-node-api/**/*.js"
+      ]
+    }
+  ]
+}

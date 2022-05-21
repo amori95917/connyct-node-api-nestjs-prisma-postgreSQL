@@ -2,6 +2,52 @@ import { Field, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
 @InputType()
+export class CreateCompanyInput {
+  @Field()
+  @IsNotEmpty()
+  name: string;
+
+  @Field()
+  @IsNotEmpty()
+  legalName: string;
+
+  @Field()
+  @IsNotEmpty()
+  registrationNumber: string;
+
+  @Field()
+  @IsNotEmpty()
+  establishedDate: Date;
+
+  @Field()
+  @IsNotEmpty()
+  businessType: string;
+
+  @Field()
+  @IsNotEmpty()
+  ownership: string; // probably better to use enum
+
+  @Field()
+  @IsNotEmpty()
+  companyStage: string;
+
+  @Field()
+  branches: number;
+
+  @Field()
+  numberOfemployees: number;
+
+  @Field()
+  transactions: number;
+
+  // @Field()
+  // addresses: AddressInput
+
+  // @Field()
+  // employees:
+}
+
+@InputType()
 export class CreateCompanyGeneralInput {
   @Field()
   @IsNotEmpty()
@@ -30,6 +76,31 @@ export class CreateCompanyGeneralInput {
   @Field()
   @IsNotEmpty()
   companyStage: string;
+}
+
+@InputType()
+export class AddressInput {
+  @Field()
+  @IsUUID('4')
+  id: string;
+
+  @Field()
+  country: string;
+
+  @Field()
+  city: string;
+
+  @Field({ nullable: true })
+  state?: string;
+
+  @Field()
+  zipCode: string;
+
+  @Field()
+  address1: string;
+
+  @Field()
+  address2: string;
 }
 
 @InputType()

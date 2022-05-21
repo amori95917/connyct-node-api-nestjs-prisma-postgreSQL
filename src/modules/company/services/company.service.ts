@@ -10,7 +10,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateCompanyAddressInput,
   CreateCompanyGeneralInput,
+  CreateCompanyInput,
 } from '../dto/company-input';
+import { Prisma } from '@prisma/client';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -56,8 +58,18 @@ export class CompanyService {
     };
   }
 
-  async createCompanyGeneralInfo(generalCompany: any) {
+  async createCompany(company: CreateCompanyInput) {
+    return await this.prisma.company.create({
+      data: {
+        ...company,
+        employees: { create: { employeeId: this.request?.user?.id } },
+      },
+    });
+  }
+
+  async createCompanyGeneralInfo(generalCompany: Prisma.CompanyCreateInput) {
     console.log('generalCompany', generalCompany);
+    // const data: Pick<Prisma.CompanyCreateInput> =
     // TODO: Need a way to check if company already exists or not. Validation is needed
     return await this.prisma.company.create({
       data: {

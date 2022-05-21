@@ -33,6 +33,7 @@ export class UserMiddleware implements NestMiddleware {
         delete user.password;
         req.user = user;
         req.user.isAdmin = await this.validationService.isAdmin(userId);
+        // should we attach role to req.user?
       }
     }
     next();
