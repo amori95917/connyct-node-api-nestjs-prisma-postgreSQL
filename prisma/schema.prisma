@@ -131,6 +131,12 @@ model CompanyEmployee {
   company    Company @relation("EmployeeCompany", fields: [companyId], references: [id])
 }
 
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[]
+}
+
 model Post {
   id        String     @id @default(uuid())
   text      String
@@ -139,6 +145,7 @@ model Post {
   author    User       @relation(fields: [authorId], references: [id])
   postVotes PostVote[]
   comments  Comment[]
+  tags      Tag[]
   createdAt DateTime?  @default(now())
   updatedAt DateTime?  @updatedAt @db.Timestamp()
 }

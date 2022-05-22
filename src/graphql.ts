@@ -95,6 +95,19 @@ export class RequestResetPasswordInput {
     email: string;
 }
 
+export class CreateCompanyInput {
+    name: string;
+    legalName: string;
+    registrationNumber: string;
+    establishedDate: DateTime;
+    businessType: string;
+    ownership: string;
+    companyStage: string;
+    branches: number;
+    numberOfemployees: number;
+    transactions: number;
+}
+
 export class CreateCompanyGeneralInput {
     name: string;
     legalName: string;
@@ -227,6 +240,8 @@ export abstract class IMutation {
     abstract resetPassword(data: ResetPasswordInput): Token | Promise<Token>;
 
     abstract requestResetPassword(data: RequestResetPasswordInput): boolean | Promise<boolean>;
+
+    abstract createCompany(data: CreateCompanyInput): Company | Promise<Company>;
 
     abstract createCompanyGeneralInfo(data: CreateCompanyGeneralInput): GeneralCompany | Promise<GeneralCompany>;
 

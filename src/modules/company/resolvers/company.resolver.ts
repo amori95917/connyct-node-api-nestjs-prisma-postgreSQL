@@ -51,7 +51,7 @@ export class CompanyResolver {
   @Mutation(() => GeneralCompany)
   async createCompanyGeneralInfo(
     @Args('data')
-    generalCompany: Prisma.CompanyCreateInput,
+    generalCompany: CreateCompanyGeneralInput,
   ): Promise<CompanyPrisma> {
     return this.companyService.createCompanyGeneralInfo(generalCompany);
   }

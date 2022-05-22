@@ -116,6 +116,12 @@ Table CompanyEmployee {
   company Company [not null]
 }
 
+Table Tag {
+  id String [pk]
+  name String [unique, not null]
+  posts Post [not null]
+}
+
 Table Post {
   id String [pk]
   text String [not null]
@@ -124,6 +130,7 @@ Table Post {
   author User [not null]
   postVotes PostVote [not null]
   comments Comment [not null]
+  tags Tag [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
@@ -166,6 +173,11 @@ Table CommentVote {
   indexes {
     (userId, commentId) [unique]
   }
+}
+
+Table PostToTag {
+  postsId String [ref: > Post.id]
+  tagsId String [ref: > Tag.id]
 }
 
 Enum CompanyStage {

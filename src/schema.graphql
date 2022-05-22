@@ -158,6 +158,7 @@ type Mutation {
   requestConfirmEmail(data: RequestConfirmEmailInput!): Boolean!
   resetPassword(data: ResetPasswordInput!): Token!
   requestResetPassword(data: RequestResetPasswordInput!): Boolean!
+  createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): GeneralCompany!
   createCompanyAddress(data: CreateCompanyAddressInput!): GeneralCompany!
 }
@@ -207,6 +208,19 @@ input ResetPasswordInput {
 
 input RequestResetPasswordInput {
   email: String!
+}
+
+input CreateCompanyInput {
+  name: String!
+  legalName: String!
+  registrationNumber: String!
+  establishedDate: DateTime!
+  businessType: String!
+  ownership: String!
+  companyStage: String!
+  branches: Float!
+  numberOfemployees: Float!
+  transactions: Float!
 }
 
 input CreateCompanyGeneralInput {

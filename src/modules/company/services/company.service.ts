@@ -58,7 +58,7 @@ export class CompanyService {
     };
   }
 
-  async createCompany(company: CreateCompanyInput) {
+  async createCompany(company: any) {
     return await this.prisma.company.create({
       data: {
         ...company,
@@ -67,7 +67,7 @@ export class CompanyService {
     });
   }
 
-  async createCompanyGeneralInfo(generalCompany: Prisma.CompanyCreateInput) {
+  async createCompanyGeneralInfo(generalCompany: any) {
     console.log('generalCompany', generalCompany);
     // const data: Pick<Prisma.CompanyCreateInput> =
     // TODO: Need a way to check if company already exists or not. Validation is needed
