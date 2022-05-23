@@ -15,6 +15,7 @@ import { UserModule } from './modules/user/user.module';
 import { CompanyModule } from './modules/company/company.module';
 import { UserMiddleware } from './modules/user/middlewares/user.middleware';
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
+import { TagModule } from './modules/tag/tag.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
     AuthModule,
     EmailModule,
     CompanyModule,
+    TagModule,
   ],
 })
 export class AppModule {

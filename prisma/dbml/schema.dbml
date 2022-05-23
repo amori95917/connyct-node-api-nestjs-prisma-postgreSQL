@@ -18,9 +18,9 @@ Table User {
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   posts Post [not null]
-  postVotes PostVote [not null]
+  postRatings PostRating [not null]
   comment Comment [not null]
-  commentVotes CommentVote [not null]
+  commentRatings CommentRating [not null]
   userRoles UserRole [not null]
   RoleRight RoleRight [not null]
   employee CompanyEmployee
@@ -125,20 +125,20 @@ Table Tag {
 Table Post {
   id String [pk]
   text String [not null]
-  votes Int [not null, default: 0]
-  authorId String [not null]
-  author User [not null]
-  postVotes PostVote [not null]
+  rating Int [not null, default: 0]
+  creatorId String [not null]
+  creator User [not null]
+  postRating PostRating [not null]
   comments Comment [not null]
   tags Tag [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
 
-Table PostVote {
+Table PostRating {
   userId String [not null]
   postId String [not null]
-  votingStatus VotingStatus [not null]
+  rating RatingStatus [not null]
   user User [not null]
   post Post [not null]
 
@@ -150,11 +150,11 @@ Table PostVote {
 Table Comment {
   id String [pk]
   text String [not null]
-  votes Int [not null, default: 0]
+  rating Int [not null, default: 0]
   creatorId String [not null]
   postId String
   repliedToId String
-  commentVote CommentVote [not null]
+  commentRating CommentRating [not null]
   user User [not null]
   post Post
   parentComment Comment
@@ -163,10 +163,10 @@ Table Comment {
   updatedAt DateTime
 }
 
-Table CommentVote {
+Table CommentRating {
   userId String [not null]
   commentId String [not null]
-  votingStatus VotingStatus [not null]
+  rating RatingStatus [not null]
   user User [not null]
   comment Comment [not null]
 
@@ -193,7 +193,7 @@ Enum Ownership {
   NONPROFIT
 }
 
-Enum VotingStatus {
+Enum RatingStatus {
   NEUTRAL
   UPVOTED
   DOWNVOTED
@@ -215,11 +215,11 @@ Ref: CompanyEmployee.employeeId - User.id
 
 Ref: CompanyEmployee.companyId > Company.id
 
-Ref: Post.authorId > User.id
+Ref: Post.creatorId > User.id
 
-Ref: PostVote.userId > User.id
+Ref: PostRating.userId > User.id
 
-Ref: PostVote.postId > Post.id
+Ref: PostRating.postId > Post.id
 
 Ref: Comment.creatorId > User.id
 
@@ -227,6 +227,6 @@ Ref: Comment.postId > Post.id
 
 Ref: Comment.repliedToId - Comment.id
 
-Ref: CommentVote.userId > User.id
+Ref: CommentRating.userId > User.id
 
-Ref: CommentVote.commentId > Comment.id
+Ref: CommentRating.commentId > Comment.id

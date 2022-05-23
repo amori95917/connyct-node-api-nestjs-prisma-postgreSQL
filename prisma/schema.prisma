@@ -15,28 +15,28 @@ datasource db {
 }
 
 model User {
-  id            String           @id @default(uuid())
-  firstName     String
-  lastName      String
-  email         String           @unique
-  username      String           @unique
-  password      String
-  emailToken    String?          @map("email_token")
-  passwordToken String?          @map("password_token")
-  confirm       Boolean          @default(false)
-  isValid       Boolean          @default(false) @map("is_valid")
-  isActive      Boolean          @default(false)
-  isSuperuser   Boolean          @default(false)
-  createdAt     DateTime?        @default(now())
-  updatedAt     DateTime?        @updatedAt @db.Timestamp()
+  id             String           @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String           @unique
+  username       String           @unique
+  password       String
+  emailToken     String?          @map("email_token")
+  passwordToken  String?          @map("password_token")
+  confirm        Boolean          @default(false)
+  isValid        Boolean          @default(false) @map("is_valid")
+  isActive       Boolean          @default(false)
+  isSuperuser    Boolean          @default(false)
+  createdAt      DateTime?        @default(now())
+  updatedAt      DateTime?        @updatedAt @db.Timestamp()
   // lastLogin
-  posts         Post[]
-  postVotes     PostVote[]
-  comment       Comment[]
-  commentVotes  CommentVote[]
-  userRoles     UserRole[]
-  RoleRight     RoleRight[]
-  employee      CompanyEmployee? @relation("EmployeeUser")
+  posts          Post[]
+  postRatings    PostRating[]
+  comment        Comment[]
+  commentRatings CommentRating[]
+  userRoles      UserRole[]
+  RoleRight      RoleRight[]
+  employee       CompanyEmployee? @relation("EmployeeUser")
 
   @@unique([id, email])
 }
@@ -138,50 +138,50 @@ model Tag {
 }
 
 model Post {
-  id        String     @id @default(uuid())
-  text      String
-  votes     Int        @default(0)
-  authorId  String
-  author    User       @relation(fields: [authorId], references: [id])
-  postVotes PostVote[]
-  comments  Comment[]
-  tags      Tag[]
-  createdAt DateTime?  @default(now())
-  updatedAt DateTime?  @updatedAt @db.Timestamp()
+  id         String       @id @default(uuid())
+  text       String
+  rating     Int          @default(0)
+  creatorId  String
+  creator    User         @relation(fields: [creatorId], references: [id])
+  postRating PostRating[]
+  comments   Comment[]
+  tags       Tag[]
+  createdAt  DateTime?    @default(now())
+  updatedAt  DateTime?    @updatedAt @db.Timestamp()
 }
 
-model PostVote {
-  userId       String
-  postId       String
-  votingStatus VotingStatus
-  user         User         @relation(fields: [userId], references: [id])
-  post         Post         @relation(fields: [postId], references: [id])
+model PostRating {
+  userId String
+  postId String
+  rating RatingStatus
+  user   User         @relation(fields: [userId], references: [id])
+  post   Post         @relation(fields: [postId], references: [id])
 
   @@unique(fields: [userId, postId], name: "UserAndPostIds")
 }
 
 model Comment {
-  id            String        @id @default(uuid())
+  id            String          @id @default(uuid())
   text          String
-  votes         Int           @default(0)
+  rating        Int             @default(0)
   creatorId     String
   postId        String?
   repliedToId   String?
-  commentVote   CommentVote[]
-  user          User          @relation(fields: [creatorId], references: [id])
-  post          Post?         @relation(fields: [postId], references: [id])
-  parentComment Comment?      @relation(name: "CommentToComment", fields: [repliedToId], references: [id])
-  comments      Comment[]     @relation(name: "CommentToComment")
-  createdAt     DateTime?     @default(now())
-  updatedAt     DateTime?     @updatedAt @db.Timestamp()
+  commentRating CommentRating[]
+  user          User            @relation(fields: [creatorId], references: [id])
+  post          Post?           @relation(fields: [postId], references: [id])
+  parentComment Comment?        @relation(name: "CommentToComment", fields: [repliedToId], references: [id])
+  comments      Comment[]       @relation(name: "CommentToComment")
+  createdAt     DateTime?       @default(now())
+  updatedAt     DateTime?       @updatedAt @db.Timestamp()
 }
 
-model CommentVote {
-  userId       String
-  commentId    String
-  votingStatus VotingStatus
-  user         User         @relation(fields: [userId], references: [id])
-  comment      Comment      @relation(fields: [commentId], references: [id])
+model CommentRating {
+  userId    String
+  commentId String
+  rating    RatingStatus
+  user      User         @relation(fields: [userId], references: [id])
+  comment   Comment      @relation(fields: [commentId], references: [id])
 
   @@unique(fields: [userId, commentId], name: "UserAndCommentIds")
 }
@@ -200,7 +200,7 @@ enum Ownership {
   // will include other if needed
 }
 
-enum VotingStatus {
+enum RatingStatus {
   NEUTRAL
   UPVOTED
   DOWNVOTED

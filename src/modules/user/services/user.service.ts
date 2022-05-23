@@ -85,6 +85,20 @@ export class UserService {
     return await this.prisma.user.findFirst({ where: { email } });
   }
 
+  async findUserById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  public async findUsersByIds(authorIds: readonly string[]): Promise<User[]> {
+    return this.prisma.user.findMany({
+      where: {
+        id: {
+          in: [...authorIds],
+        },
+      },
+    });
+  }
+
   async updateUser(userId: string, params: UpdateUserInput): Promise<User> {
     const userOwnId = this.allowOperation ? params.userId : userId;
     if (this.allowOperation && !params?.userId) throw UserIdIsRequired;
