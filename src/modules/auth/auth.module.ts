@@ -13,8 +13,10 @@ import { TokenService } from './services/token.service';
 
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtStrategy } from './jwt.strategy';
+import { AnonymousStrategy } from './strategies/anonymous.strategy';
 import { AuthResolver } from './resolvers/auth.resolver';
 import { RolesGuard } from './guards/roles.guard';
+import { GqlAnonymousGuard } from './guards/gql-anonymous.guard';
 
 @Module({
   imports: [...DEPENDENCIES_AUTH_MODULES, PrismaModule],
@@ -24,6 +26,7 @@ import { RolesGuard } from './guards/roles.guard';
     AuthService,
     PrismaService,
     JwtStrategy,
+    AnonymousStrategy,
     EmailService,
     UserService,
     PasswordService,
@@ -31,6 +34,10 @@ import { RolesGuard } from './guards/roles.guard';
     {
       provide: 'APP_GUARD',
       useClass: RolesGuard,
+    },
+    {
+      provide: 'APP_GUARD',
+      useClass: GqlAnonymousGuard,
     },
   ],
   exports: [JwtModule, JwtStrategy, AuthService, TokenService],

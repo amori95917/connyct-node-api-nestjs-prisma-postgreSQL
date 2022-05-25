@@ -13,6 +13,7 @@ import { EmailModule } from './modules/email/email.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
 import { CompanyModule } from './modules/company/company.module';
+import { PostModule } from './modules/post/post.module';
 import { UserMiddleware } from './modules/user/middlewares/user.middleware';
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { TagModule } from './modules/tag/tag.module';
@@ -56,6 +57,7 @@ import { TagModule } from './modules/tag/tag.module';
     EmailModule,
     CompanyModule,
     TagModule,
+    PostModule,
   ],
 })
 export class AppModule {

@@ -17,7 +17,7 @@ import { CommentsService } from '../../comment/services/comment.service';
 import { RatePayload } from '../../rating/entities/rate.payload';
 import { RatingStatus } from '../../rating/entities/rating-status.enum';
 import { RatingService } from '../../rating/services/rating.service';
-import { User } from '../../user/user.models';
+import { User } from '../../user/entities/user.entity';
 
 import { CreatePostInput } from '../dto/create-post.input';
 import { CreatePostPayload } from '../entities/create-post.payload';

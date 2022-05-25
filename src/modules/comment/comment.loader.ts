@@ -7,7 +7,7 @@ import { UserService } from '../user/services/user.service';
 import { CommentsRepository } from './repository/comment.repository';
 
 import type { Post } from '../post/post.models';
-import type { User } from '../user/user.models';
+import type { User } from '../user/entities/user.entity';
 import type { Comment } from './comment.models';
 
 @Injectable({ scope: Scope.REQUEST })

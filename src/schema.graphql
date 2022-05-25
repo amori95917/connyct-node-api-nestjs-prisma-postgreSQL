@@ -2,8 +2,45 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Comment {
+  id: ID!
+  text: String!
+  creator: User!
+  rating: Int!
+  myRatingStatus: RatingStatus!
+  createdAt: DateTime!
+  post: Post
+  postId: Int
+  repliedTo: Comment
+  repliedToId: Int
+  replies: [Comment!]!
+  creatorId: Int!
+}
+
+enum RatingStatus {
+  NEUTRAL
+  UPVOTED
+  DOWNVOTED
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Post {
+  id: ID!
+  text: String!
+  creator: User!
+  rating: Int!
+  createdAt: DateTime!
+  myRatingStatus: RatingStatus!
+  creatorId: Int!
+  comments: [Comment!]!
+}
+
 type User {
-  id: String!
+  id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   firstName: String!
@@ -12,13 +49,9 @@ type User {
   isValid: Boolean!
   isSuperuser: Boolean
   confirm: Boolean!
+  posts: [Post!]!
   isAdmin: Boolean!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type UserEdge {
   cursor: String!
@@ -93,11 +126,47 @@ type CompanyPaginated {
   hasNextPage: Boolean!
 }
 
+type UserError {
+  message: String!
+  field: String
+}
+
+type RatePayload implements MutationPayload {
+  errors: [UserError!]
+  isRateSuccessful: Boolean!
+}
+
+interface MutationPayload {
+  errors: [UserError!]
+}
+
+type NewReplyPayload implements MutationPayload {
+  errors: [UserError!]
+  comment: Comment
+}
+
+type CreatePostPayload implements MutationPayload {
+  errors: [UserError!]
+  post: Post
+}
+
+type DeletePostPayload implements MutationPayload {
+  errors: [UserError!]
+  isDeleteSuccessful: Boolean!
+}
+
+type UpdatePostPayload implements MutationPayload {
+  errors: [UserError!]
+  post: Post
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
   getUser(userId: String!): User!
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
+  getPost(id: Int!): Post
+  getPosts: [Post!]!
 }
 
 input PaginationArgs {
@@ -161,6 +230,17 @@ type Mutation {
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): GeneralCompany!
   createCompanyAddress(data: CreateCompanyAddressInput!): GeneralCompany!
+  createPost(input: CreatePostInput!): CreatePostPayload!
+  updatePost(id: Int!, input: UpdatePostInput!): UpdatePostPayload!
+  deletePost(postId: Int!): DeletePostPayload!
+  upvotePost(postId: Int!): RatePayload!
+  downvotePost(postId: Int!): RatePayload!
+  removeRatingFromPost(postId: Int!): RatePayload!
+  replyToPost(postId: Int!, input: CreateCommentInput!): NewReplyPayload!
+  replyToComment(commentId: Int!, input: CreateCommentInput!): NewReplyPayload!
+  upvoteComment(commentId: Int!): RatePayload!
+  downvoteComment(commentId: Int!): RatePayload!
+  removeRatingFromComment(commentId: Int!): RatePayload!
 }
 
 input UpdateStatusUserInput {
@@ -241,4 +321,18 @@ input CreateCompanyAddressInput {
   zipCode: String!
   address1: String!
   address2: String!
+}
+
+input CreatePostInput {
+  text: String!
+  tags: [String!]
+}
+
+input UpdatePostInput {
+  text: String
+  tags: [String!]
+}
+
+input CreateCommentInput {
+  text: String!
 }

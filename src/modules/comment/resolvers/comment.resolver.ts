@@ -14,7 +14,7 @@ import { Post } from '../../post/post.models';
 import { RatePayload } from '../../rating/entities/rate.payload';
 import { RatingStatus } from '../../rating/entities/rating-status.enum';
 import { RatingService } from '../../rating/services/rating.service';
-import { User } from '../../user/user.models';
+import { User } from '../../user/entities/user.entity';
 
 import CommentsLoader from '../comment.loader';
 import { Comment } from '../comment.models';

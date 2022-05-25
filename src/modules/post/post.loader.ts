@@ -3,7 +3,7 @@ import * as DataLoader from 'dataloader';
 
 import { UserService } from '../user/services/user.service';
 
-import type { User } from '../user/user.models';
+import type { User } from '../user/entities/user.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export default class PostsLoaders {

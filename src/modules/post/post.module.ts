@@ -9,6 +9,8 @@ import PostsLoaders from './post.loader';
 import { PostsRepository } from './repository/post.repository';
 import { PostsResolver } from './resolvers/post.resolver';
 import { PostsService } from './services/post.service';
+import { TagService } from '../tag/services/tag.service';
+import { TagRepository } from '../tag/repository/tag.repository';
 
 @Module({
   exports: [PostsService, PostsRepository],
@@ -18,6 +20,13 @@ import { PostsService } from './services/post.service';
     forwardRef(() => UserModule),
     forwardRef(() => CommentModule),
   ],
-  providers: [PostsService, PostsResolver, PostsLoaders, PostsRepository],
+  providers: [
+    PostsService,
+    PostsResolver,
+    PostsLoaders,
+    PostsRepository,
+    TagService,
+    TagRepository,
+  ],
 })
 export class PostModule {}
