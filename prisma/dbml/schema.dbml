@@ -7,7 +7,7 @@ Table User {
   firstName String [not null]
   lastName String [not null]
   email String [unique, not null]
-  username String [unique, not null]
+  username String [unique]
   password String [not null]
   emailToken String
   passwordToken String
@@ -24,6 +24,7 @@ Table User {
   userRoles UserRole [not null]
   RoleRight RoleRight [not null]
   employee CompanyEmployee
+  Company Company [not null]
 
   indexes {
     (id, email) [unique]
@@ -75,23 +76,26 @@ Table RoleRight {
 
 Table Company {
   id String [pk]
-  name String [not null]
+  name String
   legalName String [not null]
-  registrationNumber String [not null]
-  establishedDate DateTime [not null]
-  companyStage CompanyStage [not null]
-  description String [not null]
+  registrationNumber String
+  establishedDate DateTime
+  companyStage CompanyStage
+  description String
   mission String
   vision String
-  ownership Ownership [not null]
+  ownership Ownership
   addresses Address [not null]
   branches Int [not null, default: 0]
   numberOfemployees Int [not null, default: 1]
-  transactions Float [not null]
-  isActive Boolean [not null]
+  transactions Float
+  isActive Boolean [not null, default: false]
+  isVerified Boolean [not null, default: false]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   employees CompanyEmployee [not null]
+  owner User [not null]
+  ownerId String [not null]
 }
 
 Table Address {
@@ -209,7 +213,9 @@ Ref: RoleRight.rightId > Right.id
 
 Ref: RoleRight.userId > User.id
 
-Ref: Address.companyId > Company.id
+Ref: Company.ownerId > User.id
+
+Ref: Address.companyId > Company.id [delete: Cascade]
 
 Ref: CompanyEmployee.employeeId - User.id
 

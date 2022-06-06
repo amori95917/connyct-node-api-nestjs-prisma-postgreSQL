@@ -140,19 +140,51 @@ export class UserService {
 
   async signUp(payload: SignupInput): Promise<User> {
     try {
-      console.log('payload', payload);
-      const userId = v4();
-      const emailToken = this.tokenService.generateTokenConfirm(
-        Operations.EmailConfirm,
-        userId,
+      const hashPassword = await this.passwordService.hashPassword(
+        payload.password,
       );
+      const { isCompanyAccount, legalName, ...rest } = payload;
+      const email = await this.prisma.user.findFirst({
+        where: { email: payload.email },
+      });
+      if (email) throw new Error('Email already exist');
 
-      return await this.createUser({
-        ...payload,
-        id: userId,
-        emailToken,
+      if (!isCompanyAccount) {
+        return await this.prisma.user.create({
+          data: {
+            ...rest,
+            password: hashPassword,
+          },
+        });
+        // TODO username should be generated uniquely if not provided
+      }
+      if (legalName.length < 3) {
+        throw new Error('Legal name must be longer than 3 characters');
+      }
+      const companyName = await this.prisma.company.findFirst({
+        where: { legalName: legalName },
+      });
+      if (companyName) throw new Error('Company name already exist');
+      await this.prisma.company.create({
+        data: {
+          legalName: legalName,
+          owner: {
+            connectOrCreate: {
+              where: { email: payload.email },
+              create: { ...rest, password: hashPassword },
+            },
+          },
+        },
+        include: {
+          owner: true,
+        },
+      });
+      return await this.prisma.user.findFirst({
+        where: { email: payload.email },
       });
     } catch (e) {
+      console.log('error singup', e);
+      throw new Error(e);
       if (e.code === 'P2002') throw EmailConflict;
       throw new Error('Failed in signup');
     }

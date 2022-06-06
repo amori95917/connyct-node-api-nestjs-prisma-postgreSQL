@@ -37,7 +37,7 @@ export class AuthResolver {
   @Mutation(() => Auth)
   async signup(@Args('data') data: SignupInput): Promise<Token> {
     const user = await this.userService.signUp(data);
-
+    console.log(user);
     await this.emailService.sendEmailConfirmation({
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,

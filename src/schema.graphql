@@ -263,9 +263,9 @@ input SignupInput {
   firstName: String!
   lastName: String!
   email: String!
-  username: String!
   password: String!
-  isCompanyAccount: Boolean!
+  isCompanyAccount: Boolean
+  legalName: String
 }
 
 input LoginInput {

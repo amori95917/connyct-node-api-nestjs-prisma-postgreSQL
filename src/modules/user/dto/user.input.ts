@@ -29,11 +29,12 @@ export type UserDataInput = {
   email: string;
   firstName: string;
   lastName: string;
-  username: string;
+  username?: string;
   password: string;
   emailToken?: string;
   passwordToken?: string;
   confirm?: boolean;
   isValid?: boolean;
   isCompanyAccount?: boolean;
+  companyLegalName?: string;
 };

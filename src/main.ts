@@ -1,6 +1,10 @@
 import * as dotenv from 'dotenv';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
@@ -15,7 +19,15 @@ async function bootstrap() {
   const nestConfig = configService.get<NestConfig>('nest');
   const corsConfig = configService.get<CorsConfig>('cors');
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (validationErrors: ValidationError[] = []) => {
+        console.log('validation error', validationErrors);
+        return new BadRequestException(validationErrors);
+      },
+      transform: true,
+    }),
+  );
   if (corsConfig.enabled) app.enableCors({ origin: '*' });
   await app.listen(nestConfig.port);
 }

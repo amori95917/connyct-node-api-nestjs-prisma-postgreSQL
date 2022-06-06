@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Company" ALTER COLUMN "name" DROP NOT NULL,
+ALTER COLUMN "registrationNumber" DROP NOT NULL,
+ALTER COLUMN "establishedDate" DROP NOT NULL,
+ALTER COLUMN "description" DROP NOT NULL,
+ALTER COLUMN "branches" DROP NOT NULL,
+ALTER COLUMN "transactions" DROP NOT NULL,
+ALTER COLUMN "isActive" DROP NOT NULL;

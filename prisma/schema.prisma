@@ -19,7 +19,7 @@ model User {
   firstName      String
   lastName       String
   email          String           @unique
-  username       String           @unique
+  username       String?          @unique
   password       String
   emailToken     String?          @map("email_token")
   passwordToken  String?          @map("password_token")
@@ -38,6 +38,7 @@ model User {
   RoleRight      RoleRight[]
   employee       CompanyEmployee? @relation("EmployeeUser")
 
+  Company Company[]
   @@unique([id, email])
 }
 
@@ -83,23 +84,24 @@ model RoleRight {
 }
 
 model Company {
-  id                 String       @id @default(uuid())
-  name               String
+  id                 String        @id @default(uuid())
+  name               String?
   legalName          String
-  registrationNumber String
-  establishedDate    DateTime
-  companyStage       CompanyStage
-  description        String
+  registrationNumber String?
+  establishedDate    DateTime?
+  companyStage       CompanyStage?
+  description        String?
   mission            String?
   vision             String?
-  ownership          Ownership
+  ownership          Ownership?
   addresses          Address[]
   // businessType BusinessType - industry
-  branches           Int          @default(0)
+  branches           Int           @default(0)
   // may be apt to use range instead
-  numberOfemployees  Int          @default(1)
-  transactions       Float
-  isActive           Boolean
+  numberOfemployees  Int           @default(1)
+  transactions       Float?
+  isActive           Boolean       @default(false)
+  isVerified         Boolean       @default(false)
 
   // follow, follower, posts, address, contacts, main products, company user with various role, rating, certifications
   // response rate, response time, number of sales and so on
@@ -107,6 +109,9 @@ model Company {
   updatedAt DateTime? @updatedAt @db.Timestamp()
 
   employees CompanyEmployee[] @relation("EmployeeCompany")
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
 }
 
 model Address {
@@ -120,7 +125,7 @@ model Address {
   companyId String    @unique
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
-  Company   Company   @relation(fields: [companyId], references: [id])
+  Company   Company   @relation(fields: [companyId], references: [id],onDelete: Cascade)
 }
 
 model CompanyEmployee {
