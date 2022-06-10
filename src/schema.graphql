@@ -82,37 +82,32 @@ type Auth {
   user: User!
 }
 
-type GeneralCompany {
-  id: String!
+type Company {
+  id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   name: String!
   legalName: String!
   registrationNumber: String!
   establishedDate: DateTime!
-  businessType: String!
-  ownership: String!
   companyStage: String!
+  description: String!
+  ownership: String!
+  mission: String!
+  vision: String!
+  addresses: JSON!
+  numberOfEmployees: Float!
+  contactEmail: String!
+  transactions: Float!
+  isActive: Boolean!
+  isVerified: Boolean!
+  ownerId: String!
 }
 
-type Company {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  name: String!
-  legalName: String!
-  registrationNumber: String!
-  establishedDate: DateTime!
-  businessType: String!
-  ownership: String!
-  companyStage: String!
-  country: String!
-  city: String!
-  state: String!
-  zipCode: String!
-  address1: String!
-  address2: String!
-}
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 type CompanyEdge {
   cursor: String!
@@ -228,8 +223,9 @@ type Mutation {
   resetPassword(data: ResetPasswordInput!): Token!
   requestResetPassword(data: RequestResetPasswordInput!): Boolean!
   createCompany(data: CreateCompanyInput!): Company!
-  createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): GeneralCompany!
-  createCompanyAddress(data: CreateCompanyAddressInput!): GeneralCompany!
+  createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
+  createCompanyAddress(data: CreateCompanyAddressInput!): Company!
+  editCompany(id: String!, data: CompanyEditInput!): Company!
   createPost(input: CreatePostInput!): CreatePostPayload!
   updatePost(id: Int!, input: UpdatePostInput!): UpdatePostPayload!
   deletePost(postId: Int!): DeletePostPayload!
@@ -321,6 +317,29 @@ input CreateCompanyAddressInput {
   zipCode: String!
   address1: String!
   address2: String!
+}
+
+input CompanyEditInput {
+  name: String
+  registrationNumber: String!
+  establishedDate: DateTime!
+  companyStage: String
+  description: String
+  mission: String
+  vision: String
+  ownership: String
+  addresses: CompanyAddress
+  contactEmail: String!
+  numberOfemployees: Float
+  transactions: Float
+}
+
+input CompanyAddress {
+  country: String
+  city: String
+  zipCode: String
+  state: String
+  street: String
 }
 
 input CreatePostInput {

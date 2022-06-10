@@ -1,31 +1,27 @@
+import { Float } from 'type-graphql';
 import { Field, ObjectType } from '@nestjs/graphql';
 
 import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 
 import { BaseEntity } from '../../prisma/entities/base.entity';
 
+import { GraphQLJSON } from 'graphql-type-json';
 @ObjectType()
-export class GeneralCompany extends BaseEntity {
+export class CompanyAddress {
   @Field()
-  name: string;
+  country: string;
 
   @Field()
-  legalName: string;
+  city: string;
 
   @Field()
-  registrationNumber: string;
+  zipCode: string;
 
   @Field()
-  establishedDate: Date;
+  state: string;
 
   @Field()
-  businessType: string;
-
-  @Field()
-  ownership: string;
-
-  @Field()
-  companyStage: string;
+  street: string;
 }
 
 @ObjectType()
@@ -43,31 +39,40 @@ export class Company extends BaseEntity {
   establishedDate: Date;
 
   @Field()
-  businessType: string;
+  companyStage: string;
+
+  @Field()
+  description: string;
 
   @Field()
   ownership: string;
 
   @Field()
-  companyStage: string;
+  mission: string;
 
   @Field()
-  country: string;
+  vision: string;
+
+  @Field(() => GraphQLJSON)
+  addresses: JSON;
 
   @Field()
-  city: string;
+  numberOfEmployees: number;
 
   @Field()
-  state?: string;
+  contactEmail: string;
+
+  @Field(() => Float)
+  transactions: number;
 
   @Field()
-  zipCode: string;
+  isActive: boolean;
 
   @Field()
-  address1: string;
+  isVerified: boolean;
 
   @Field()
-  address2: string;
+  ownerId: string;
 }
 
 @ObjectType()

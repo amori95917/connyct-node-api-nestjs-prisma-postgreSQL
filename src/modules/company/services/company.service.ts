@@ -1,3 +1,4 @@
+import { CompanyEditInput } from './../dto/company-edit-input';
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
 import { REQUEST } from '@nestjs/core';
@@ -7,12 +8,7 @@ import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination
 import { FilterListCompanies } from '../dto/filter-company.input';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  CreateCompanyAddressInput,
-  CreateCompanyGeneralInput,
-  CreateCompanyInput,
-} from '../dto/company-input';
-import { Prisma } from '@prisma/client';
+import { CreateCompanyAddressInput } from '../dto/company-input';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -82,5 +78,25 @@ export class CompanyService {
   async createCompanyAddress(companyAddress: CreateCompanyAddressInput) {
     console.log('generalCompany', companyAddress);
     return await this.prisma.company.findFirst();
+  }
+
+  async editCompany(companyId: string, companyEditData: CompanyEditInput) {
+    try {
+      const companyData = await this.prisma.company.findFirst({
+        where: { id: companyId },
+      });
+      if (!companyData) throw new Error('Company does not exist');
+      const updatedData = await this.prisma.company.update({
+        where: { id: companyId },
+        data: {
+          ...companyEditData,
+          addresses: companyEditData.addresses as any,
+        },
+      });
+      // console.log('updated data', updatedData);
+      return updatedData;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 }

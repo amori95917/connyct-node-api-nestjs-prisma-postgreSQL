@@ -85,9 +85,10 @@ Table Company {
   mission String
   vision String
   ownership Ownership
-  addresses Address [not null]
-  branches Int [not null, default: 0]
+  addresses Json
+  branches Branch [not null]
   numberOfemployees Int [not null, default: 1]
+  contactEmail String
   transactions Float
   isActive Boolean [not null, default: false]
   isVerified Boolean [not null, default: false]
@@ -98,18 +99,28 @@ Table Company {
   ownerId String [not null]
 }
 
+Table Branch {
+  id String [pk]
+  name String [not null]
+  contactNumber String [not null]
+  contactEmail String [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  address Address [not null]
+  Company Company [not null]
+  companyId String [not null]
+}
+
 Table Address {
   id String [pk]
   country String [not null]
   city String [not null]
-  state String [not null]
-  zipCode String [not null]
-  address1 String [not null]
-  address2 String [not null]
-  companyId String [unique, not null]
+  state String
+  zipCode String
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
-  Company Company [not null]
+  Branch Branch
+  branchId String
 }
 
 Table CompanyEmployee {
@@ -215,7 +226,9 @@ Ref: RoleRight.userId > User.id
 
 Ref: Company.ownerId > User.id
 
-Ref: Address.companyId > Company.id [delete: Cascade]
+Ref: Branch.companyId > Company.id
+
+Ref: Address.branchId > Branch.id
 
 Ref: CompanyEmployee.employeeId - User.id
 

@@ -1,14 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Company as CompanyPrisma, Prisma } from '@prisma/client';
+import { Company as CompanyPrisma } from '@prisma/client';
 
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { Roles } from 'src/modules/auth/decorators/role.decorator';
 import { Role } from 'src/modules/auth/enum/role.enum';
-import {
-  Company,
-  CompanyPaginated,
-  GeneralCompany,
-} from '../entities/company.entity';
+import { Company, CompanyPaginated } from '../entities/company.entity';
 import { CompanyService } from '../services/company.service';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { FilterListCompanies } from '../dto/filter-company.input';
@@ -17,6 +13,7 @@ import {
   CreateCompanyInput,
   CreateCompanyAddressInput,
 } from '../dto/company-input';
+import { CompanyEditInput } from '../dto/company-edit-input';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -48,7 +45,7 @@ export class CompanyResolver {
   }
 
   @Roles(Role.Owner)
-  @Mutation(() => GeneralCompany)
+  @Mutation(() => Company)
   async createCompanyGeneralInfo(
     @Args('data')
     generalCompany: CreateCompanyGeneralInput,
@@ -57,10 +54,18 @@ export class CompanyResolver {
   }
 
   @Roles(Role.Owner)
-  @Mutation(() => GeneralCompany)
+  @Mutation(() => Company)
   async createCompanyAddress(
     @Args('data') companyAddress: CreateCompanyAddressInput,
   ): Promise<CompanyPrisma> {
     return this.companyService.createCompanyAddress(companyAddress);
+  }
+  @Roles(Role.Owner)
+  @Mutation(() => Company)
+  async editCompany(
+    @Args('id') companyId: string,
+    @Args('data') companyEditData: CompanyEditInput,
+  ): Promise<CompanyPrisma> {
+    return this.companyService.editCompany(companyId, companyEditData);
   }
 }

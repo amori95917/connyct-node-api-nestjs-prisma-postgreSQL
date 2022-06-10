@@ -12,10 +12,8 @@ export class User extends BaseEntity {
   public id!: string;
 
   @Field()
-  @Field()
   firstName: string;
 
-  @Field()
   @Field()
   lastName: string;
 

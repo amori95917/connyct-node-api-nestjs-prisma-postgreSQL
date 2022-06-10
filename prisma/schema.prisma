@@ -94,11 +94,11 @@ model Company {
   mission            String?
   vision             String?
   ownership          Ownership?
-  addresses          Address[]
-  // businessType BusinessType - industry
-  branches           Int           @default(0)
+  addresses          Json?
+  branches           Branch[]
   // may be apt to use range instead
   numberOfemployees  Int           @default(1)
+  contactEmail       String?
   transactions       Float?
   isActive           Boolean       @default(false)
   isVerified         Boolean       @default(false)
@@ -114,18 +114,29 @@ model Company {
   ownerId String
 }
 
+// id, name, address, contactNumber, contactEmail, createdAt, updatedAt
+model Branch {
+  id            String    @id @default(uuid())
+  name          String
+  contactNumber String
+  contactEmail  String
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt @db.Timestamp()
+  address       Address[]
+  Company       Company   @relation(fields: [companyId], references: [id])
+  companyId     String
+}
+
 model Address {
   id        String    @id @default(uuid())
   country   String
   city      String
-  state     String
-  zipCode   String
-  address1  String
-  address2  String
-  companyId String    @unique
+  state     String?
+  zipCode   String?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
-  Company   Company   @relation(fields: [companyId], references: [id],onDelete: Cascade)
+  Branch    Branch?   @relation(fields: [branchId], references: [id])
+  branchId  String?
 }
 
 model CompanyEmployee {

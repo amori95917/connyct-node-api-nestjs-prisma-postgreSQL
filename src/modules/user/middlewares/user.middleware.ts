@@ -4,6 +4,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { ValidationService } from 'src/modules/user/services/validation.service';
 
 import * as jwt from 'jsonwebtoken';
+import CommentsLoader from 'src/modules/comment/comment.loader';
 
 interface JWT {
   userId: string;
