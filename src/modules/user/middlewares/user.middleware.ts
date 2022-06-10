@@ -26,8 +26,10 @@ export class UserMiddleware implements NestMiddleware {
         where: { id: userId },
         include: { userRoles: true },
       });
-      if (user && !user.confirm)
+
+      if (user && !user.confirm) {
         throw new ForbiddenException('User not confirmed');
+      }
 
       if (user) {
         delete user.password;

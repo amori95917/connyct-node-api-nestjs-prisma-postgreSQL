@@ -149,15 +149,34 @@ export class UserService {
       });
       if (email) throw new Error('Email already exist');
 
+      //function to assign roles to user
+      const userRoles = async (userId, roleId) => {
+        await this.prisma.userRole.create({
+          data: {
+            userId: userId,
+            roleId: roleId,
+          },
+        });
+      };
+      // indivaidual signup
       if (!isCompanyAccount) {
-        return await this.prisma.user.create({
+        const user = await this.prisma.user.create({
           data: {
             ...rest,
             password: hashPassword,
           },
         });
+        const role = await this.prisma.role.findFirst({
+          where: {
+            name: 'USER',
+          },
+        });
+        userRoles(user.id, role.id);
+        return user;
         // TODO username should be generated uniquely if not provided
       }
+
+      // company signup
       if (legalName.length < 3) {
         throw new Error('Legal name must be longer than 3 characters');
       }
@@ -179,14 +198,19 @@ export class UserService {
           owner: true,
         },
       });
-      return await this.prisma.user.findFirst({
+      const user = await this.prisma.user.findFirst({
         where: { email: payload.email },
       });
+      const role = await this.prisma.role.findFirst({
+        where: {
+          name: 'OWNER',
+        },
+      });
+      userRoles(user.id, role.id);
+      return user;
     } catch (e) {
       console.log('error singup', e);
       throw new Error(e);
-      if (e.code === 'P2002') throw EmailConflict;
-      throw new Error('Failed in signup');
     }
   }
 
