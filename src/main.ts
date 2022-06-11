@@ -28,7 +28,20 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  if (corsConfig.enabled) app.enableCors({ origin: '*' });
+  if (corsConfig.enabled) {
+    const corsOptions = {
+      // allowedHeaders: [
+      //   'origin',
+      //   'x-requested-with',
+      //   'content-type',
+      //   'accept',
+      //   'authorization',
+      // ],
+      credentials: true,
+      origin: ['http://localhost:3000'],
+    };
+    app.enableCors(corsOptions);
+  }
   await app.listen(nestConfig.port);
 }
 bootstrap();

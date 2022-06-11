@@ -139,6 +139,7 @@ export class UserService {
   }
 
   async signUp(payload: SignupInput): Promise<User> {
+    console.log('##########################payload', payload);
     try {
       const hashPassword = await this.passwordService.hashPassword(
         payload.password,
@@ -163,6 +164,8 @@ export class UserService {
         const user = await this.prisma.user.create({
           data: {
             ...rest,
+            // generate unique username based on email or firstname and lastnamex
+            username: rest.username || rest.email,
             password: hashPassword,
           },
         });

@@ -19,7 +19,7 @@ export class UserMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: any, res: any, next: () => void) {
-    if (req.headers.authorization) {
+    if (req.headers.authorization?.includes('Bearer')) {
       const { userId } = jwt.decode(
         String(req.headers.authorization).split(/ /g)[1],
       ) as JWT;

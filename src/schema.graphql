@@ -259,6 +259,7 @@ input SignupInput {
   firstName: String!
   lastName: String!
   email: String!
+  username: String
   password: String!
   isCompanyAccount: Boolean
   legalName: String

@@ -17,6 +17,10 @@ export class SignupInput {
   @IsNotEmpty()
   email: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  username: string;
+
   @Field()
   @IsNotEmpty()
   @MinLength(8)
