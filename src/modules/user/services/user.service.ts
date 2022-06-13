@@ -159,6 +159,17 @@ export class UserService {
           },
         });
       };
+      const userName = (length, name) => {
+        let result = '';
+        const characters =
+          'ABCDEFGHIJKLMOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(
+            Math.floor(Math.random() * characters.length),
+          );
+        }
+        return name + result;
+      };
       // indivaidual signup
       if (!isCompanyAccount) {
         const user = await this.prisma.user.create({
@@ -167,6 +178,7 @@ export class UserService {
             // generate unique username based on email or firstname and lastnamex
             username: rest.username || rest.email,
             password: hashPassword,
+            username: userName(5, payload.firstName),
           },
         });
         const role = await this.prisma.role.findFirst({
@@ -193,7 +205,11 @@ export class UserService {
           owner: {
             connectOrCreate: {
               where: { email: payload.email },
-              create: { ...rest, password: hashPassword },
+              create: {
+                ...rest,
+                password: hashPassword,
+                username: userName(5, payload.firstName),
+              },
             },
           },
         },

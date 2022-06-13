@@ -93,7 +93,6 @@ export class CompanyService {
           addresses: companyEditData.addresses as any,
         },
       });
-      // console.log('updated data', updatedData);
       return updatedData;
     } catch (e) {
       throw new Error(e);

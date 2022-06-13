@@ -25,6 +25,7 @@ Table User {
   RoleRight RoleRight [not null]
   employee CompanyEmployee
   Company Company [not null]
+  InvitedEmployee InvitedEmployee [not null]
 
   indexes {
     (id, email) [unique]
@@ -38,6 +39,7 @@ Table Role {
   updatedAt DateTime
   userRoles UserRole [not null]
   RoleRight RoleRight [not null]
+  InvitedEmployee InvitedEmployee [not null]
 }
 
 Table Right {
@@ -190,6 +192,18 @@ Table CommentRating {
   }
 }
 
+Table InvitedEmployee {
+  id String [pk]
+  invitedBy User [not null]
+  invitedId String [not null]
+  invitedEmail String [unique, not null]
+  invitedRole Role [not null]
+  invitedRoleId String [not null]
+  isInviteAccepted Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
 Table PostToTag {
   postsId String [ref: > Post.id]
   tagsId String [ref: > Tag.id]
@@ -249,3 +263,7 @@ Ref: Comment.repliedToId - Comment.id
 Ref: CommentRating.userId > User.id
 
 Ref: CommentRating.commentId > Comment.id
+
+Ref: InvitedEmployee.invitedId > User.id
+
+Ref: InvitedEmployee.invitedRoleId > Role.id

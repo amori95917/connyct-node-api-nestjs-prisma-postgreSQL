@@ -155,6 +155,16 @@ type UpdatePostPayload implements MutationPayload {
   post: Post
 }
 
+type InvitedEmployee {
+  id: ID!
+  invitedId: String!
+  invitedEmail: String!
+  invitedRoleId: String!
+  isInviteAccepted: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -237,6 +247,8 @@ type Mutation {
   upvoteComment(commentId: Int!): RatePayload!
   downvoteComment(commentId: Int!): RatePayload!
   removeRatingFromComment(commentId: Int!): RatePayload!
+  inviteEmployee(data: InvitedEmployeeInput!): InvitedEmployee!
+  createEmployee(data: UserEmployeeInput!): User!
 }
 
 input UpdateStatusUserInput {
@@ -355,4 +367,18 @@ input UpdatePostInput {
 
 input CreateCommentInput {
   text: String!
+}
+
+input InvitedEmployeeInput {
+  invitedEmail: String!
+  role: String!
+}
+
+input UserEmployeeInput {
+  isInviteAccepted: Boolean!
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  role: String!
 }
