@@ -176,7 +176,7 @@ export class UserService {
           data: {
             ...rest,
             // generate unique username based on email or firstname and lastnamex
-            username: rest.username || rest.email,
+            // username: rest.username || rest.email,
             password: hashPassword,
             username: userName(5, payload.firstName),
           },

@@ -26,6 +26,9 @@ Table User {
   employee CompanyEmployee
   Company Company [not null]
   InvitedEmployee InvitedEmployee [not null]
+  FollowUnfollowCompany FollowUnfollowCompany [not null]
+  FollowedToUser FollowUserToUser [not null]
+  FollowedByUser FollowUserToUser [not null]
 
   indexes {
     (id, email) [unique]
@@ -99,6 +102,7 @@ Table Company {
   employees CompanyEmployee [not null]
   owner User [not null]
   ownerId String [not null]
+  FollowUnfollowCompany FollowUnfollowCompany [not null]
 }
 
 Table Branch {
@@ -204,6 +208,26 @@ Table InvitedEmployee {
   updatedAt DateTime
 }
 
+Table FollowUnfollowCompany {
+  id String [pk]
+  followedBy User [not null]
+  followedById String [not null]
+  followedTo Company [not null]
+  followedToId String [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table FollowUserToUser {
+  id String [pk]
+  followedTo User [not null]
+  followedToId String [not null]
+  followedBy User [not null]
+  followedById String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
 Table PostToTag {
   postsId String [ref: > Post.id]
   tagsId String [ref: > Tag.id]
@@ -267,3 +291,11 @@ Ref: CommentRating.commentId > Comment.id
 Ref: InvitedEmployee.invitedId > User.id
 
 Ref: InvitedEmployee.invitedRoleId > Role.id
+
+Ref: FollowUnfollowCompany.followedById > User.id
+
+Ref: FollowUnfollowCompany.followedToId > Company.id
+
+Ref: FollowUserToUser.followedToId > User.id
+
+Ref: FollowUserToUser.followedById > User.id

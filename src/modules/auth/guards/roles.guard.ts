@@ -37,7 +37,6 @@ export class RolesGuard implements CanActivate {
         return await this.checkPermission(user);
       }
     }
-
     return false;
   }
 
@@ -46,6 +45,7 @@ export class RolesGuard implements CanActivate {
       where: { id: user.id },
       include: { userRoles: { include: { role: true } } },
     });
+    console.log('user-role', _user);
     return _user.userRoles.some((role) => {
       if (this.permissonRoles.includes(role.role.name as any)) {
         return true;

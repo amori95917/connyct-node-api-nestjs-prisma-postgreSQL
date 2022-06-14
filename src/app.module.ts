@@ -18,6 +18,7 @@ import { UserMiddleware } from './modules/user/middlewares/user.middleware';
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { TagModule } from './modules/tag/tag.module';
 import { EmployeeModule } from './modules/employee/employee.module';
+import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/follow-unfollow-company.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { EmployeeModule } from './modules/employee/employee.module';
     TagModule,
     PostModule,
     EmployeeModule,
+    FollowUnfollowCompanyModule,
   ],
 })
 export class AppModule {

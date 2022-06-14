@@ -165,6 +165,22 @@ type InvitedEmployee {
   updatedAt: DateTime!
 }
 
+type FollowUserToUser {
+  id: ID!
+  followedToId: String!
+  followedById: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FollowCompany {
+  id: ID!
+  followedById: String!
+  followedToId: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -249,6 +265,10 @@ type Mutation {
   removeRatingFromComment(commentId: Int!): RatePayload!
   inviteEmployee(data: InvitedEmployeeInput!): InvitedEmployee!
   createEmployee(data: UserEmployeeInput!): User!
+  followCompany(data: FollowCompanyInput!): FollowCompany!
+  unfollowCompany(data: UnfollowCompanyInput!): String!
+  followUserToUser(data: FollowUserToUserInput!): FollowUserToUser!
+  unfollowUser(data: UnfollowUserInput!): String!
 }
 
 input UpdateStatusUserInput {
@@ -381,4 +401,20 @@ input UserEmployeeInput {
   email: String!
   password: String!
   role: String!
+}
+
+input FollowCompanyInput {
+  followedToId: String!
+}
+
+input UnfollowCompanyInput {
+  companyId: String!
+}
+
+input FollowUserToUserInput {
+  followedToID: String!
+}
+
+input UnfollowUserInput {
+  userId: String!
 }

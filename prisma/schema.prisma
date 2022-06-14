@@ -38,8 +38,11 @@ model User {
   RoleRight      RoleRight[]
   employee       CompanyEmployee? @relation("EmployeeUser")
 
-  Company         Company[]
-  InvitedEmployee InvitedEmployee[]
+  Company               Company[]
+  InvitedEmployee       InvitedEmployee[]
+  FollowUnfollowCompany FollowUnfollowCompany[]
+  FollowedToUser        FollowUserToUser[]      @relation("Followed_To_User")
+  FollowedByUser        FollowUserToUser[]      @relation("Followed_By_User")
   @@unique([id, email])
 }
 
@@ -112,8 +115,9 @@ model Company {
 
   employees CompanyEmployee[] @relation("EmployeeCompany")
 
-  owner   User   @relation(fields: [ownerId], references: [id])
-  ownerId String
+  owner                 User                    @relation(fields: [ownerId], references: [id])
+  ownerId               String
+  FollowUnfollowCompany FollowUnfollowCompany[]
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
@@ -236,4 +240,25 @@ model InvitedEmployee {
   isInviteAccepted Boolean   @default(false)
   createdAt        DateTime? @default(now())
   updatedAt        DateTime? @updatedAt @db.Timestamp()
+}
+
+model FollowUnfollowCompany {
+  id           String    @id @default(uuid())
+  followedBy   User      @relation(fields: [followedById], references: [id])
+  followedById String
+  followedTo   Company   @relation(fields: [followedToId], references: [id])
+  followedToId String
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt @db.Timestamp()
+}
+
+model FollowUserToUser {
+  id           String   @id @default(uuid())
+  followedTo   User     @relation("Followed_To_User", fields: [followedToId], references: [id])
+  followedToId String
+  followedBy   User     @relation("Followed_By_User", fields: [followedById], references: [id])
+  followedById String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt @db.Timestamp()
+
 }
