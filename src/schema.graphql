@@ -248,6 +248,7 @@ type Mutation {
   requestConfirmEmail(data: RequestConfirmEmailInput!): Boolean!
   resetPassword(data: ResetPasswordInput!): Token!
   requestResetPassword(data: RequestResetPasswordInput!): Boolean!
+  logout: Boolean!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
   createCompanyAddress(data: CreateCompanyAddressInput!): Company!

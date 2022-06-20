@@ -38,7 +38,7 @@ async function bootstrap() {
       //   'authorization',
       // ],
       credentials: true,
-      origin: ['http://localhost:3000'],
+      origin: '*',
     };
     app.enableCors(corsOptions);
   }

@@ -1,5 +1,7 @@
+import { Auth } from './../entities/auth.entity';
 import {
   Args,
+  Context,
   Mutation,
   Parent,
   ResolveField,
@@ -22,7 +24,6 @@ import { Role } from '../enum/role.enum';
 import { RequestConfirmEmailInput } from '../dto/confirm.input';
 import { LoginInput, LoginLinkAccessInput } from '../dto/login.input';
 import { SignupInput } from '../dto/signup.input';
-import { Auth } from '../entities/auth.entity';
 import { Token } from '../entities/token.entity';
 
 @Resolver(() => Auth)
@@ -35,26 +36,38 @@ export class AuthResolver {
   ) {}
 
   @Mutation(() => Auth)
-  async signup(@Args('data') data: SignupInput): Promise<Token> {
-    console.log('#########################################');
+  async signup(
+    @Args('data') data: SignupInput,
+    @Context() context,
+  ): Promise<Token> {
     const user = await this.userService.signUp(data);
-    console.log(user);
     await this.emailService.sendEmailConfirmation({
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
       emailToken: user.emailToken,
     });
 
-    return this.tokenService.generateTokens({
+    const token = this.tokenService.generateTokens({
       userId: user.id,
     });
+    context.res.cookie('cookie', {
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      user: user,
+    });
+
+    return token;
   }
 
   @Mutation(() => Auth)
-  async login(@Args('data') { email, password }: LoginInput) {
+  async login(
+    @Args('data') { email, password }: LoginInput,
+    @Context() context,
+  ) {
     const { accessToken, refreshToken } = await this.auth.login(
       email.toLowerCase(),
       password,
+      context,
     );
 
     return {
@@ -127,5 +140,12 @@ export class AuthResolver {
 
     if (user) return true;
     return false;
+  }
+
+  @Mutation(() => Boolean)
+  @Roles(Role.Admin, Role.Editor, Role.Manager, Role.Owner, Role.User)
+  async logout(@Context() context) {
+    context.res.clearCookie('cookie-data');
+    return true;
   }
 }

@@ -29,7 +29,7 @@ export class AuthService {
     this.logger = new Logger(AuthService.name);
   }
 
-  async login(email: string, password: string): Promise<Token> {
+  async login(email: string, password: string, context: any): Promise<Token> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw UserNotFound;
 
@@ -39,9 +39,15 @@ export class AuthService {
     );
     if (!passwordValid) throw new BadRequestException('Senha inválida');
 
-    return this.tokenService.generateTokens({
+    const token = this.tokenService.generateTokens({
       userId: user.id,
     });
+    context.res.cookie('cookie-data', {
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      user: user,
+    });
+    return token;
   }
 
   async loginLinkAccess(email: string): Promise<{

@@ -48,7 +48,11 @@ import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/f
           debug: graphqlConfig.debug,
           playground: graphqlConfig.playgroundEnabled,
           plugings: [ApolloServerPluginLandingPageLocalDefault],
-          context: ({ req }) => ({ req }),
+          context: ({ req, res }) => ({ req, res }),
+          cors: {
+            credentials: true,
+            origin: true,
+          },
         };
       },
       inject: [ConfigService],
