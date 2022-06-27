@@ -27,6 +27,9 @@ import { UpdatePostPayload } from '../entities/update-post.payload';
 import PostsLoaders from '../post.loader';
 import { Post } from '../post.models';
 import { PostsService } from '../services/post.service';
+import { Roles } from 'src/modules/auth/decorators/role.decorator';
+import { Role } from 'src/modules/auth/enum/role.enum';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -37,40 +40,49 @@ export class PostsResolver {
     private readonly ratingService: RatingService,
   ) {}
 
-  @Query(() => Post, { nullable: true })
-  @UseGuards(GqlAnonymousGuard)
-  public async getPost(
-    @Args('id', { type: () => Int }) id: string,
-  ): Promise<Post> {
-    return this.postsService.getPostById(id);
-  }
+  // @Query(() => Post, { nullable: true })
+  // @UseGuards(GqlAnonymousGuard)
+  // public async getPost(
+  //   @Args('id', { type: () => Int }) id: string,
+  // ): Promise<Post> {
+  //   return this.postsService.getPostById(id);
+  // }
 
-  @Query(() => [Post])
-  @UseGuards(GqlAnonymousGuard)
-  public async getPosts(): Promise<Post[]> {
-    return this.postsService.getPosts();
-  }
+  // @Query(() => [Post])
+  // @UseGuards(GqlAnonymousGuard)
+  // public async getPosts(): Promise<Post[]> {
+  //   return this.postsService.getPosts();
+  // }
 
   @Mutation(() => CreatePostPayload)
   @UseGuards(GqlAuthGuard)
-  public async createPost(
-    @Args('input') input: CreatePostInput,
+  @Roles(Role.Owner, Role.Manager, Role.Editor)
+  async createPost(
+    @Args('data') feedData: CreatePostInput,
+    @Args('file', { type: () => [GraphQLUpload] })
+    file: FileUpload[],
     @CurrentUser() user: User,
   ): Promise<CreatePostPayload> {
+    // console.log('***********uploads*********');
+    // file.map(async (image) => {
+    //   const { filename } = await image;
+    //   console.log(filename);
+    //   console.log(image);
+    // });
     const userId = user.id;
-    return this.postsService.createPost(input, userId);
+    return this.postsService.createPost(feedData, file, userId);
   }
 
-  @Mutation(() => UpdatePostPayload)
-  @UseGuards(GqlAuthGuard)
-  public async updatePost(
-    @Args('id', { type: () => Int }) id: string,
-    @Args('input') input: UpdatePostInput,
-    @CurrentUser() user: User,
-  ): Promise<UpdatePostPayload> {
-    const userId = user.id;
-    return this.postsService.updatePost(id, input, userId);
-  }
+  // @Mutation(() => UpdatePostPayload)
+  // @UseGuards(GqlAuthGuard)
+  // public async updatePost(
+  //   @Args('id', { type: () => Int }) id: string,
+  //   @Args('input') input: UpdatePostInput,
+  //   @CurrentUser() user: User,
+  // ): Promise<UpdatePostPayload> {
+  //   const userId = user.id;
+  //   return this.postsService.updatePost(id, input, userId);
+  // }
 
   @Mutation(() => DeletePostPayload)
   @UseGuards(GqlAuthGuard)

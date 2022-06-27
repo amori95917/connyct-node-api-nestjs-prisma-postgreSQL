@@ -23,7 +23,6 @@ export class EmployeeService {
       const role = await this.prisma.role.findFirst({
         where: { name: invitedEmployee.role },
       });
-      console.log('role', role);
       if (!role) throw new Error('Role does not exist');
       const { id } = user;
       const findUser = await this.prisma.user.findFirst({
@@ -67,7 +66,6 @@ export class EmployeeService {
     try {
       if (!employee.isInviteAccepted)
         throw new Error('Invitation not accepted');
-      console.log('isAccepted', !employee.isInviteAccepted);
       const { isInviteAccepted, role, ...userInput } = employee;
       const invitedEmployee = await this.prisma.invitedEmployee.findFirst({
         where: {

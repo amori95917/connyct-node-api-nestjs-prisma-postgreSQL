@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 generator dbml {
@@ -154,22 +155,41 @@ model CompanyEmployee {
 }
 
 model Tag {
-  id    String @id @default(uuid())
-  name  String @unique
-  posts Post[]
+  id          String        @id @default(uuid())
+  name        String        @unique
+  TagWithPost TagWithPost[]
+}
+
+model TagWithPost {
+  id     String @id @default(uuid())
+  tagsId String
+  tags   Tag?   @relation(fields: [tagsId], references: [id])
+  postId String
+  post   Post?  @relation(fields: [postId], references: [id])
 }
 
 model Post {
-  id         String       @id @default(uuid())
-  text       String
-  rating     Int          @default(0)
-  creatorId  String
-  creator    User         @relation(fields: [creatorId], references: [id])
-  postRating PostRating[]
-  comments   Comment[]
-  tags       Tag[]
-  createdAt  DateTime?    @default(now())
-  updatedAt  DateTime?    @updatedAt @db.Timestamp()
+  id          String        @id @default(uuid())
+  text        String
+  rating      Int           @default(0)
+  creatorId   String
+  creator     User          @relation(fields: [creatorId], references: [id])
+  postRating  PostRating[]
+  comments    Comment[]
+  createdAt   DateTime?     @default(now())
+  updatedAt   DateTime?     @updatedAt @db.Timestamp()
+  Product     Product[]
+  TagWithPost TagWithPost[]
+  isSaleAble  Boolean       @default(false)
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String?
+  description String?
+  image       String
+  postId      String
+  post        Post?   @relation(fields: [postId], references: [id])
 }
 
 model PostRating {

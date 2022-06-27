@@ -8,6 +8,7 @@ import type { DeletePostPayload } from '../entities/delete-post.payload';
 import type { UpdatePostInput } from '../dto/update-post.input';
 import type { UpdatePostPayload } from '../entities/update-post.payload';
 import type { Post } from '../post.models';
+import { FileUpload } from 'graphql-upload';
 
 @Injectable()
 export class PostsService {
@@ -18,14 +19,20 @@ export class PostsService {
     if (!post) {
       throw new NotFoundException('Post not found');
     }
-    return post;
+    return;
+    // return post;
   }
 
   public async createPost(
-    input: CreatePostInput,
+    feedData: CreatePostInput,
+    file: FileUpload[],
     creatorId: string,
   ): Promise<CreatePostPayload> {
-    const post = await this.postsRepository.createPost(input, creatorId);
+    const post = await this.postsRepository.createPost(
+      feedData,
+      creatorId,
+      file,
+    );
     return {
       post,
     };
@@ -50,10 +57,10 @@ export class PostsService {
       };
     }
     const updatedPost = await this.postsRepository.updatePost(postId, input, {
-      tags: Boolean('tags'),
+      // tags: Boolean('tags'),
     });
     return {
-      post: updatedPost,
+      // post: updatedPost,
     };
   }
 
@@ -79,10 +86,16 @@ export class PostsService {
   }
 
   public async getUserPosts(id: string): Promise<Post[]> {
-    return this.postsRepository.findPostsByUserId(id);
+    // return this.postsRepository.findPostsByUserId(id);
+    return;
   }
 
   public async getPosts(): Promise<Post[]> {
-    return this.postsRepository.findPosts();
+    return;
+    // return this.postsRepository.findPosts();
   }
+
+  // public async createPost(input, creatorId): Promise<any> {
+  //   return;
+  // }
 }

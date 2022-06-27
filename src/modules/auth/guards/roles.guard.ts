@@ -33,7 +33,6 @@ export class RolesGuard implements CanActivate {
       if (ctx.getContext().req.headers['authorization']) {
         console.log('inside auth check');
         const user = ctx.getContext().req?.user;
-        console.log('context user', user);
         return await this.checkPermission(user);
       }
     }
@@ -45,7 +44,6 @@ export class RolesGuard implements CanActivate {
       where: { id: user.id },
       include: { userRoles: { include: { role: true } } },
     });
-    console.log('user-role', _user);
     return _user.userRoles.some((role) => {
       if (this.permissonRoles.includes(role.role.name as any)) {
         return true;

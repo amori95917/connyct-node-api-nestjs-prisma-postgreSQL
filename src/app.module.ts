@@ -1,3 +1,4 @@
+import { graphqlUploadExpress } from 'graphql-upload';
 import config from './config/config';
 import { GraphqlConfig, ThrottlerConfig } from './config/config.interface';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -41,6 +42,7 @@ import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/f
         return {
           sortSchema: graphqlConfig.sortSchema,
           autoSchemaFile: './src/schema.graphql',
+          uploads: false,
           installSubscriptionHandlers: true,
           // buildSchemaOptions: {
           //   numberScalarMode: 'integer',
@@ -70,6 +72,7 @@ import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/f
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer.apply(graphqlUploadExpress({ maxFiles: 10 })).forRoutes('graphql');
     consumer.apply(UserMiddleware).forRoutes('*');
   }
 }

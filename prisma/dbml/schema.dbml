@@ -140,7 +140,15 @@ Table CompanyEmployee {
 Table Tag {
   id String [pk]
   name String [unique, not null]
-  posts Post [not null]
+  TagWithPost TagWithPost [not null]
+}
+
+Table TagWithPost {
+  id String [pk]
+  tagsId String [not null]
+  tags Tag
+  postId String [not null]
+  post Post
 }
 
 Table Post {
@@ -151,9 +159,20 @@ Table Post {
   creator User [not null]
   postRating PostRating [not null]
   comments Comment [not null]
-  tags Tag [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
+  Product Product [not null]
+  TagWithPost TagWithPost [not null]
+  isSaleAble Boolean [not null, default: false]
+}
+
+Table Product {
+  id String [pk]
+  name String
+  description String
+  image String [not null]
+  postId String [not null]
+  post Post
 }
 
 Table PostRating {
@@ -228,11 +247,6 @@ Table FollowUserToUser {
   updatedAt DateTime [not null]
 }
 
-Table PostToTag {
-  postsId String [ref: > Post.id]
-  tagsId String [ref: > Tag.id]
-}
-
 Enum CompanyStage {
   STARTUP
   SCALEUP
@@ -272,7 +286,13 @@ Ref: CompanyEmployee.employeeId - User.id
 
 Ref: CompanyEmployee.companyId > Company.id
 
+Ref: TagWithPost.tagsId > Tag.id
+
+Ref: TagWithPost.postId > Post.id
+
 Ref: Post.creatorId > User.id
+
+Ref: Product.postId > Post.id
 
 Ref: PostRating.userId > User.id
 
