@@ -18,11 +18,21 @@ export class UpdatePostInput {
   @Field(() => String, { nullable: true })
   text: string;
 
+  @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsString({ each: true })
   @MinLength(3, { each: true })
   @MaxLength(50, { each: true })
   @ArrayUnique()
-  @Field(() => [String], { nullable: true })
   tags?: string[];
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @MinLength(3)
+  name: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @MinLength(10)
+  description: string;
 }

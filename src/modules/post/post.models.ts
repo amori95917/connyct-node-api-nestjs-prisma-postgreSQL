@@ -1,4 +1,3 @@
-import { Product } from './entities/product.entity';
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import { Comment } from '../comment/comment.models';
@@ -35,9 +34,6 @@ export class Post {
 
   @Field(() => [Comment])
   public comments?: Comment[];
-
-  @Field(() => [Product])
-  product?: Product[];
 
   @Field(() => Boolean)
   isSaleAble: boolean;

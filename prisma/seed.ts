@@ -32,6 +32,7 @@ const roles = [
   { name: 'MANAGER' },
   { name: 'EDITOR' },
   { name: 'STAFF' },
+  { name: 'USER' },
 ];
 
 async function main() {

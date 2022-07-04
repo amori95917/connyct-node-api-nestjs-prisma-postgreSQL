@@ -1,10 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-
-import { User } from '../../user/entities/user.entity';
-import { Token } from './token.entity';
+import { Company, User } from '@prisma/client';
 
 @ObjectType()
-export class Auth extends Token {
+export class UserPayload {
   @Field()
   user: User;
 

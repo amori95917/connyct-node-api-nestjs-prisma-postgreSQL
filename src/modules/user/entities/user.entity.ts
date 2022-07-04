@@ -1,3 +1,4 @@
+import { Company } from 'src/modules/company/entities/company.entity';
 import { Field, HideField, ObjectType, ID } from '@nestjs/graphql';
 
 import { Role } from 'src/modules/auth/entities/role.entity';
@@ -34,8 +35,14 @@ export class User extends BaseEntity {
   @Field()
   confirm: boolean;
 
+  @Field()
+  emailToken: string;
+
   @Field(() => [Post])
   public posts?: Post[];
+
+  @Field(() => [Company])
+  company?: Company[];
 }
 
 @ObjectType()

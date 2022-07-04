@@ -36,11 +36,8 @@ export class AuthResolver {
   ) {}
 
   @Mutation(() => Auth)
-  async signup(
-    @Args('data') data: SignupInput,
-    @Context() context,
-  ): Promise<Token> {
-    const user = await this.userService.signUp(data);
+  async signup(@Args('data') data: SignupInput, @Context() context) {
+    const { user, companyId } = await this.userService.signUp(data);
     await this.emailService.sendEmailConfirmation({
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
@@ -55,8 +52,14 @@ export class AuthResolver {
       refreshToken: token.refreshToken,
       user: user,
     });
+    const { accessToken, refreshToken } = token;
 
-    return token;
+    return {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      user: user,
+      companyId: companyId,
+    };
   }
 
   @Mutation(() => Auth)

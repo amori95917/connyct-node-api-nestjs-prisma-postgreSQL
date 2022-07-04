@@ -22,6 +22,7 @@ import {
 } from '../dto/user.input';
 
 import { v4 } from 'uuid';
+import { Auth } from 'src/modules/auth/entities/auth.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UserService {
@@ -138,7 +139,7 @@ export class UserService {
     });
   }
 
-  async signUp(payload: SignupInput): Promise<User> {
+  async signUp(payload: SignupInput): Promise<Auth> {
     console.log('##########################payload', payload);
     try {
       const hashPassword = await this.passwordService.hashPassword(
@@ -187,7 +188,7 @@ export class UserService {
           },
         });
         userRoles(user.id, role.id);
-        return user;
+        return { user };
         // TODO username should be generated uniquely if not provided
       }
 
@@ -219,6 +220,7 @@ export class UserService {
       });
       const user = await this.prisma.user.findFirst({
         where: { email: payload.email },
+        include: { Company: true },
       });
       const role = await this.prisma.role.findFirst({
         where: {
@@ -226,7 +228,10 @@ export class UserService {
         },
       });
       userRoles(user.id, role.id);
-      return user;
+      console.log('incoming company', user.Company[0].id);
+      return {
+        user: user,
+      };
     } catch (e) {
       console.log('error singup', e);
       throw new Error(e);

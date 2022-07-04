@@ -5,7 +5,6 @@ import { PostsRepository } from '../repository/post.repository';
 import type { CreatePostInput } from '../dto/create-post.input';
 import type { CreatePostPayload } from '../entities/create-post.payload';
 import type { DeletePostPayload } from '../entities/delete-post.payload';
-import type { UpdatePostInput } from '../dto/update-post.input';
 import type { UpdatePostPayload } from '../entities/update-post.payload';
 import type { Post } from '../post.models';
 import { FileUpload } from 'graphql-upload';
@@ -28,19 +27,23 @@ export class PostsService {
     file: FileUpload[],
     creatorId: string,
   ): Promise<CreatePostPayload> {
-    const post = await this.postsRepository.createPost(
+    const result = await this.postsRepository.createPost(
       feedData,
       creatorId,
       file,
     );
     return {
-      post,
+      post: result.post,
+      tags: result.tags,
+      product: result.product,
     };
   }
 
   public async updatePost(
     postId: string,
-    input: UpdatePostInput,
+    productId: string,
+    input: CreatePostInput,
+    file: FileUpload,
     creatorId: string,
   ): Promise<UpdatePostPayload> {
     const post = await this.postsRepository.findPostByCreatorId(
@@ -56,11 +59,16 @@ export class PostsService {
         ],
       };
     }
-    const updatedPost = await this.postsRepository.updatePost(postId, input, {
-      // tags: Boolean('tags'),
-    });
+    const updatedResult = await this.postsRepository.updatePost(
+      postId,
+      productId,
+      input,
+      file,
+    );
     return {
-      // post: updatedPost,
+      post: updatedResult.post,
+      product: updatedResult.product,
+      tags: updatedResult.tags,
     };
   }
 

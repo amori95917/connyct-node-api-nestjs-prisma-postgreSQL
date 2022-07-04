@@ -59,30 +59,30 @@ export class PostsResolver {
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   async createPost(
     @Args('data') feedData: CreatePostInput,
-    @Args('file', { type: () => [GraphQLUpload] })
+    @Args({ name: 'file', nullable: true, type: () => [GraphQLUpload] })
     file: FileUpload[],
     @CurrentUser() user: User,
   ): Promise<CreatePostPayload> {
-    // console.log('***********uploads*********');
-    // file.map(async (image) => {
-    //   const { filename } = await image;
-    //   console.log(filename);
-    //   console.log(image);
-    // });
     const userId = user.id;
     return this.postsService.createPost(feedData, file, userId);
   }
 
-  // @Mutation(() => UpdatePostPayload)
-  // @UseGuards(GqlAuthGuard)
-  // public async updatePost(
-  //   @Args('id', { type: () => Int }) id: string,
-  //   @Args('input') input: UpdatePostInput,
-  //   @CurrentUser() user: User,
-  // ): Promise<UpdatePostPayload> {
-  //   const userId = user.id;
-  //   return this.postsService.updatePost(id, input, userId);
-  // }
+  @Mutation(() => UpdatePostPayload)
+  @UseGuards(GqlAuthGuard)
+  @Roles(Role.Owner, Role.Manager, Role.Editor)
+  public async updatePost(
+    @Args({ name: 'id', type: () => String }) id: string,
+    @Args({ name: 'productId', nullable: true, type: () => String })
+    productId: string,
+    @Args({ name: 'input', nullable: true }) input: CreatePostInput,
+    @Args({ name: 'file', nullable: true, type: () => GraphQLUpload })
+    file: FileUpload,
+    @CurrentUser()
+    user: User,
+  ): Promise<UpdatePostPayload> {
+    const userId = user.id;
+    return this.postsService.updatePost(id, productId, input, file, userId);
+  }
 
   @Mutation(() => DeletePostPayload)
   @UseGuards(GqlAuthGuard)

@@ -11,12 +11,6 @@ export class Product {
   @Field({ nullable: true })
   description: string;
 
-  // @Field()
-  // image: string;
-
   @Field()
-  createdAt: Date;
-
-  @Field()
-  updatedAt: Date;
+  image: string;
 }

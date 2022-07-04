@@ -2,18 +2,49 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Product {
+type Company {
   id: ID!
-  name: String
-  description: String
   createdAt: DateTime!
   updatedAt: DateTime!
+  name: String!
+  legalName: String!
+  registrationNumber: String!
+  establishedDate: DateTime!
+  companyStage: String!
+  description: String!
+  ownership: String!
+  mission: String!
+  vision: String!
+  addresses: JSON!
+  numberOfemployees: Float!
+  contactEmail: String!
+  transactions: Float!
+  isActive: Boolean!
+  isVerified: Boolean!
+  ownerId: String!
 }
 
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+type CompanyEdge {
+  cursor: String!
+  node: Company!
+}
+
+type CompanyPaginated {
+  edges: [CompanyEdge!]
+  nodes: [Company!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
 
 type Comment {
   id: ID!
@@ -45,7 +76,6 @@ type Post {
   myRatingStatus: RatingStatus!
   creatorId: Int!
   comments: [Comment!]!
-  product: [Product!]!
   isSaleAble: Boolean!
 }
 
@@ -59,7 +89,9 @@ type User {
   isValid: Boolean!
   isSuperuser: Boolean
   confirm: Boolean!
+  emailToken: String!
   posts: [Post!]!
+  company: [Company!]!
   isAdmin: Boolean!
 }
 
@@ -90,45 +122,8 @@ type Auth {
   """JWT refresh token"""
   refreshToken: String!
   user: User!
-}
-
-type Company {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  name: String!
+  companyId: String!
   legalName: String!
-  registrationNumber: String!
-  establishedDate: DateTime!
-  companyStage: String!
-  description: String!
-  ownership: String!
-  mission: String!
-  vision: String!
-  addresses: JSON!
-  numberOfEmployees: Float!
-  contactEmail: String!
-  transactions: Float!
-  isActive: Boolean!
-  isVerified: Boolean!
-  ownerId: String!
-}
-
-"""
-The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-"""
-scalar JSON
-
-type CompanyEdge {
-  cursor: String!
-  node: Company!
-}
-
-type CompanyPaginated {
-  edges: [CompanyEdge!]
-  nodes: [Company!]
-  totalCount: Int!
-  hasNextPage: Boolean!
 }
 
 type UserError {
@@ -150,14 +145,35 @@ type NewReplyPayload implements MutationPayload {
   comment: Comment
 }
 
+type Product {
+  id: ID!
+  name: String
+  description: String
+  image: String!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+}
+
 type CreatePostPayload implements MutationPayload {
   errors: [UserError!]
   post: Post
+  product: [Product!]
+  tags: [Tag!]
 }
 
 type DeletePostPayload implements MutationPayload {
   errors: [UserError!]
   isDeleteSuccessful: Boolean!
+}
+
+type UpdatePostPayload implements MutationPayload {
+  errors: [UserError!]
+  post: Post
+  product: Product
+  tags: [Tag!]
 }
 
 type InvitedEmployee {
@@ -256,7 +272,8 @@ type Mutation {
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
   createCompanyAddress(data: CreateCompanyAddressInput!): Company!
   editCompany(id: String!, data: CompanyEditInput!): Company!
-  createPost(data: CreatePostInput!, file: [Upload!]!): CreatePostPayload!
+  createPost(data: CreatePostInput!, file: [Upload!]): CreatePostPayload!
+  updatePost(id: String!, productId: String, input: CreatePostInput, file: Upload): UpdatePostPayload!
   deletePost(postId: Int!): DeletePostPayload!
   upvotePost(postId: Int!): RatePayload!
   downvotePost(postId: Int!): RatePayload!

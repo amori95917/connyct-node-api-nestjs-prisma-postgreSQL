@@ -11,7 +11,7 @@ Table User {
   password String [not null]
   emailToken String
   passwordToken String
-  confirm Boolean [not null, default: false]
+  confirm Boolean [not null, default: true]
   isValid Boolean [not null, default: false]
   isActive Boolean [not null, default: false]
   isSuperuser Boolean [not null, default: false]
@@ -164,6 +164,7 @@ Table Post {
   Product Product [not null]
   TagWithPost TagWithPost [not null]
   isSaleAble Boolean [not null, default: false]
+  isDeleted Boolean [not null, default: false]
 }
 
 Table Product {
@@ -276,15 +277,15 @@ Ref: RoleRight.rightId > Right.id
 
 Ref: RoleRight.userId > User.id
 
-Ref: Company.ownerId > User.id
+Ref: Company.ownerId > User.id [delete: Cascade]
 
 Ref: Branch.companyId > Company.id
 
 Ref: Address.branchId > Branch.id
 
-Ref: CompanyEmployee.employeeId - User.id
+Ref: CompanyEmployee.employeeId - User.id [delete: Cascade]
 
-Ref: CompanyEmployee.companyId > Company.id
+Ref: CompanyEmployee.companyId > Company.id [delete: Cascade]
 
 Ref: TagWithPost.tagsId > Tag.id
 
@@ -292,15 +293,15 @@ Ref: TagWithPost.postId > Post.id
 
 Ref: Post.creatorId > User.id
 
-Ref: Product.postId > Post.id
+Ref: Product.postId > Post.id [delete: Cascade]
 
 Ref: PostRating.userId > User.id
 
 Ref: PostRating.postId > Post.id
 
-Ref: Comment.creatorId > User.id
+Ref: Comment.creatorId > User.id [delete: Cascade]
 
-Ref: Comment.postId > Post.id
+Ref: Comment.postId > Post.id [delete: Cascade]
 
 Ref: Comment.repliedToId - Comment.id
 
@@ -312,10 +313,10 @@ Ref: InvitedEmployee.invitedId > User.id
 
 Ref: InvitedEmployee.invitedRoleId > Role.id
 
-Ref: FollowUnfollowCompany.followedById > User.id
+Ref: FollowUnfollowCompany.followedById > User.id [delete: Cascade]
 
-Ref: FollowUnfollowCompany.followedToId > Company.id
+Ref: FollowUnfollowCompany.followedToId > Company.id [delete: Cascade]
 
-Ref: FollowUserToUser.followedToId > User.id
+Ref: FollowUserToUser.followedToId > User.id [delete: Cascade]
 
-Ref: FollowUserToUser.followedById > User.id
+Ref: FollowUserToUser.followedById > User.id [delete: Cascade]

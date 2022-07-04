@@ -57,7 +57,7 @@ export class Company extends BaseEntity {
   addresses: JSON;
 
   @Field()
-  numberOfEmployees: number;
+  numberOfemployees: number;
 
   @Field()
   contactEmail: string;

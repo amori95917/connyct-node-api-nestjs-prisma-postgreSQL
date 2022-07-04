@@ -24,7 +24,7 @@ model User {
   password       String
   emailToken     String?          @map("email_token")
   passwordToken  String?          @map("password_token")
-  confirm        Boolean          @default(false)
+  confirm        Boolean          @default(true)
   isValid        Boolean          @default(false) @map("is_valid")
   isActive       Boolean          @default(false)
   isSuperuser    Boolean          @default(false)
@@ -116,7 +116,7 @@ model Company {
 
   employees CompanyEmployee[] @relation("EmployeeCompany")
 
-  owner                 User                    @relation(fields: [ownerId], references: [id])
+  owner                 User                    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId               String
   FollowUnfollowCompany FollowUnfollowCompany[]
 }
@@ -149,9 +149,9 @@ model Address {
 model CompanyEmployee {
   id         String  @id @default(uuid())
   employeeId String  @unique
-  employee   User    @relation("EmployeeUser", fields: [employeeId], references: [id])
+  employee   User    @relation("EmployeeUser", fields: [employeeId], references: [id], onDelete: Cascade)
   companyId  String
-  company    Company @relation("EmployeeCompany", fields: [companyId], references: [id])
+  company    Company @relation("EmployeeCompany", fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
@@ -181,6 +181,7 @@ model Post {
   Product     Product[]
   TagWithPost TagWithPost[]
   isSaleAble  Boolean       @default(false)
+  isDeleted   Boolean       @default(false)
 }
 
 model Product {
@@ -189,7 +190,7 @@ model Product {
   description String?
   image       String
   postId      String
-  post        Post?   @relation(fields: [postId], references: [id])
+  post        Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model PostRating {
@@ -210,8 +211,8 @@ model Comment {
   postId        String?
   repliedToId   String?
   commentRating CommentRating[]
-  user          User            @relation(fields: [creatorId], references: [id])
-  post          Post?           @relation(fields: [postId], references: [id])
+  user          User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  post          Post?           @relation(fields: [postId], references: [id], onDelete: Cascade)
   parentComment Comment?        @relation(name: "CommentToComment", fields: [repliedToId], references: [id])
   comments      Comment[]       @relation(name: "CommentToComment")
   createdAt     DateTime?       @default(now())
@@ -264,9 +265,9 @@ model InvitedEmployee {
 
 model FollowUnfollowCompany {
   id           String    @id @default(uuid())
-  followedBy   User      @relation(fields: [followedById], references: [id])
+  followedBy   User      @relation(fields: [followedById], references: [id], onDelete: Cascade)
   followedById String
-  followedTo   Company   @relation(fields: [followedToId], references: [id])
+  followedTo   Company   @relation(fields: [followedToId], references: [id], onDelete: Cascade)
   followedToId String
   createdAt    DateTime? @default(now())
   updatedAt    DateTime? @updatedAt @db.Timestamp()
@@ -274,9 +275,9 @@ model FollowUnfollowCompany {
 
 model FollowUserToUser {
   id           String   @id @default(uuid())
-  followedTo   User     @relation("Followed_To_User", fields: [followedToId], references: [id])
+  followedTo   User     @relation("Followed_To_User", fields: [followedToId], references: [id], onDelete: Cascade)
   followedToId String
-  followedBy   User     @relation("Followed_By_User", fields: [followedById], references: [id])
+  followedBy   User     @relation("Followed_By_User", fields: [followedById], references: [id], onDelete: Cascade)
   followedById String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt @db.Timestamp()
