@@ -9,6 +9,9 @@ export class Auth extends Token {
   user: User;
 
   @Field()
+  role: string;
+
+  @Field()
   companyId?: string;
 
   @Field()

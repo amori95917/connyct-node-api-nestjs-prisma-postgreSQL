@@ -86,8 +86,9 @@ export class PostsResolver {
 
   @Mutation(() => DeletePostPayload)
   @UseGuards(GqlAuthGuard)
+  @Roles(Role.Owner, Role.Manager, Role.Editor)
   public async deletePost(
-    @Args('postId', { type: () => Int }) postId: string,
+    @Args('postId', { type: () => String }) postId: string,
     @CurrentUser() user: User,
   ): Promise<DeletePostPayload> {
     const userId = user.id;

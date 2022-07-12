@@ -15,6 +15,7 @@ import { ValidationService } from 'src/modules/user/services/validation.service'
 import { Operations } from '../enum/operations.enum';
 
 import { Token } from '../entities/token.entity';
+import { Auth } from '../entities/auth.entity';
 
 @Injectable()
 export class AuthService {
@@ -29,10 +30,13 @@ export class AuthService {
     this.logger = new Logger(AuthService.name);
   }
 
-  async login(email: string, password: string, context: any): Promise<Token> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async login(email: string, password: string, context: any): Promise<Auth> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { Company: true },
+    });
     if (!user) throw UserNotFound;
-
+    console.log('incming user role', user);
     const passwordValid = await this.passwordService.validatePassword(
       password,
       user.password,
@@ -47,7 +51,18 @@ export class AuthService {
       refreshToken: token.refreshToken,
       user: user,
     });
-    return token;
+    const userRole = await this.prisma.userRole.findFirst({
+      where: { userId: user.id },
+      include: { role: true },
+    });
+    return {
+      user,
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      role: userRole.role.name,
+      companyId: user.Company[0].id,
+      legalName: user.Company[0].legalName,
+    };
   }
 
   async loginLinkAccess(email: string): Promise<{

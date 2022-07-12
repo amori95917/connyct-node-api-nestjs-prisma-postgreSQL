@@ -122,6 +122,7 @@ type Auth {
   """JWT refresh token"""
   refreshToken: String!
   user: User!
+  role: String!
   companyId: String!
   legalName: String!
 }
@@ -274,7 +275,7 @@ type Mutation {
   editCompany(id: String!, data: CompanyEditInput!): Company!
   createPost(data: CreatePostInput!, file: [Upload!]): CreatePostPayload!
   updatePost(id: String!, productId: String, input: CreatePostInput, file: Upload): UpdatePostPayload!
-  deletePost(postId: Int!): DeletePostPayload!
+  deletePost(postId: String!): DeletePostPayload!
   upvotePost(postId: Int!): RatePayload!
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!

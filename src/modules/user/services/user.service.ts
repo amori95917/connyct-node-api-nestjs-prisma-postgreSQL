@@ -188,7 +188,7 @@ export class UserService {
           },
         });
         userRoles(user.id, role.id);
-        return { user };
+        return { user, role: role.name };
         // TODO username should be generated uniquely if not provided
       }
 
@@ -231,6 +231,9 @@ export class UserService {
       console.log('incoming company', user.Company[0].id);
       return {
         user: user,
+        role: role.name,
+        companyId: user.Company[0].id,
+        legalName: user.Company[0].legalName,
       };
     } catch (e) {
       console.log('error singup', e);

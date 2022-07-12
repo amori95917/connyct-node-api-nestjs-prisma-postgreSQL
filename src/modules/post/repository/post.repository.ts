@@ -9,6 +9,7 @@ import type { CreatePostInput } from '../dto/create-post.input';
 import type { Post, Prisma } from '@prisma/client';
 import { FileUpload } from 'graphql-upload';
 import { createWriteStream, unlink } from 'fs';
+import { DeletePostPayload } from '../entities/delete-post.payload';
 
 @Injectable()
 export class PostsRepository {
@@ -261,7 +262,11 @@ export class PostsRepository {
     });
   }
 
-  public async deletePostById(postId: string): Promise<void> {
-    await this.prisma.post.delete({ where: { id: postId } });
+  public async deletePostById(postId: string): Promise<DeletePostPayload> {
+    await this.prisma.post.update({
+      where: { id: postId },
+      data: { isDeleted: true },
+    });
+    return { isDeleteSuccessful: true };
   }
 }

@@ -36,8 +36,13 @@ export class AuthResolver {
   ) {}
 
   @Mutation(() => Auth)
-  async signup(@Args('data') data: SignupInput, @Context() context) {
-    const { user, companyId } = await this.userService.signUp(data);
+  async signup(
+    @Args('data') data: SignupInput,
+    @Context() context,
+  ): Promise<Auth> {
+    const { user, companyId, legalName, role } = await this.userService.signUp(
+      data,
+    );
     await this.emailService.sendEmailConfirmation({
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
@@ -59,6 +64,8 @@ export class AuthResolver {
       refreshToken: refreshToken,
       user: user,
       companyId: companyId,
+      legalName: legalName,
+      role: role,
     };
   }
 
@@ -67,15 +74,15 @@ export class AuthResolver {
     @Args('data') { email, password }: LoginInput,
     @Context() context,
   ) {
-    const { accessToken, refreshToken } = await this.auth.login(
-      email.toLowerCase(),
-      password,
-      context,
-    );
+    const { accessToken, refreshToken, user, role, companyId, legalName } =
+      await this.auth.login(email.toLowerCase(), password, context);
 
     return {
       accessToken,
       refreshToken,
+      role,
+      companyId,
+      legalName,
     };
   }
 
