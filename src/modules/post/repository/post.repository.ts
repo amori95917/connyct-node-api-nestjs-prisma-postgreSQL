@@ -6,10 +6,11 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 import { TagService } from 'src/modules/tag/services/tag.service';
 import type { CreatePostInput } from '../dto/create-post.input';
-import type { Post, Prisma } from '@prisma/client';
+import type { Post, Prisma, Product } from '@prisma/client';
 import { FileUpload } from 'graphql-upload';
 import { createWriteStream, unlink } from 'fs';
 import { DeletePostPayload } from '../entities/delete-post.payload';
+import { Tag } from '../entities/tags.entity';
 
 @Injectable()
 export class PostsRepository {
@@ -30,6 +31,7 @@ export class PostsRepository {
           data: {
             text: feedData.text,
             creatorId: creatorId,
+            companyId: feedData.companyId,
           },
         });
         // create tags
@@ -268,5 +270,50 @@ export class PostsRepository {
       data: { isDeleted: true },
     });
     return { isDeleteSuccessful: true };
+  }
+  public async findPostsByCompanyId(companyId: string): Promise<Post[]> {
+    const post = await this.prisma.post.findMany({
+      where: { companyId },
+    });
+    if (post.length < 1)
+      throw new Error('posts doesnot exits in related company');
+    return post;
+  }
+
+  public async findProducts(postId: string): Promise<Product[]> {
+    return await this.prisma.product.findMany({ where: { postId: postId } });
+  }
+
+  public async findTags(postId: string): Promise<Tag[] | null> {
+    const tagWithPost = await this.prisma.tagWithPost.findMany({
+      where: { postId: postId },
+      include: {
+        tags: true,
+      },
+    });
+    const tags = tagWithPost.map((tag) => tag.tags);
+    console.log('incoming tags', tags);
+    return tags;
+  }
+  public async findCompanyPostsFollowedByUser(
+    userId: string,
+  ): Promise<Post[] | null> {
+    const followedCompany = await this.prisma.followUnfollowCompany.findFirst({
+      where: { followedById: userId },
+    });
+    if (!followedCompany) return null;
+    const { followedToId } = followedCompany;
+    return await this.findPostsByCompanyId(followedToId);
+  }
+
+  public async findCompanyPostProductsFollowedByUser(
+    postId: string,
+  ): Promise<Product[]> {
+    return this.findProducts(postId);
+  }
+  public async findCompanyPostTagsFollowedByUser(
+    postId: string,
+  ): Promise<Tag[]> {
+    return this.findTags(postId);
   }
 }

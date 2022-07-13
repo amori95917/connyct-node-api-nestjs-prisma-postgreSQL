@@ -37,4 +37,8 @@ export class CreatePostInput {
   @IsOptional()
   @MinLength(10)
   description: string;
+
+  @Field()
+  @IsNotEmpty()
+  companyId: string;
 }

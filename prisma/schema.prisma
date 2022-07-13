@@ -182,6 +182,7 @@ model Post {
   TagWithPost TagWithPost[]
   isSaleAble  Boolean       @default(false)
   isDeleted   Boolean       @default(false)
+  companyId   String
 }
 
 model Product {

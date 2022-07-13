@@ -3,7 +3,8 @@ import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Comment } from '../comment/comment.models';
 import { RatingStatus } from '../rating/entities/rating-status.enum';
 import { User } from '../user/entities/user.entity';
-import { Tag, TagWithPost } from '@prisma/client';
+import { Product } from './entities/product.entity';
+import { Tag } from './entities/tags.entity';
 
 registerEnumType(RatingStatus, {
   name: 'RatingStatus',
@@ -37,4 +38,13 @@ export class Post {
 
   @Field(() => Boolean)
   isSaleAble: boolean;
+
+  @Field()
+  companyId: string;
+
+  @Field(() => [Product])
+  product?: Product[];
+
+  @Field(() => [Tag])
+  tags?: Tag[];
 }

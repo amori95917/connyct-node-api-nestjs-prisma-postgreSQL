@@ -30,6 +30,8 @@ import { PostsService } from '../services/post.service';
 import { Roles } from 'src/modules/auth/decorators/role.decorator';
 import { Role } from 'src/modules/auth/enum/role.enum';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { Product } from '../entities/product.entity';
+import { Tag } from '../entities/tags.entity';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -93,6 +95,42 @@ export class PostsResolver {
   ): Promise<DeletePostPayload> {
     const userId = user.id;
     return this.postsService.deletePost(postId, userId);
+  }
+
+  @Query(() => [Post])
+  @UseGuards(GqlAuthGuard)
+  public async getPostsByCompanyId(
+    @Args('id', { type: () => String }) id: string,
+  ) {
+    return this.postsService.findPostsByCompanyId(id);
+  }
+  @ResolveField('product', () => [Product])
+  public async getProductsByPosts(@Parent() post: Post) {
+    const { id } = post;
+    return this.postsService.findProducts(id);
+  }
+  @ResolveField('tags', () => [Tag])
+  public async getTags(@Parent() post: Post) {
+    const { id } = post;
+    return this.postsService.findTags(id);
+  }
+
+  @Query(() => [Post], { nullable: true })
+  @UseGuards(GqlAuthGuard)
+  public async getCompanyPostsFollowedByUser(@CurrentUser() user: User) {
+    const { id } = user;
+    return this.postsService.findCompanyPostsFollowedByUser(id);
+  }
+
+  @ResolveField('product', () => [Product])
+  public async getCompanyPostProductsFollowedByUser(@Parent() post: Post) {
+    const { id } = post;
+    return this.postsService.findCompanyPostProductsFollowedByUser(id);
+  }
+  @ResolveField('tags', () => [Tag])
+  public async getCompanyPostTagsFollowedByUser(@Parent() post: Post) {
+    const { id } = post;
+    return this.postsService.findCompanyPostTagsFollowedByUser(id);
   }
 
   @Mutation(() => RatePayload)

@@ -165,6 +165,7 @@ Table Post {
   TagWithPost TagWithPost [not null]
   isSaleAble Boolean [not null, default: false]
   isDeleted Boolean [not null, default: false]
+  companyId String [not null]
 }
 
 Table Product {

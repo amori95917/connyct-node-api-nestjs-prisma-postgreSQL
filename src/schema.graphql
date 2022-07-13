@@ -67,6 +67,18 @@ enum RatingStatus {
   DOWNVOTED
 }
 
+type Product {
+  id: ID!
+  name: String
+  description: String
+  image: String!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+}
+
 type Post {
   id: ID!
   text: String!
@@ -77,6 +89,9 @@ type Post {
   creatorId: Int!
   comments: [Comment!]!
   isSaleAble: Boolean!
+  companyId: String!
+  product: [Product!]!
+  tags: [Tag!]!
 }
 
 type User {
@@ -146,18 +161,6 @@ type NewReplyPayload implements MutationPayload {
   comment: Comment
 }
 
-type Product {
-  id: ID!
-  name: String
-  description: String
-  image: String!
-}
-
-type Tag {
-  id: ID!
-  name: String!
-}
-
 type CreatePostPayload implements MutationPayload {
   errors: [UserError!]
   post: Post
@@ -208,6 +211,8 @@ type Query {
   me: User!
   getUser(userId: String!): User!
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
+  getPostsByCompanyId(id: String!): [Post!]!
+  getCompanyPostsFollowedByUser: [Post!]
 }
 
 input PaginationArgs {
@@ -401,6 +406,7 @@ input CreatePostInput {
   tags: [String!]
   name: String
   description: String
+  companyId: String!
 }
 
 """The `Upload` scalar type represents a file upload."""

@@ -76,13 +76,13 @@ export class AuthResolver {
   ) {
     const { accessToken, refreshToken, user, role, companyId, legalName } =
       await this.auth.login(email.toLowerCase(), password, context);
-
     return {
       accessToken,
       refreshToken,
+      user,
       role,
-      companyId,
-      legalName,
+      // companyId,
+      // legalName,
     };
   }
 

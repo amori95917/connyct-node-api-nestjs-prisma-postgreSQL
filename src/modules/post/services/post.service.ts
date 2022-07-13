@@ -8,6 +8,8 @@ import type { DeletePostPayload } from '../entities/delete-post.payload';
 import type { UpdatePostPayload } from '../entities/update-post.payload';
 import type { Post } from '../post.models';
 import { FileUpload } from 'graphql-upload';
+import { Product } from '../entities/product.entity';
+import { Tag } from '../entities/tags.entity';
 
 @Injectable()
 export class PostsService {
@@ -92,7 +94,28 @@ export class PostsService {
       isDeleteSuccessful: true,
     };
   }
-
+  public async findPostsByCompanyId(id: string): Promise<Post[]> {
+    return this.postsRepository.findPostsByCompanyId(id);
+  }
+  public async findProducts(id: string): Promise<Product[]> {
+    return this.postsRepository.findProducts(id);
+  }
+  public async findTags(id: string): Promise<Tag[]> {
+    return this.postsRepository.findTags(id);
+  }
+  public async findCompanyPostsFollowedByUser(
+    id: string,
+  ): Promise<Post[] | null> {
+    return this.postsRepository.findCompanyPostsFollowedByUser(id);
+  }
+  public async findCompanyPostProductsFollowedByUser(
+    id: string,
+  ): Promise<Product[]> {
+    return this.postsRepository.findCompanyPostProductsFollowedByUser(id);
+  }
+  public async findCompanyPostTagsFollowedByUser(id: string): Promise<Tag[]> {
+    return this.postsRepository.findCompanyPostTagsFollowedByUser(id);
+  }
   public async getUserPosts(id: string): Promise<Post[]> {
     // return this.postsRepository.findPostsByUserId(id);
     return;

@@ -55,13 +55,21 @@ export class AuthService {
       where: { userId: user.id },
       include: { role: true },
     });
+    if (userRole.role.name === 'OWNER') {
+      return {
+        user,
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        role: userRole.role.name,
+        companyId: user.Company[0].id,
+        legalName: user.Company[0].legalName,
+      };
+    }
     return {
       user,
       accessToken: token.accessToken,
       refreshToken: token.refreshToken,
       role: userRole.role.name,
-      companyId: user.Company[0].id,
-      legalName: user.Company[0].legalName,
     };
   }
 
