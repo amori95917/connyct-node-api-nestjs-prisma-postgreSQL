@@ -11,9 +11,9 @@ export class Auth extends Token {
   @Field()
   role: string;
 
-  @Field()
+  @Field({ nullable: true })
   companyId?: string;
 
-  @Field()
+  @Field({ nullable: true })
   legalName?: string;
 }

@@ -138,8 +138,8 @@ type Auth {
   refreshToken: String!
   user: User!
   role: String!
-  companyId: String!
-  legalName: String!
+  companyId: String
+  legalName: String
 }
 
 type UserError {
