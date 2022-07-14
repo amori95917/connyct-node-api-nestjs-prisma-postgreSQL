@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Company } from 'src/modules/company/entities/company.entity';
 
 import { User } from '../../user/entities/user.entity';
 import { Token } from './token.entity';
@@ -11,9 +12,6 @@ export class Auth extends Token {
   @Field()
   role: string;
 
-  @Field({ nullable: true })
-  companyId?: string;
-
-  @Field({ nullable: true })
-  legalName?: string;
+  @Field(() => [Company], { nullable: true })
+  company?: Company[];
 }

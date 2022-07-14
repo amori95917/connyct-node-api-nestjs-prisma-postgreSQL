@@ -5,24 +5,24 @@ import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 
 import { BaseEntity } from '../../prisma/entities/base.entity';
 
-import { GraphQLJSON } from 'graphql-type-json';
-@ObjectType()
-export class CompanyAddress {
-  @Field()
-  country: string;
+import JSON from 'graphql-type-json';
+// @ObjectType()
+// export class CompanyAddress {
+//   @Field()
+//   country: string;
 
-  @Field()
-  city: string;
+//   @Field()
+//   city: string;
 
-  @Field()
-  zipCode: string;
+//   @Field()
+//   zipCode: string;
 
-  @Field()
-  state: string;
+//   @Field()
+//   state: string;
 
-  @Field()
-  street: string;
-}
+//   @Field()
+//   street: string;
+// }
 
 @ObjectType()
 export class Company extends BaseEntity {
@@ -53,8 +53,8 @@ export class Company extends BaseEntity {
   @Field()
   vision: string;
 
-  @Field(() => GraphQLJSON)
-  addresses: JSON;
+  @Field(() => JSON)
+  addresses: any;
 
   @Field()
   numberOfemployees: number;

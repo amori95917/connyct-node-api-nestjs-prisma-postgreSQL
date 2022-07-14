@@ -65,7 +65,7 @@ export class CompanyResolver {
   async editCompany(
     @Args('id') companyId: string,
     @Args('data') companyEditData: CompanyEditInput,
-  ): Promise<CompanyPrisma> {
+  ): Promise<Company> {
     return this.companyService.editCompany(companyId, companyEditData);
   }
 }

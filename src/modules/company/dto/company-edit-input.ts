@@ -11,7 +11,6 @@ import {
 import { Field, InputType } from '@nestjs/graphql';
 import { CompanyStage, Ownership } from '@prisma/client';
 import { Float } from 'type-graphql';
-import { Type } from 'class-transformer';
 
 @InputType()
 export class CompanyAddress {
@@ -78,7 +77,6 @@ export class CompanyEditInput {
   @Field({ nullable: true })
   @IsOptional()
   @IsObject()
-  @Type(() => CompanyAddress)
   addresses: CompanyAddress;
 
   @Field()

@@ -61,8 +61,7 @@ export class AuthService {
         accessToken: token.accessToken,
         refreshToken: token.refreshToken,
         role: userRole.role.name,
-        companyId: user.Company[0].id,
-        legalName: user.Company[0].legalName,
+        company: user.Company,
       };
     }
     return {

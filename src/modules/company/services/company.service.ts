@@ -9,6 +9,7 @@ import { FilterListCompanies } from '../dto/filter-company.input';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCompanyAddressInput } from '../dto/company-input';
+import { Company } from '../entities/company.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -78,7 +79,10 @@ export class CompanyService {
     return await this.prisma.company.findFirst();
   }
 
-  async editCompany(companyId: string, companyEditData: CompanyEditInput) {
+  async editCompany(
+    companyId: string,
+    companyEditData: CompanyEditInput,
+  ): Promise<Company> {
     try {
       const companyData = await this.prisma.company.findFirst({
         where: { id: companyId },

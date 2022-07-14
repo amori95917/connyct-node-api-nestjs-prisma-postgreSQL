@@ -232,8 +232,7 @@ export class UserService {
       return {
         user: user,
         role: role.name,
-        companyId: user.Company[0].id,
-        legalName: user.Company[0].legalName,
+        company: user.Company,
       };
     } catch (e) {
       console.log('error singup', e);

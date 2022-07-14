@@ -40,9 +40,7 @@ export class AuthResolver {
     @Args('data') data: SignupInput,
     @Context() context,
   ): Promise<Auth> {
-    const { user, companyId, legalName, role } = await this.userService.signUp(
-      data,
-    );
+    const { user, company, role } = await this.userService.signUp(data);
     await this.emailService.sendEmailConfirmation({
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
@@ -62,10 +60,9 @@ export class AuthResolver {
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      user: user,
-      companyId: companyId,
-      legalName: legalName,
-      role: role,
+      user,
+      role,
+      company,
     };
   }
 
@@ -74,15 +71,14 @@ export class AuthResolver {
     @Args('data') { email, password }: LoginInput,
     @Context() context,
   ) {
-    const { accessToken, refreshToken, user, role, companyId, legalName } =
+    const { accessToken, refreshToken, user, role, company } =
       await this.auth.login(email.toLowerCase(), password, context);
     return {
       accessToken,
       refreshToken,
       user,
       role,
-      // companyId,
-      // legalName,
+      company,
     };
   }
 
