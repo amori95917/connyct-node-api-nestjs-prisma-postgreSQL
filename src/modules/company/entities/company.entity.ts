@@ -26,52 +26,52 @@ import JSON from 'graphql-type-json';
 
 @ObjectType()
 export class Company extends BaseEntity {
-  @Field()
-  name: string;
+  @Field({ nullable: true })
+  name?: string;
 
   @Field()
   legalName: string;
 
-  @Field()
+  @Field({ nullable: true })
   registrationNumber: string;
 
-  @Field()
+  @Field({ nullable: true })
   establishedDate: Date;
 
-  @Field()
+  @Field({ nullable: true })
   companyStage: string;
 
-  @Field()
+  @Field({ nullable: true })
   description: string;
 
-  @Field()
+  @Field({ nullable: true })
   ownership: string;
 
-  @Field()
+  @Field({ nullable: true })
   mission: string;
 
-  @Field()
+  @Field({ nullable: true })
   vision: string;
 
-  @Field(() => JSON)
+  @Field(() => JSON, { nullable: true })
   addresses: any;
 
-  @Field()
+  @Field({ nullable: true })
   numberOfemployees: number;
 
-  @Field()
+  @Field({ nullable: true })
   contactEmail: string;
 
-  @Field(() => Float)
+  @Field(() => Float, { nullable: true })
   transactions: number;
 
-  @Field()
+  @Field({ nullable: true })
   isActive: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   isVerified: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   ownerId: string;
 }
 

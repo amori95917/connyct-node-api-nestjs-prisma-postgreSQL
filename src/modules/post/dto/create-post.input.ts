@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -18,6 +19,7 @@ import { type } from 'os';
 export class CreatePostInput {
   @Field(() => String, { nullable: false })
   @IsNotEmpty()
+  @IsString()
   text: string;
 
   @Field(() => [String], { nullable: true })
@@ -31,14 +33,18 @@ export class CreatePostInput {
   @Field({ nullable: true })
   @IsOptional()
   @MinLength(3)
+  @IsString()
   name: string;
 
   @Field({ nullable: true })
   @IsOptional()
   @MinLength(10)
+  @IsString()
   description: string;
 
   @Field()
   @IsNotEmpty()
+  @IsString()
+  @IsUUID()
   companyId: string;
 }

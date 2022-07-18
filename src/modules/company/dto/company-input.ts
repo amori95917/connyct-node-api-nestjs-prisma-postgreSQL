@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 @InputType()
 export class CreateCompanyInput {
@@ -9,6 +9,7 @@ export class CreateCompanyInput {
 
   @Field()
   @IsNotEmpty()
+  @IsString()
   legalName: string;
 
   @Field()
@@ -39,12 +40,6 @@ export class CreateCompanyInput {
 
   @Field()
   transactions: number;
-
-  // @Field()
-  // addresses: AddressInput
-
-  // @Field()
-  // employees:
 }
 
 @InputType()

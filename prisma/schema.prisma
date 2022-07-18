@@ -92,8 +92,8 @@ model RoleRight {
 model Company {
   id                 String        @id @default(uuid())
   name               String?
-  legalName          String
-  registrationNumber String?
+  legalName          String @unique
+  registrationNumber String?  @unique
   establishedDate    DateTime?
   companyStage       CompanyStage?
   description        String?
@@ -104,7 +104,7 @@ model Company {
   branches           Branch[]
   // may be apt to use range instead
   numberOfemployees  Int           @default(1)
-  contactEmail       String?
+  contactEmail       String? @unique
   transactions       Float?
   isActive           Boolean       @default(false)
   isVerified         Boolean       @default(false)

@@ -1,6 +1,7 @@
 import {
   IsDate,
   IsEmail,
+  IsInt,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -39,6 +40,7 @@ export class CompanyAddress {
 export class CompanyEditInput {
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
   @Min(3)
   name: string;
 
@@ -47,6 +49,7 @@ export class CompanyEditInput {
   @MinLength(6, {
     message: 'Registration number should be at least of 6 char length',
   })
+  @IsString()
   registrationNumber: string;
 
   @Field()
@@ -60,14 +63,17 @@ export class CompanyEditInput {
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
   description: string;
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
   mission: string;
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
   vision: string;
 
   @Field({ nullable: true })
@@ -86,9 +92,11 @@ export class CompanyEditInput {
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsInt()
   numberOfemployees: number;
 
   @Field(() => Float, { nullable: true })
   @IsOptional()
+  @IsInt()
   transactions: number;
 }

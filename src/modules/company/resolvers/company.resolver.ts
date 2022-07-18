@@ -19,7 +19,7 @@ import { CompanyEditInput } from '../dto/company-edit-input';
 export class CompanyResolver {
   constructor(private readonly companyService: CompanyService) {}
 
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   @Query(() => CompanyPaginated)
   async companies(
     @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
