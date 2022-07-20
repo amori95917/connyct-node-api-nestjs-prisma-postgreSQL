@@ -1,16 +1,18 @@
+import { Role } from 'src/modules/auth/enum/role.enum';
 import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 @InputType()
 export class InvitedEmployeeInput {
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsEmail()
   @IsString()
   invitedEmail: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsString()
-  role: string;
+  @IsEnum(Role)
+  role: Role;
 }

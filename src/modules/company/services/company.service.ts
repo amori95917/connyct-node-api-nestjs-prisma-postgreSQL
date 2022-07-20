@@ -32,27 +32,35 @@ export class CompanyService {
     order: OrderListCompanies,
     filter?: FilterListCompanies,
   ) {
-    const nodes = await this.prisma.company.findMany({
-      skip: paginate.skip,
-      take: paginate.take,
-      orderBy: { [order.orderBy]: order.direction },
-      where: {
-        ...(filter?.omni && {
-          name: { contains: filter.omni, mode: 'insensitive' },
-        }),
-      },
-    });
-    const totalCount = await this.prisma.company.count({});
-    const hasNextPage = haveNextPage(paginate.skip, paginate.take, totalCount);
-    return {
-      nodes,
-      totalCount,
-      hasNextPage,
-      edges: nodes?.map((node) => ({
-        node,
-        cursor: Buffer.from(node.id).toString('base64'),
-      })),
-    };
+    try {
+      const nodes = await this.prisma.company.findMany({
+        skip: paginate.skip,
+        take: paginate.take,
+        orderBy: { [order.orderBy]: order.direction },
+        where: {
+          ...(filter?.omni && {
+            name: { contains: filter.omni, mode: 'insensitive' },
+          }),
+        },
+      });
+      const totalCount = await this.prisma.company.count({});
+      const hasNextPage = haveNextPage(
+        paginate.skip,
+        paginate.take,
+        totalCount,
+      );
+      return {
+        nodes,
+        totalCount,
+        hasNextPage,
+        edges: nodes?.map((node) => ({
+          node,
+          cursor: Buffer.from(node.id).toString('base64'),
+        })),
+      };
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async createCompany(company: any) {

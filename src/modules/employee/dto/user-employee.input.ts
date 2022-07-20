@@ -1,45 +1,48 @@
+import { Role } from 'src/modules/auth/enum/role.enum';
 import { Field, InputType } from '@nestjs/graphql';
 import {
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsString,
-  MinLength,
+  Length,
 } from 'class-validator';
 
 @InputType()
 export class UserEmployeeInput {
-  @Field()
+  @Field(() => Boolean)
   @IsBoolean()
   @IsNotEmpty()
   isInviteAccepted: boolean;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
-  @MinLength(3)
+  @Length(3, 35, { message: 'firstname must be between 3 to 35 characters' })
   @IsString()
   firstName: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
-  @MinLength(3)
+  @Length(3, 35, { message: 'lastname must be between 3 to 35' })
   @IsString()
   lastName: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsEmail()
   @IsString()
   email: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be atleast 8 character long' })
+  @Length(8, 35, { message: 'Password must be atleast 8 character long' })
   @IsString()
   password: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsString()
-  role: string;
+  @IsEnum(Role)
+  role: Role;
 }

@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 @InputType()
 export class FollowUserToUserInput {
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsString()
   @IsUUID()

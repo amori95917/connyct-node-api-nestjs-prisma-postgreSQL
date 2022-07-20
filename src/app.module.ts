@@ -20,6 +20,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { TagModule } from './modules/tag/tag.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/follow-unfollow-company.module';
+import { IndustryModule } from './modules/industry/industry.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/f
     PostModule,
     EmployeeModule,
     FollowUnfollowCompanyModule,
+    IndustryModule,
   ],
 })
 export class AppModule {

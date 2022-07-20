@@ -6,7 +6,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Min,
+  Length,
   MinLength,
 } from 'class-validator';
 import { Field, InputType } from '@nestjs/graphql';
@@ -15,69 +15,87 @@ import { Float } from 'type-graphql';
 
 @InputType()
 export class CompanyAddress {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
+  @Length(3, 35, { message: 'country name must be between 3 to 35 characters' })
   country: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
+  @Length(3, 35, { message: 'city name must be between 3 to 35 characters' })
   city: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
+  @Length(3, 35, { message: 'zipCode  must be between 3 to 35 characters' })
   zipCode: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
+  @Length(3, 35, { message: 'state must be between 3 to 35 characters' })
   state: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
+  @Length(3, 35, { message: 'street must be between 3 to 35 characters' })
   street: string;
 }
 
 @InputType()
 export class CompanyEditInput {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Min(3)
+  @Length(3, 35, { message: 'Name must be between 3 to 35 characters' })
   name: string;
 
-  @Field()
+  @Field(() => String)
   @IsString()
-  @MinLength(6, {
-    message: 'Registration number should be at least of 6 char length',
+  @Length(3, 35, {
+    message: 'Registration number must be between 3 to 35 characters',
   })
   @IsString()
   registrationNumber: string;
 
-  @Field()
+  @Field(() => Date)
   @IsNotEmpty()
   @IsDate()
+  @Length(3, 35, {
+    message: 'Established Date must be between 3 to 35 characters',
+  })
   establishedDate: Date;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   companyStage: CompanyStage;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  @MinLength(8, { message: 'Description must be atleast 8 characters' })
   description: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  @MinLength(8, { message: 'Mission must be atleast 8 characters' })
   mission: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  @MinLength(8, { message: 'Vision must be atleast 8 characters' })
   vision: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   ownership: Ownership;
 
   @Field({ nullable: true })
@@ -85,18 +103,19 @@ export class CompanyEditInput {
   @IsObject()
   addresses: CompanyAddress;
 
-  @Field()
+  @Field(() => String)
   @IsEmail()
   @IsNotEmpty()
+  @IsString()
   contactEmail: string;
 
-  @Field({ nullable: true })
+  @Field(() => Number, { nullable: true })
   @IsOptional()
   @IsInt()
   numberOfemployees: number;
 
   @Field(() => Float, { nullable: true })
   @IsOptional()
-  @IsInt()
   transactions: number;
+  // check this field type?
 }

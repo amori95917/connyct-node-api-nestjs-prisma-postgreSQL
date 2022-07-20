@@ -205,6 +205,22 @@ type FollowCompany {
   updatedAt: DateTime!
 }
 
+type Industry {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  type: String!
+  description: String
+  isActive: Boolean
+}
+
+type IndustryPayload {
+  error: String
+  industries: [Industry!]
+  industry: Industry
+  isDeletedSuccessful: Boolean
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -212,6 +228,7 @@ type Query {
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
+  getIndustry: IndustryPayload!
 }
 
 input PaginationArgs {
@@ -294,6 +311,10 @@ type Mutation {
   unfollowCompany(data: UnfollowCompanyInput!): String!
   followUserToUser(data: FollowUserToUserInput!): FollowUserToUser!
   unfollowUser(data: UnfollowUserInput!): String!
+  createIndustry(data: IndustryInput!): IndustryPayload!
+  updateIndustry(id: String!, data: IndustryInput!): IndustryPayload!
+  deleteIndustry(id: String!): IndustryPayload!
+  activeOrDeactiveIndustry(id: String!): IndustryPayload!
 }
 
 input UpdateStatusUserInput {
@@ -316,7 +337,6 @@ input SignupInput {
   firstName: String!
   lastName: String!
   email: String!
-  username: String
   password: String!
   isCompanyAccount: Boolean
   legalName: String
@@ -443,4 +463,9 @@ input FollowUserToUserInput {
 
 input UnfollowUserInput {
   userId: String!
+}
+
+input IndustryInput {
+  type: String!
+  description: String
 }

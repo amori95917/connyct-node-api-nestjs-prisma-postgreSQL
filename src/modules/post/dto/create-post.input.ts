@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -20,6 +21,7 @@ export class CreatePostInput {
   @Field(() => String, { nullable: false })
   @IsNotEmpty()
   @IsString()
+  @Length(3, 75, { message: 'Text must be between 3 and 75 characters' })
   text: string;
 
   @Field(() => [String], { nullable: true })
@@ -30,19 +32,20 @@ export class CreatePostInput {
   @ArrayUnique()
   tags?: string[];
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
-  @MinLength(3)
+  @Length(3, 35, { message: 'Name must be between 3 to 35 characters ' })
   @IsString()
   name: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @MinLength(10)
   @IsString()
+  @MinLength(8, { message: 'Description must be atleast 8 characters long' })
   description: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsString()
   @IsUUID()

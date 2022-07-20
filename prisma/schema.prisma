@@ -67,7 +67,7 @@ model Right {
 
 model UserRole {
   id        String    @id @default(uuid())
-  userId    String
+  userId    String    @unique
   user      User      @relation(fields: [userId], references: [id])
   roleId    String
   role      Role      @relation(fields: [roleId], references: [id])
@@ -92,8 +92,8 @@ model RoleRight {
 model Company {
   id                 String        @id @default(uuid())
   name               String?
-  legalName          String @unique
-  registrationNumber String?  @unique
+  legalName          String        @unique
+  registrationNumber String?       @unique
   establishedDate    DateTime?
   companyStage       CompanyStage?
   description        String?
@@ -104,7 +104,7 @@ model Company {
   branches           Branch[]
   // may be apt to use range instead
   numberOfemployees  Int           @default(1)
-  contactEmail       String? @unique
+  contactEmail       String?       @unique
   transactions       Float?
   isActive           Boolean       @default(false)
   isVerified         Boolean       @default(false)
@@ -283,4 +283,14 @@ model FollowUserToUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt @db.Timestamp()
 
+}
+
+model Industry {
+  id            String    @id @default(uuid())
+  type          String    @unique
+  description   String?
+  isActive      Boolean   @default(false)
+  pirorityOrder Int       @default(autoincrement())
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt @db.Timestamp()
 }

@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Length,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -13,9 +14,10 @@ import {
  */
 @InputType()
 export class UpdatePostInput {
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsNotEmpty()
-  @Field(() => String, { nullable: true })
+  @IsString()
   text: string;
 
   @Field(() => [String], { nullable: true })
@@ -26,13 +28,15 @@ export class UpdatePostInput {
   @ArrayUnique()
   tags?: string[];
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
-  @MinLength(3)
+  @IsString()
+  @Length(3, 35, { message: 'Name must be between 3 to 35 characters ' })
   name: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
-  @MinLength(10)
+  @IsString()
+  @MinLength(8, { message: 'Description must be atleast 8 characters long' })
   description: string;
 }

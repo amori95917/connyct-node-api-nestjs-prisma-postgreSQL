@@ -3,7 +3,7 @@ import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
 export class UnfollowUserInput {
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   @IsString()
   @IsUUID()

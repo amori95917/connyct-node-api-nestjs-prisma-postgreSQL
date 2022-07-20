@@ -114,34 +114,54 @@ export class PostsRepository {
   }
 
   public async findPostById(postId: string): Promise<Post | null> {
-    return this.prisma.post.findUnique({ where: { id: postId } });
+    try {
+      return this.prisma.post.findUnique({ where: { id: postId } });
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findPostByCreatorId(
     creatorId: string,
     postId: string,
   ): Promise<Post | null> {
-    return this.prisma.post.findFirst({ where: { creatorId, id: postId } });
+    try {
+      return this.prisma.post.findFirst({ where: { creatorId, id: postId } });
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findPostsByUserId(id: string): Promise<Post[]> {
-    return this.prisma.post.findMany({
-      where: { creatorId: id },
-    });
+    try {
+      return this.prisma.post.findMany({
+        where: { creatorId: id },
+      });
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findPosts(): Promise<Post[]> {
-    return this.prisma.post.findMany();
+    try {
+      return this.prisma.post.findMany();
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findPostsByIds(keys: readonly string[]): Promise<Post[]> {
-    return this.prisma.post.findMany({
-      where: {
-        id: {
-          in: [...keys],
+    try {
+      return this.prisma.post.findMany({
+        where: {
+          id: {
+            in: [...keys],
+          },
         },
-      },
-    });
+      });
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async updatePost(
@@ -265,55 +285,85 @@ export class PostsRepository {
   }
 
   public async deletePostById(postId: string): Promise<DeletePostPayload> {
-    await this.prisma.post.update({
-      where: { id: postId },
-      data: { isDeleted: true },
-    });
-    return { isDeleteSuccessful: true };
+    try {
+      await this.prisma.post.update({
+        where: { id: postId },
+        data: { isDeleted: true },
+      });
+      return { isDeleteSuccessful: true };
+    } catch (e) {
+      throw new Error(e);
+    }
   }
   public async findPostsByCompanyId(companyId: string): Promise<Post[]> {
-    const post = await this.prisma.post.findMany({
-      where: { companyId },
-    });
-    if (post.length < 1)
-      throw new Error('posts doesnot exits in related company');
-    return post;
+    try {
+      const post = await this.prisma.post.findMany({
+        where: { companyId },
+      });
+      if (post.length < 1)
+        throw new Error('posts doesnot exits in related company');
+      return post;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findProducts(postId: string): Promise<Product[]> {
-    return await this.prisma.product.findMany({ where: { postId: postId } });
+    try {
+      return await this.prisma.product.findMany({ where: { postId: postId } });
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findTags(postId: string): Promise<Tag[] | null> {
-    const tagWithPost = await this.prisma.tagWithPost.findMany({
-      where: { postId: postId },
-      include: {
-        tags: true,
-      },
-    });
-    const tags = tagWithPost.map((tag) => tag.tags);
-    console.log('incoming tags', tags);
-    return tags;
+    try {
+      const tagWithPost = await this.prisma.tagWithPost.findMany({
+        where: { postId: postId },
+        include: {
+          tags: true,
+        },
+      });
+      const tags = tagWithPost.map((tag) => tag.tags);
+      console.log('incoming tags', tags);
+      return tags;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
   public async findCompanyPostsFollowedByUser(
     userId: string,
   ): Promise<Post[] | null> {
-    const followedCompany = await this.prisma.followUnfollowCompany.findFirst({
-      where: { followedById: userId },
-    });
-    if (!followedCompany) return null;
-    const { followedToId } = followedCompany;
-    return await this.findPostsByCompanyId(followedToId);
+    try {
+      const followedCompany = await this.prisma.followUnfollowCompany.findFirst(
+        {
+          where: { followedById: userId },
+        },
+      );
+      if (!followedCompany) return null;
+      const { followedToId } = followedCompany;
+      return await this.findPostsByCompanyId(followedToId);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async findCompanyPostProductsFollowedByUser(
     postId: string,
   ): Promise<Product[]> {
-    return this.findProducts(postId);
+    try {
+      return this.findProducts(postId);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
   public async findCompanyPostTagsFollowedByUser(
     postId: string,
   ): Promise<Tag[]> {
-    return this.findTags(postId);
+    try {
+      return this.findTags(postId);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 }

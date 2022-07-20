@@ -82,8 +82,8 @@ Table RoleRight {
 Table Company {
   id String [pk]
   name String
-  legalName String [not null]
-  registrationNumber String
+  legalName String [unique, not null]
+  registrationNumber String [unique]
   establishedDate DateTime
   companyStage CompanyStage
   description String
@@ -93,7 +93,7 @@ Table Company {
   addresses Json
   branches Branch [not null]
   numberOfemployees Int [not null, default: 1]
-  contactEmail String
+  contactEmail String [unique]
   transactions Float
   isActive Boolean [not null, default: false]
   isVerified Boolean [not null, default: false]
@@ -247,6 +247,16 @@ Table FollowUserToUser {
   followedById String [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+}
+
+Table Industry {
+  id String [pk]
+  type String [unique, not null]
+  description String
+  isActive Boolean [not null, default: false]
+  pirorityOrder Int [increment, not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Enum CompanyStage {
