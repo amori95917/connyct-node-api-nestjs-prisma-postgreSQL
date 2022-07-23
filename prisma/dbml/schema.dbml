@@ -55,7 +55,7 @@ Table Right {
 
 Table UserRole {
   id String [pk]
-  userId String [not null]
+  userId String [unique, not null]
   user User [not null]
   roleId String [not null]
   role Role [not null]

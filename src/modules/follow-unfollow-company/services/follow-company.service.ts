@@ -1,3 +1,4 @@
+import { Company } from 'src/modules/company/entities/company.entity';
 import { UnfollowUserInput } from './../dto/unfollow-user.input';
 import { UnfollowCompanyInput } from './../dto/unfollow-company.input';
 import { FollowCompanyInput } from '../dto/follow-company.input';
@@ -128,6 +129,23 @@ export class FollowCompanyService {
         where: { followedById: user.id, followedToId: userId.userId },
       });
       return 'User unfollowed';
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async getCompanyFollowedByUser(userId: string): Promise<Company[]> {
+    try {
+      const companyFollowedByUser =
+        await this.prisma.followUnfollowCompany.findMany({
+          where: { followedById: userId },
+          include: { followedTo: true },
+        });
+      const followedCompany = companyFollowedByUser.map((company) => {
+        return company.followedTo;
+      });
+      console.log('incoming company', followedCompany);
+      return followedCompany;
     } catch (e) {
       throw new Error(e);
     }

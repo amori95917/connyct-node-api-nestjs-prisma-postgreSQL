@@ -1,3 +1,4 @@
+import { FollowCompanyService } from './../follow-unfollow-company/services/follow-company.service';
 import { Module } from '@nestjs/common';
 
 import { EmailService } from '../email/services/email.service';
@@ -20,6 +21,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
     PrismaService,
     EmailService,
     ValidationService,
+    FollowCompanyService,
     {
       provide: 'APP_GUARD',
       useClass: RolesGuard,

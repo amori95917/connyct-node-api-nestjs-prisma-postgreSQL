@@ -21,6 +21,7 @@ import { TagModule } from './modules/tag/tag.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/follow-unfollow-company.module';
 import { IndustryModule } from './modules/industry/industry.module';
+import { GraphQLError, GraphQLFormattedError } from 'graphql';
 
 @Module({
   imports: [
@@ -56,8 +57,15 @@ import { IndustryModule } from './modules/industry/industry.module';
             credentials: true,
             origin: true,
           },
+          formatError: (error: GraphQLError) => {
+            const graphQLFormattedError: GraphQLFormattedError = {
+              message: error?.extensions?.exception?.code || error?.message,
+            };
+            return graphQLFormattedError;
+          },
         };
       },
+
       inject: [ConfigService],
     }),
     PrismaModule,

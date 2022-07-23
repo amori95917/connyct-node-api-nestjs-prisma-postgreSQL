@@ -1,3 +1,4 @@
+import { Company } from 'src/modules/company/entities/company.entity';
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -23,12 +24,14 @@ import { FilterListUsers } from '../dto/filter-user.input';
 import { OrderListUsers } from '../dto/order-users.input';
 import { UpdateStatusUserInput, UpdateUserInput } from '../dto/user.input';
 import { User, UserPaginated } from '../entities/user.entity';
+import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly validationService: ValidationService,
+    private readonly followCompanyService: FollowCompanyService,
   ) {}
 
   @ResolveField(() => Boolean)
@@ -71,6 +74,11 @@ export class UserResolver {
   @Roles(Role.Admin, Role.User)
   async getUser(@Args('userId') userId: string): Promise<UserPrisma> {
     return await this.userService.getUser(userId);
+  }
+
+  @ResolveField('company', () => [Company])
+  async companyFollowedByUser(@Parent() user: User): Promise<Company[]> {
+    return this.followCompanyService.getCompanyFollowedByUser(user.id);
   }
 
   @UseGuards(GqlAuthGuard)
