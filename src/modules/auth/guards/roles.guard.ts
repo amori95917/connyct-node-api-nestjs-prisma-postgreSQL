@@ -40,6 +40,7 @@ export class RolesGuard implements CanActivate {
   }
 
   async checkPermission(user): Promise<boolean> {
+    if (!user) return false;
     const _user = await this.prisma.user.findFirst({
       where: { id: user.id },
       include: { userRoles: { include: { role: true } } },
