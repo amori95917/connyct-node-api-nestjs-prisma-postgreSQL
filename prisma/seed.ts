@@ -1,8 +1,8 @@
 import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import { company } from './seed-data/company-seed';
-import { user } from './seed-data/user-seed';
 import { post } from './seed-data/post-seed';
+import { user } from './seed-data/user-seed';
 import { products } from './seed-data/product-seed';
 import { readdirSync } from 'fs';
 // import { Role } from 'src/modules/auth/enum/role.enum';

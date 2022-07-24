@@ -76,9 +76,19 @@ export class UserResolver {
     return await this.userService.getUser(userId);
   }
 
-  @ResolveField('company', () => [Company])
+  @ResolveField('company', () => [Company], { nullable: true })
   async companyFollowedByUser(@Parent() user: User): Promise<Company[]> {
     return this.followCompanyService.getCompanyFollowedByUser(user.id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Roles(Role.User)
+  @Query(() => [Company], { nullable: true })
+  async getCompanysFollowedByUser(
+    @UserDecorator() user: User,
+  ): Promise<Company[]> {
+    const { id } = user;
+    return this.followCompanyService.getCompanyFollowedByUser(id);
   }
 
   @UseGuards(GqlAuthGuard)
