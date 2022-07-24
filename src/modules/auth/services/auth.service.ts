@@ -36,7 +36,6 @@ export class AuthService {
       include: { Company: true },
     });
     if (!user) throw UserNotFound;
-    console.log('incming user role', user);
     const passwordValid = await this.passwordService.validatePassword(
       password,
       user.password,

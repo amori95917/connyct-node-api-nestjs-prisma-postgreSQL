@@ -227,14 +227,12 @@ export class UserService {
         },
       });
       userRoles(user.id, role.id);
-      console.log('incoming company', user.Company[0].id);
       return {
         user: user,
         role: role.name,
         company: user.Company,
       };
     } catch (e) {
-      console.log('error singup', e);
       throw new Error(e);
     }
   }

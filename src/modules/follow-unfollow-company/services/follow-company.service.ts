@@ -144,7 +144,6 @@ export class FollowCompanyService {
       const followedCompany = companyFollowedByUser.map((company) => {
         return company.followedTo;
       });
-      console.log('incoming company', followedCompany);
       return followedCompany;
     } catch (e) {
       throw new Error(e);

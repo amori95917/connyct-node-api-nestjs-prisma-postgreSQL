@@ -50,7 +50,6 @@ export class PostsRepository {
             });
           }),
         );
-        console.log('all tags', tags);
         tags.forEach(async (tag) => {
           await this.prisma.tagWithPost.create({
             data: {
@@ -67,8 +66,6 @@ export class PostsRepository {
         const files = await Promise.all(
           file.map(async (image: FileUpload): Promise<any> => {
             const { createReadStream, filename } = await image;
-            console.log('incoming file', filename);
-            console.log('incoming exe', !regax.exec(filename));
             if (!regax.exec(filename)) {
               throw new Error('File extension not supported!');
             }
@@ -182,9 +179,7 @@ export class PostsRepository {
             text: input.text,
           },
         });
-        console.log('incoming post', newPost);
         // create tags
-        console.log('input tags', input.tags);
         const tags = await Promise.all(
           input.tags.map(async (tag) => {
             const isTag = await this.prisma.tag.findUnique({
@@ -192,7 +187,6 @@ export class PostsRepository {
                 name: tag,
               },
             });
-            console.log('********tags*****', tag);
             if (isTag) return isTag;
             return await this.prisma.tag.create({
               data: {
@@ -201,7 +195,6 @@ export class PostsRepository {
             });
           }),
         );
-        console.log('incoming tags', tags);
         tags.forEach(async (tag) => {
           await this.prisma.tagWithPost.deleteMany({
             where: { id: tag.id, postId: postId },
@@ -242,7 +235,6 @@ export class PostsRepository {
             }),
           );
         });
-        console.log('new filename', newFileName);
         const newProduct = await this.prisma.product.update({
           where: {
             id: productId,
@@ -254,7 +246,6 @@ export class PostsRepository {
             image: newFileName,
           },
         });
-        console.log('incoming product', newProduct);
 
         return { newPost, tags, newProduct };
       });
@@ -325,7 +316,6 @@ export class PostsRepository {
         },
       });
       const tags = tagWithPost.map((tag) => tag.tags);
-      console.log('incoming tags', tags);
       return tags;
     } catch (e) {
       throw new Error(e);

@@ -35,6 +35,19 @@ const companyUser = {
   username: 'kiran247437',
   email: 'owner@gmail.com',
   password: 'company@123',
+  isActive: true,
+  isValid: true,
+  confirm: true,
+};
+const manager = {
+  firstName: 'Bishes',
+  lastName: 'Manager',
+  username: 'manager247437',
+  email: 'manager@gmail.com',
+  password: 'manager@123',
+  isActive: true,
+  isValid: true,
+  confirm: true,
 };
 
 const roles = [
@@ -77,23 +90,43 @@ async function main() {
       ...companyUser,
       password: await hashedPassword(companyUser.password),
       userRoles: { create: { roleId: (await role(Role.Owner)).id } },
+      Company: {
+        createMany: {
+          data: company,
+          skipDuplicates: true,
+        },
+      },
     },
   });
-  console.log('company user', companyUserData);
-  const newCompany = company.map((data) =>
-    Object.assign(data, { ownerId: companyUserData.id }),
-  );
-  const companyData = await prisma.company.createMany({
-    data: newCompany,
-    skipDuplicates: true,
+  const createManager = await prisma.user.create({
+    data: {
+      ...manager,
+      password: await hashedPassword(manager.password),
+      userRoles: { create: { roleId: (await role(Role.Manager)).id } },
+    },
   });
-  console.log('createAllCompanies', companyData);
+  console.log('createAllCompanies seeding', companyUser);
   console.log('Company seeding finished');
+  const normalUserData = await Promise.all(
+    user.map(async (user) => {
+      return {
+        ...user,
+        password: await hashedPassword(user.password),
+      };
+    }),
+  );
 
   const normalUser = await prisma.user.createMany({
-    data: user,
+    data: normalUserData,
     skipDuplicates: true,
   });
+  const userRole = await prisma.user.findMany({ where: { isActive: false } });
+  const newRole = await Promise.all(
+    userRole.map(async (user) => {
+      return { userId: user.id, roleId: (await role(Role.User)).id };
+    }),
+  );
+  const createUserRole = await prisma.userRole.createMany({ data: newRole });
   console.log('Normal user seeding', normalUser);
   console.log('Normal user seeding finished');
 
@@ -101,7 +134,7 @@ async function main() {
   const newPost = post.map((posts) =>
     Object.assign(
       posts,
-      { creatorId: companyUserData.id },
+      { creatorId: createManager.id },
       { companyId: getCompany[Math.floor(Math.random() * 50)].id },
     ),
   );
