@@ -86,7 +86,7 @@ type Post {
   rating: Int!
   createdAt: DateTime!
   myRatingStatus: RatingStatus!
-  creatorId: Int!
+  creatorId: String!
   comments: [Comment!]!
   isSaleAble: Boolean!
   companyId: String!

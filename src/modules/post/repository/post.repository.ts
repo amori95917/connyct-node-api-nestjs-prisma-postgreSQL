@@ -35,72 +35,77 @@ export class PostsRepository {
           },
         });
         // create tags
-        const tags = await Promise.all(
-          feedData.tags.map(async (tag) => {
-            const isTag = await this.prisma.tag.findUnique({
-              where: {
-                name: tag,
-              },
-            });
-            if (isTag) return isTag;
-            return await this.prisma.tag.create({
+        let tags: Tag[];
+        if (feedData.tags) {
+          tags = await Promise.all(
+            feedData.tags.map(async (tag) => {
+              const isTag = await this.prisma.tag.findUnique({
+                where: {
+                  name: tag,
+                },
+              });
+              if (isTag) return isTag;
+              return await this.prisma.tag.create({
+                data: {
+                  name: tag,
+                },
+              });
+            }),
+          );
+          tags.forEach(async (tag) => {
+            await this.prisma.tagWithPost.create({
               data: {
-                name: tag,
+                tagsId: tag.id,
+                postId: post.id,
               },
             });
-          }),
-        );
-        tags.forEach(async (tag) => {
-          await this.prisma.tagWithPost.create({
-            data: {
-              tagsId: tag.id,
-              postId: post.id,
-            },
           });
-        });
+        }
         // TODO intercept error message and sent graphql friendly error msg
         if (feedData.name || feedData.description) {
           if (!file) throw new Error('Image is required');
         }
-        const regax = /(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i;
-        const files = await Promise.all(
-          file.map(async (image: FileUpload): Promise<any> => {
-            const { createReadStream, filename } = await image;
-            if (!regax.exec(filename)) {
-              throw new Error('File extension not supported!');
-            }
-            const stream = createReadStream();
-            const newFileName = Date.now() + filename;
-            new Promise(async (resolve, reject) =>
-              stream
-                .pipe(
-                  createWriteStream(
-                    `./src/modules/post/uploads/feeds/${newFileName}`,
-                  ),
-                )
-                .on('error', (err) => {
-                  console.log('WriteStream Error', err);
-                  reject('error');
-                }),
-            );
-            return newFileName;
-          }),
-        );
+        let product: Product[];
+        if (file) {
+          const regax = /(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i;
+          const files = await Promise.all(
+            file.map(async (image: FileUpload): Promise<any> => {
+              const { createReadStream, filename } = await image;
+              if (!regax.exec(filename)) {
+                throw new Error('File extension not supported!');
+              }
+              const stream = createReadStream();
+              const newFileName = Date.now() + filename;
+              new Promise(async (resolve, reject) =>
+                stream
+                  .pipe(
+                    createWriteStream(
+                      `./src/modules/post/uploads/feeds/${newFileName}`,
+                    ),
+                  )
+                  .on('error', (err) => {
+                    console.log('WriteStream Error', err);
+                    reject('error');
+                  }),
+              );
+              return newFileName;
+            }),
+          );
 
-        // create product
-        const product = await Promise.all(
-          files.map(async (fileName) => {
-            return await this.prisma.product.create({
-              data: {
-                name: feedData.name,
-                description: feedData.description,
-                image: fileName,
-                postId: post.id,
-              },
-            });
-          }),
-        );
-
+          // create product
+          product = await Promise.all(
+            files.map(async (fileName) => {
+              return await this.prisma.product.create({
+                data: {
+                  name: feedData.name,
+                  description: feedData.description,
+                  image: fileName,
+                  postId: post.id,
+                },
+              });
+            }),
+          );
+        }
         return { post, product, tags };
       });
 
@@ -180,32 +185,35 @@ export class PostsRepository {
           },
         });
         // create tags
-        const tags = await Promise.all(
-          input.tags.map(async (tag) => {
-            const isTag = await this.prisma.tag.findUnique({
-              where: {
-                name: tag,
-              },
+        let tags: Tag[];
+        if (input.tags) {
+          tags = await Promise.all(
+            input.tags.map(async (tag) => {
+              const isTag = await this.prisma.tag.findUnique({
+                where: {
+                  name: tag,
+                },
+              });
+              if (isTag) return isTag;
+              return await this.prisma.tag.create({
+                data: {
+                  name: tag,
+                },
+              });
+            }),
+          );
+          tags.forEach(async (tag) => {
+            await this.prisma.tagWithPost.deleteMany({
+              where: { id: tag.id, postId: postId },
             });
-            if (isTag) return isTag;
-            return await this.prisma.tag.create({
+            await this.prisma.tagWithPost.create({
               data: {
-                name: tag,
+                tagsId: tag.id,
+                postId: post.id,
               },
             });
-          }),
-        );
-        tags.forEach(async (tag) => {
-          await this.prisma.tagWithPost.deleteMany({
-            where: { id: tag.id, postId: postId },
           });
-          await this.prisma.tagWithPost.create({
-            data: {
-              tagsId: tag.id,
-              postId: post.id,
-            },
-          });
-        });
+        }
         // product edit
         const product = await this.prisma.product.findFirst({
           where: {

@@ -65,9 +65,6 @@ export class CompanyEditInput {
   @Field(() => Date)
   @IsNotEmpty()
   @IsDate()
-  @Length(3, 35, {
-    message: 'Established Date must be between 3 to 35 characters',
-  })
   establishedDate: Date;
 
   @Field(() => String, { nullable: true })

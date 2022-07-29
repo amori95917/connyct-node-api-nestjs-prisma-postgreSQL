@@ -24,13 +24,13 @@ export class Post {
   @Field(() => Int)
   public rating!: number;
 
-  @Field()
+  @Field(() => Date)
   public createdAt!: Date;
 
   @Field(() => RatingStatus, { defaultValue: RatingStatus.NEUTRAL })
   public myRatingStatus?: RatingStatus;
 
-  @Field(() => Int)
+  @Field(() => String)
   public creatorId!: string;
 
   @Field(() => [Comment])
@@ -39,7 +39,7 @@ export class Post {
   @Field(() => Boolean)
   isSaleAble: boolean;
 
-  @Field()
+  @Field(() => String)
   companyId: string;
 
   @Field(() => [Product])

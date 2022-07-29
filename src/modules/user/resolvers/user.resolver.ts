@@ -64,7 +64,7 @@ export class UserResolver {
   }
 
   @Query(() => User)
-  @Roles(Role.Admin, Role.User)
+  @Roles(Role.Admin, Role.Owner, Role.Manager, Role.Editor, Role.User)
   async me(@UserDecorator() user: User): Promise<User> {
     return user;
   }
