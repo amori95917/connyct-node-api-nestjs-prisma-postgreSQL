@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 
 import { SmtpConfig } from 'src/config/config.interface';
@@ -99,16 +100,15 @@ export class EmailService implements EmailProvider {
 
   /* istanbul ignore next */
   private registerPartials() {
-    // console.log(__dirname)
-    // const PARTIALS_DIR = `${__dirname}../templates/partials`;
-    // const files = fs.readdirSync(PARTIALS_DIR);
-    // files.forEach((file: string) => {
-    //   const name = file.split(/[.]/g)[0];
-    //   const partial = fs
-    //     .readFileSync(`${PARTIALS_DIR}/${name}.hbs`)
-    //     .toString('utf8');
-    //   Handlebars.registerPartial(name, partial);
-    // });
+    const PARTIALS_DIR = path.join(__dirname, '../templates/partials');
+    const files = fs.readdirSync(PARTIALS_DIR);
+    files.forEach((file: string) => {
+      const name = file.split(/[.]/g)[0];
+      const partial = fs
+        .readFileSync(`${PARTIALS_DIR}/${name}.hbs`)
+        .toString('utf8');
+      Handlebars.registerPartial(name, partial);
+    });
   }
 
   /* istanbul ignore next */
