@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 
-import 'colors';
+//import 'colors';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
