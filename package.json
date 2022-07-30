@@ -24,6 +24,7 @@
     "seed:db": "npx prisma db seed",
     "gen-typings": "ts-node ./src/config/generate-typings",
     "prisma:generate": "npx prisma generate --watch",
+    "postinstall": "npx prisma generate && npm run build",
     "dev": "concurrently \"yarn start:dev\" \"yarn gen-typings\" \"yarn prisma:generate\"",
     "console": "prisma-repl"
   },
