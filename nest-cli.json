@@ -5,7 +5,7 @@
   "compilerOptions": {
     "assets": [
       {
-        "include": "src/modules/email/templates/**/*",
+        "include": "**/*.hbs",
         "outDir": "dist/src",
         "watchAssets": true
       }
