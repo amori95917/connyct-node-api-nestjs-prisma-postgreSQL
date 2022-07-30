@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+
 import { SmtpConfig } from 'src/config/config.interface';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -98,15 +99,16 @@ export class EmailService implements EmailProvider {
 
   /* istanbul ignore next */
   private registerPartials() {
-    const PARTIALS_DIR = `${__dirname}/../templates/partials`;
-    const files = fs.readdirSync(PARTIALS_DIR);
-    files.forEach((file: string) => {
-      const name = file.split(/[.]/g)[0];
-      const partial = fs
-        .readFileSync(`${PARTIALS_DIR}/${name}.hbs`)
-        .toString('utf8');
-      Handlebars.registerPartial(name, partial);
-    });
+    // console.log(__dirname)
+    // const PARTIALS_DIR = `${__dirname}../templates/partials`;
+    // const files = fs.readdirSync(PARTIALS_DIR);
+    // files.forEach((file: string) => {
+    //   const name = file.split(/[.]/g)[0];
+    //   const partial = fs
+    //     .readFileSync(`${PARTIALS_DIR}/${name}.hbs`)
+    //     .toString('utf8');
+    //   Handlebars.registerPartial(name, partial);
+    // });
   }
 
   /* istanbul ignore next */
