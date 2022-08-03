@@ -1,4 +1,8 @@
-import { Company } from 'src/modules/company/entities/company.entity';
+import { OrderFollowedCompanyList } from 'src/modules/follow-unfollow-company/dto/follow-company.input';
+import {
+  Company,
+  CompanyPaginated,
+} from 'src/modules/company/entities/company.entity';
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -76,19 +80,20 @@ export class UserResolver {
     return await this.userService.getUser(userId);
   }
 
-  @ResolveField('company', () => [Company], { nullable: true })
-  async companyFollowedByUser(@Parent() user: User): Promise<Company[]> {
-    return this.followCompanyService.getCompanyFollowedByUser(user.id);
-  }
-
   @UseGuards(GqlAuthGuard)
   @Roles(Role.User)
-  @Query(() => [Company], { nullable: true })
+  @Query(() => CompanyPaginated, { nullable: true })
   async getCompanysFollowedByUser(
+    @Args('paginate', { nullable: true }) paginate: PaginationArgs,
+    @Args('order', { nullable: true }) order: OrderFollowedCompanyList,
     @UserDecorator() user: User,
-  ): Promise<Company[]> {
+  ) {
     const { id } = user;
-    return this.followCompanyService.getCompanyFollowedByUser(id);
+    return this.followCompanyService.getCompanyFollowedByUser(
+      id,
+      paginate,
+      order,
+    );
   }
 
   @UseGuards(GqlAuthGuard)

@@ -54,11 +54,11 @@ type Comment {
   myRatingStatus: RatingStatus!
   createdAt: DateTime!
   post: Post
-  postId: Int
+  postId: String
   repliedTo: Comment
-  repliedToId: Int
+  repliedToId: String
   replies: [Comment!]!
-  creatorId: Int!
+  creatorId: String!
 }
 
 enum RatingStatus {
@@ -106,7 +106,7 @@ type User {
   confirm: Boolean!
   emailToken: String!
   posts: [Post!]!
-  company: [Company!]
+  company: [Company!]!
   isAdmin: Boolean!
 }
 
@@ -225,7 +225,7 @@ type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
   getUser(userId: String!): User!
-  getCompanysFollowedByUser: [Company!]
+  getCompanysFollowedByUser(paginate: PaginationArgs, order: OrderFollowedCompanyList): CompanyPaginated
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
@@ -260,6 +260,16 @@ enum UsersOrderBy {
 input FilterListUsers {
   omni: String = null
   isValid: Boolean = null
+}
+
+input OrderFollowedCompanyList {
+  direction: OrderDirection!
+  orderBy: FollowedCompanyOrderBy!
+}
+
+"""Order by: createdAt"""
+enum FollowedCompanyOrderBy {
+  createdAt
 }
 
 input OrderListCompanies {

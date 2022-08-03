@@ -31,18 +31,18 @@ export class Comment {
   @Field(() => Post, { nullable: true })
   public post?: Post | null;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => String, { nullable: true })
   public postId!: string | null;
 
   @Field(() => Comment, { nullable: true })
   public repliedTo?: Comment | null;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => String, { nullable: true })
   public repliedToId!: string | null;
 
   @Field(() => [Comment])
   public replies?: Comment[];
 
-  @Field(() => Int)
+  @Field(() => String)
   public creatorId!: string;
 }

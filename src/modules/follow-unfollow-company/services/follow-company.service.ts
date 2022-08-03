@@ -1,3 +1,4 @@
+import { OrderFollowedCompanyList } from 'src/modules/follow-unfollow-company/dto/follow-company.input';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { UnfollowUserInput } from './../dto/unfollow-user.input';
 import { UnfollowCompanyInput } from './../dto/unfollow-company.input';
@@ -7,6 +8,8 @@ import { User } from 'src/modules/user/entities/user.entity';
 import { FollowUnfollowCompany, FollowUserToUser } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { FollowUserToUserInput } from '../dto/follow-user.input';
+import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
+import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
 
 @Injectable()
 export class FollowCompanyService {
@@ -134,17 +137,39 @@ export class FollowCompanyService {
     }
   }
 
-  async getCompanyFollowedByUser(userId: string): Promise<Company[]> {
+  async getCompanyFollowedByUser(
+    userId: string,
+    paginate: PaginationArgs,
+    order: OrderFollowedCompanyList,
+  ) {
     try {
       const companyFollowedByUser =
         await this.prisma.followUnfollowCompany.findMany({
+          skip: paginate.skip,
+          take: paginate.take,
+          orderBy: { [order.orderBy]: order.direction },
           where: { followedById: userId },
           include: { followedTo: true },
         });
-      const followedCompany = companyFollowedByUser.map((company) => {
+      if (!companyFollowedByUser.length) return null;
+      const nodes = companyFollowedByUser.map((company) => {
         return company.followedTo;
       });
-      return followedCompany;
+      const totalCount = await this.prisma.followUnfollowCompany.count();
+      const hasNextPage = haveNextPage(
+        paginate.skip,
+        paginate.take,
+        totalCount,
+      );
+      return {
+        nodes,
+        totalCount,
+        hasNextPage,
+        edges: nodes?.map((node) => ({
+          node,
+          cursor: Buffer.from(node.id).toString('base64'),
+        })),
+      };
     } catch (e) {
       throw new Error(e);
     }

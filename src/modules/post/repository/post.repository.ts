@@ -299,7 +299,7 @@ export class PostsRepository {
       const post = await this.prisma.post.findMany({
         where: { companyId },
       });
-      if (post.length < 1)
+      if (!post.length)
         throw new Error('posts doesnot exits in related company');
       return post;
     } catch (e) {
@@ -333,14 +333,24 @@ export class PostsRepository {
     userId: string,
   ): Promise<Post[] | null> {
     try {
-      const followedCompany = await this.prisma.followUnfollowCompany.findFirst(
-        {
-          where: { followedById: userId },
-        },
+      const followedCompany = await this.prisma.followUnfollowCompany.findMany({
+        where: { followedById: userId },
+        select: { followedToId: true },
+      });
+      if (!followedCompany.length) return null;
+      console.log('follow', followedCompany);
+      const followedIds = followedCompany.map(
+        (company) => company.followedToId,
       );
-      if (!followedCompany) return null;
-      const { followedToId } = followedCompany;
-      return await this.findPostsByCompanyId(followedToId);
+      console.log('followId', followedIds);
+
+      const posts = await this.prisma.post.findMany({
+        where: {
+          companyId: { in: followedIds },
+        },
+      });
+      if (!posts.length) return null;
+      return posts;
     } catch (e) {
       throw new Error(e);
     }
@@ -350,6 +360,7 @@ export class PostsRepository {
     postId: string,
   ): Promise<Product[]> {
     try {
+      console.log('postId incoming', postId);
       return this.findProducts(postId);
     } catch (e) {
       throw new Error(e);

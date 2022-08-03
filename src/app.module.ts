@@ -63,6 +63,7 @@ import { GraphQLError, GraphQLFormattedError } from 'graphql';
             };
             return graphQLFormattedError;
           },
+          introspection: true,
         };
       },
 
