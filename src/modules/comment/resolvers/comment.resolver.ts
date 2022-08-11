@@ -33,7 +33,7 @@ export class CommentsResolver {
   @Mutation(() => NewReplyPayload)
   @UseGuards(GqlAuthGuard)
   public async replyToPost(
-    @Args('postId', { type: () => Int }) postId: string,
+    @Args('postId', { type: () => String }) postId: string,
     @Args('input') input: CreateCommentInput,
     @CurrentUser() user: User,
   ): Promise<NewReplyPayload> {
@@ -44,7 +44,7 @@ export class CommentsResolver {
   @Mutation(() => NewReplyPayload)
   @UseGuards(GqlAuthGuard)
   public async replyToComment(
-    @Args('commentId', { type: () => Int }) commentId: string,
+    @Args('commentId', { type: () => String }) commentId: string,
     @Args('input') input: CreateCommentInput,
     @CurrentUser() user: User,
   ): Promise<NewReplyPayload> {
@@ -55,7 +55,7 @@ export class CommentsResolver {
   @Mutation(() => RatePayload)
   @UseGuards(GqlAuthGuard)
   public async upvoteComment(
-    @Args('commentId', { type: () => Int }) commentId: string,
+    @Args('commentId', { type: () => String }) commentId: string,
     @CurrentUser() user: User,
   ): Promise<RatePayload> {
     const userId = user.id;
@@ -69,7 +69,7 @@ export class CommentsResolver {
   @Mutation(() => RatePayload)
   @UseGuards(GqlAuthGuard)
   public async downvoteComment(
-    @Args('commentId', { type: () => Int }) commentId: string,
+    @Args('commentId', { type: () => String }) commentId: string,
     @CurrentUser() user: User,
   ): Promise<RatePayload> {
     const userId = user.id;
@@ -83,7 +83,7 @@ export class CommentsResolver {
   @Mutation(() => RatePayload)
   @UseGuards(GqlAuthGuard)
   public async removeRatingFromComment(
-    @Args('commentId', { type: () => Int }) commentId: string,
+    @Args('commentId', { type: () => String }) commentId: string,
     @CurrentUser() user: User,
   ): Promise<RatePayload> {
     const userId = user.id;

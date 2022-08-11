@@ -41,7 +41,7 @@ export class User extends BaseEntity {
   @Field(() => [Post])
   public posts?: Post[];
 
-  @Field(() => [Company])
+  @Field(() => [Company], { nullable: true })
   company?: Company[];
 }
 

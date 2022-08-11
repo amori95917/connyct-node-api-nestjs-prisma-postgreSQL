@@ -30,18 +30,24 @@ export class AuthService {
     this.logger = new Logger(AuthService.name);
   }
 
-  async login(email: string, password: string, context: any): Promise<Auth> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+  async login(
+    emailOrUsername: string,
+    password: string,
+    context: any,
+  ): Promise<Auth> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+      },
       include: { Company: true },
     });
-    if (!user) throw UserNotFound;
-    const passwordValid = await this.passwordService.validatePassword(
-      password,
-      user.password,
-    );
-    if (!passwordValid) throw new BadRequestException('Senha inválida');
-
+    if (
+      !(
+        user &&
+        (await this.passwordService.validatePassword(password, user.password))
+      )
+    )
+      throw new BadRequestException('Username or password incorrect');
     const token = this.tokenService.generateTokens({
       userId: user.id,
     });
