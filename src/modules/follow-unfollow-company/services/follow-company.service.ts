@@ -1,3 +1,4 @@
+import { CompanyService } from './../../company/services/company.service';
 import { OrderFollowedCompanyList } from 'src/modules/follow-unfollow-company/dto/follow-company.input';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { UnfollowUserInput } from './../dto/unfollow-user.input';
@@ -10,10 +11,15 @@ import { Injectable } from '@nestjs/common';
 import { FollowUserToUserInput } from '../dto/follow-user.input';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
+import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
+import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
 
 @Injectable()
 export class FollowCompanyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly companyService: CompanyService,
+  ) {}
   async followCompany(
     followCompany: FollowCompanyInput,
     user: User,
@@ -172,6 +178,34 @@ export class FollowCompanyService {
       };
     } catch (e) {
       throw new Error(e);
+    }
+  }
+
+  async companiesSuggestions(
+    userId: string,
+    paginate: PaginationArgs,
+    order: OrderListCompanies,
+    filter: FilterListCompanies,
+  ) {
+    try {
+      const followedCompany = await this.prisma.followUnfollowCompany.findMany({
+        where: {
+          followedById: userId,
+        },
+        select: {
+          followedToId: true,
+        },
+      });
+      const companyIds = followedCompany.map((company) => company.followedToId);
+      const companies = await this.companyService.list(
+        paginate,
+        order,
+        filter,
+        companyIds,
+      );
+      return companies;
+    } catch (err) {
+      throw new Error(err);
     }
   }
 }

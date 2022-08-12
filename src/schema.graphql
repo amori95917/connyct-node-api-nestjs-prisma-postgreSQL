@@ -226,7 +226,9 @@ type Query {
   me: User!
   getUser(userId: String!): User!
   getCompanysFollowedByUser(paginate: PaginationArgs, order: OrderFollowedCompanyList): CompanyPaginated
+  companiesSuggestions(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
+  getCompanyById(id: String!): Company!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
   getIndustry: IndustryPayload!
