@@ -31,6 +31,7 @@ export class CompanyService {
     paginate: PaginationArgs,
     order: OrderListCompanies,
     filter?: FilterListCompanies,
+    companyids?: string[],
   ) {
     try {
       const nodes = await this.prisma.company.findMany({
@@ -41,6 +42,9 @@ export class CompanyService {
           ...(filter?.omni && {
             name: { contains: filter.omni, mode: 'insensitive' },
           }),
+          id: {
+            notIn: companyids,
+          },
         },
       });
       const totalCount = await this.prisma.company.count({});
@@ -60,6 +64,18 @@ export class CompanyService {
       };
     } catch (e) {
       throw new Error(e);
+    }
+  }
+
+  async getCompanyById(companyId: string): Promise<Company> {
+    try {
+      const company = await this.prisma.company.findFirst({
+        where: { id: companyId },
+      });
+      if (!company) throw new Error('company not found');
+      return company;
+    } catch (err) {
+      throw new Error(err);
     }
   }
 

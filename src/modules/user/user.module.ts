@@ -1,3 +1,4 @@
+import { CompanyService } from './../company/services/company.service';
 import { FollowCompanyService } from './../follow-unfollow-company/services/follow-company.service';
 import { Module } from '@nestjs/common';
 
@@ -22,6 +23,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
     EmailService,
     ValidationService,
     FollowCompanyService,
+    CompanyService,
     {
       provide: 'APP_GUARD',
       useClass: RolesGuard,

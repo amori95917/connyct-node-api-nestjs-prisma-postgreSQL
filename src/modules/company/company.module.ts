@@ -15,5 +15,6 @@ import { RolesGuard } from '../auth/guards/roles.guard';
       useClass: RolesGuard,
     },
   ],
+  exports: [CompanyService],
 })
 export class CompanyModule {}

@@ -14,6 +14,8 @@ import {
   CreateCompanyAddressInput,
 } from '../dto/company-input';
 import { CompanyEditInput } from '../dto/company-edit-input';
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -35,6 +37,12 @@ export class CompanyResolver {
     return await this.companyService.list(paginate, order, filter);
   }
 
+  @Roles(Role.Owner)
+  @Query(() => Company)
+  async getCompanyById(@Args('id', { type: () => String }) id: string) {
+    return this.companyService.getCompanyById(id);
+  }
+  @UseGuards(GqlAuthGuard)
   @Roles(Role.Owner)
   @Mutation(() => Company)
   async createCompany(

@@ -29,6 +29,8 @@ import { OrderListUsers } from '../dto/order-users.input';
 import { UpdateStatusUserInput, UpdateUserInput } from '../dto/user.input';
 import { User, UserPaginated } from '../entities/user.entity';
 import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
+import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
+import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -117,6 +119,28 @@ export class UserResolver {
       user.id,
       user.password,
       changePassword,
+    );
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Roles(Role.User)
+  @Query(() => CompanyPaginated)
+  async companiesSuggestions(
+    @UserDecorator() user: User,
+    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
+    paginate: PaginationArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'name', direction: 'desc' },
+    })
+    order: OrderListCompanies,
+    @Args('filter', { nullable: true }) filter: FilterListCompanies,
+  ) {
+    return this.followCompanyService.companiesSuggestions(
+      user.id,
+      paginate,
+      order,
+      filter,
     );
   }
 }
