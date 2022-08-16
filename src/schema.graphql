@@ -67,6 +67,18 @@ enum RatingStatus {
   DOWNVOTED
 }
 
+type CommentEdge {
+  cursor: String!
+  node: Comment!
+}
+
+type CommentPagination {
+  edges: [CommentEdge!]
+  nodes: [Comment!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type Product {
   id: ID!
   name: String
@@ -231,6 +243,7 @@ type Query {
   getCompanyById(id: String!): Company!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
+  getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
   getIndustry: IndustryPayload!
 }
 
@@ -288,6 +301,16 @@ enum CompaniesOrderBy {
 
 input FilterListCompanies {
   omni: String = null
+}
+
+input OrderCommentsList {
+  direction: OrderDirection!
+  orderBy: CommentOrderBy!
+}
+
+"""Order by:createdAt"""
+enum CommentOrderBy {
+  createdAt
 }
 
 type Mutation {

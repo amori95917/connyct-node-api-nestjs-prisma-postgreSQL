@@ -11,6 +11,7 @@ import { NestFactory } from '@nestjs/core';
 import { CorsConfig, NestConfig } from './config/config.interface';
 
 import { AppModule } from './app.module';
+import { verify } from 'crypto';
 
 async function bootstrap() {
   dotenv.config();

@@ -1,3 +1,4 @@
+import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import { Post } from '../post/post.models';
@@ -46,3 +47,5 @@ export class Comment {
   @Field(() => String)
   public creatorId!: string;
 }
+@ObjectType()
+export class CommentPagination extends Paginated(Comment) {}
