@@ -1,9 +1,12 @@
+import { OrderCommentsList } from './../dto/create-comment.input';
+import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
   Int,
   Mutation,
   Parent,
+  Query,
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
@@ -17,7 +20,7 @@ import { RatingService } from '../../rating/services/rating.service';
 import { User } from '../../user/entities/user.entity';
 
 import CommentsLoader from '../comment.loader';
-import { Comment } from '../comment.models';
+import { Comment, CommentPagination } from '../comment.models';
 import { CommentsService } from '../services/comment.service';
 import { CreateCommentInput } from '../dto/create-comment.input';
 import { NewReplyPayload } from '../entities/new-reply.payload';
@@ -135,5 +138,20 @@ export class CommentsResolver {
       return this.commentsLoader.batchPosts.load(postId);
     }
     return null;
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => CommentPagination)
+  async getComments(
+    @Args('postId', { type: () => String }) postId: string,
+    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
+    paginate: PaginationArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { order: 'createdAt', direction: 'asc' },
+    })
+    order: OrderCommentsList,
+  ) {
+    return this.commentsService.getComments(postId, paginate, order);
   }
 }
