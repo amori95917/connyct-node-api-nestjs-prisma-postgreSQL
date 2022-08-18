@@ -22,6 +22,7 @@ import { EmployeeModule } from './modules/employee/employee.module';
 import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/follow-unfollow-company.module';
 import { IndustryModule } from './modules/industry/industry.module';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { LikesModule } from './modules/likes/likes.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { GraphQLError, GraphQLFormattedError } from 'graphql';
     EmployeeModule,
     FollowUnfollowCompanyModule,
     IndustryModule,
+    LikesModule,
   ],
 })
 export class AppModule {

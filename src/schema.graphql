@@ -233,6 +233,28 @@ type IndustryPayload {
   isDeletedSuccessful: Boolean
 }
 
+type Likes {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  postId: String!
+  reactionId: String!
+  userId: String!
+}
+
+type LikesPayload {
+  likes: [Likes!]
+  count: Float
+  reactors: [User!]
+}
+
+type Reactions {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  reactionType: String!
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -245,6 +267,9 @@ type Query {
   getCompanyPostsFollowedByUser: [Post!]
   getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
   getIndustry: IndustryPayload!
+  getReactions: [Reactions!]!
+  getLikesByPost(postId: String!): LikesPayload!
+  getUsersByPostReaction(reactionId: String!): LikesPayload!
 }
 
 input PaginationArgs {
@@ -351,6 +376,8 @@ type Mutation {
   updateIndustry(id: String!, data: IndustryInput!): IndustryPayload!
   deleteIndustry(id: String!): IndustryPayload!
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
+  createLikes(data: LikesInput!): Likes!
+  disLike(postId: String!): Likes!
 }
 
 input UpdateStatusUserInput {
@@ -504,4 +531,9 @@ input UnfollowUserInput {
 input IndustryInput {
   type: String!
   description: String
+}
+
+input LikesInput {
+  postId: String!
+  reactionId: String!
 }
