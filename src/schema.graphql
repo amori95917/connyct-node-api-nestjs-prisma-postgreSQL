@@ -240,12 +240,19 @@ type Likes {
   postId: String!
   reactionId: String!
   userId: String!
+  user: User
 }
 
-type LikesPayload {
-  likes: [Likes!]
-  count: Float
-  reactors: [User!]
+type LikesEdge {
+  cursor: String!
+  node: Likes!
+}
+
+type ReactionsPagination {
+  edges: [LikesEdge!]
+  nodes: [Likes!]
+  totalCount: Int!
+  hasNextPage: Boolean!
 }
 
 type Reactions {
@@ -268,8 +275,8 @@ type Query {
   getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
-  getLikesByPost(postId: String!): LikesPayload!
-  getUsersByPostReaction(reactionId: String!): LikesPayload!
+  getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
+  getUsersByPostReaction(reactionId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
 }
 
 input PaginationArgs {
@@ -338,6 +345,16 @@ enum CommentOrderBy {
   createdAt
 }
 
+input ReactionsOrderList {
+  direction: OrderDirection!
+  orderBy: ReactionsOrderBy!
+}
+
+"""Order By:createdAt"""
+enum ReactionsOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -377,7 +394,7 @@ type Mutation {
   deleteIndustry(id: String!): IndustryPayload!
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
   createLikes(data: LikesInput!): Likes!
-  disLike(postId: String!): Likes!
+  removeLike(postId: String!): Likes!
 }
 
 input UpdateStatusUserInput {

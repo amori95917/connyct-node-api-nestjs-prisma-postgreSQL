@@ -175,11 +175,9 @@ async function main() {
   console.log('Products seeding', createProducts);
   console.log('Products seeding finished');
 
-  const createReactions = await prisma.reactions.createMany({
+  await prisma.reactions.createMany({
     data: reactions,
   });
-  console.log('Reactions seeding', createReactions);
-  console.log('Reactions seeding finished');
 }
 main()
   .catch((e) => {
