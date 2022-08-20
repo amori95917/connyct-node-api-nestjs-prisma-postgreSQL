@@ -50,7 +50,10 @@ export class TokenService {
   }
 
   generateAccessToken(payload: { userId: string }): string {
-    return this.jwtService.sign(payload);
+    const securityConfig = this.configService.get<SecurityConfig>('security');
+    return this.jwtService.sign(payload, {
+      expiresIn: securityConfig.expiresIn,
+    });
   }
 
   generateRefreshToken(payload: { userId: string }): string {

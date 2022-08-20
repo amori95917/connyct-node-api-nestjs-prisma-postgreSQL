@@ -9,6 +9,7 @@ import CommentsLoader from 'src/modules/comment/comment.loader';
 interface JWT {
   userId: string;
   email: string;
+  exp: number;
 }
 
 @Injectable()
@@ -20,9 +21,13 @@ export class UserMiddleware implements NestMiddleware {
 
   async use(req: any, res: any, next: () => void) {
     if (req.headers.authorization?.includes('Bearer')) {
-      const { userId } = jwt.decode(
-        String(req.headers.authorization).split(/ /g)[1],
-      ) as JWT;
+      const token = String(req.headers.authorization).split(/ /g)[1];
+
+      if (!token) throw new ForbiddenException('Invalid authorization');
+      jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err) => {
+        if (err) throw new ForbiddenException('Invalid authorization');
+      });
+      const { userId } = jwt.decode(token) as JWT;
       const user = await this.prismaService.user.findFirst({
         where: { id: userId },
         include: { userRoles: true },
