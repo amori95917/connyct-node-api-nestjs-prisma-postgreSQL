@@ -5,6 +5,7 @@ import { Likes } from '../likes.model';
 import { Reactions } from '../entities/reactions.entity';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
+import { LikesPayload } from '../entities/likes.payload';
 
 @Injectable()
 export class LikesRepository {
@@ -89,14 +90,35 @@ export class LikesRepository {
       throw new Error(err);
     }
   }
+  public async removeLike(
+    postId: string,
+    userId: string,
+  ): Promise<LikesPayload> {
+    try {
+      /**find reactions from postReactions who reacted(user) */
+      const likes = await this.prisma.postReaction.findFirst({
+        where: { postId: postId, userId: userId },
+      });
+      /**remove reaction */
+      const createLikes = await this.prisma.postReaction.delete({
+        where: { id: likes.id },
+      });
+      return {
+        isDisliked: true,
+      };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
 
-  public async create(data: LikesInput, userId: string) {
+  public async create(data: LikesInput, userId: string): Promise<LikesPayload> {
     try {
       const checkLikes = await this.prisma.postReaction.findFirst({
         where: { postId: data.postId, userId },
       });
-      /**check if post is already liked*/
-      if (checkLikes) throw new Error('post already liked');
+      console.log(checkLikes, 'incoming like');
+      /**if post is already liked, remove it*/
+      if (checkLikes) return await this.removeLike(data.postId, userId);
       /**check reaction */
       const checkReaction = await this.prisma.reactions.findFirst({
         where: { id: data.reactionId },
@@ -110,20 +132,7 @@ export class LikesRepository {
           userId: userId,
         },
       });
-      return likes;
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  public async removeLike(postId: string, userId: string): Promise<Likes> {
-    try {
-      /**find reactions from postReactions who reacted(user) */
-      const likes = await this.prisma.postReaction.findFirst({
-        where: { postId: postId, userId: userId },
-      });
-      /**remove reaction */
-      return await this.prisma.postReaction.delete({ where: { id: likes.id } });
+      return { likes };
     } catch (err) {
       throw new Error(err);
     }

@@ -255,6 +255,11 @@ type ReactionsPagination {
   hasNextPage: Boolean!
 }
 
+type LikesPayload {
+  likes: Likes
+  isDisliked: Boolean
+}
+
 type Reactions {
   id: ID!
   createdAt: DateTime!
@@ -393,7 +398,7 @@ type Mutation {
   updateIndustry(id: String!, data: IndustryInput!): IndustryPayload!
   deleteIndustry(id: String!): IndustryPayload!
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
-  createLikes(data: LikesInput!): Likes!
+  createLikes(data: LikesInput!): LikesPayload!
   removeLike(postId: String!): Likes!
 }
 

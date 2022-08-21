@@ -5,6 +5,7 @@ import { PostsRepository } from 'src/modules/post/repository/post.repository';
 import { LikesRepository } from '../repository/likes.repository';
 import { Reactions } from '../entities/reactions.entity';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
+import { LikesPayload } from '../entities/likes.payload';
 
 @Injectable()
 export class LikesService {
@@ -41,14 +42,14 @@ export class LikesService {
     );
   }
 
-  async create(data: LikesInput, userId: string): Promise<Likes> {
+  async create(data: LikesInput, userId: string): Promise<LikesPayload> {
     /**find post by postId */
     const post = await this.postsRepository.findPostById(data.postId);
     /**check if post exists or not */
     if (!post) throw new Error('Post not found');
     return await this.likesRepository.create(data, userId);
   }
-  async removeLike(postId: string, userId: string): Promise<Likes> {
+  async removeLike(postId: string, userId: string): Promise<LikesPayload> {
     /**find post by postId */
     const post = await this.postsRepository.findPostById(postId);
     /**check if post exists or not */

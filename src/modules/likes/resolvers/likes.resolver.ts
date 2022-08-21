@@ -55,7 +55,7 @@ export class LikesResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => Likes)
+  @Mutation(() => LikesPayload)
   async createLikes(@Args('data') data: LikesInput, @CurrentUser() user: User) {
     return this.likesService.create(data, user.id);
   }
