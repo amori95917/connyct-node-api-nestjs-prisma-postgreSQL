@@ -97,6 +97,11 @@ export class LikesRepository {
       });
       /**check if post is already liked*/
       if (checkLikes) throw new Error('post already liked');
+      /**check reaction */
+      const checkReaction = await this.prisma.reactions.findFirst({
+        where: { id: data.reactionId },
+      });
+      if (!checkReaction) throw new Error('Invalid reaction');
       /**create likes(reactions) */
       const likes = await this.prisma.postReaction.create({
         data: {
