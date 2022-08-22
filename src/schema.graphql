@@ -233,6 +233,40 @@ type IndustryPayload {
   isDeletedSuccessful: Boolean
 }
 
+type Likes {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  postId: String!
+  reactionId: String!
+  userId: String!
+  user: User
+}
+
+type LikesEdge {
+  cursor: String!
+  node: Likes!
+}
+
+type ReactionsPagination {
+  edges: [LikesEdge!]
+  nodes: [Likes!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+type LikesPayload {
+  likes: Likes
+  isDisliked: Boolean
+}
+
+type Reactions {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  reactionType: String!
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -245,6 +279,9 @@ type Query {
   getCompanyPostsFollowedByUser: [Post!]
   getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
   getIndustry: IndustryPayload!
+  getReactions: [Reactions!]!
+  getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
+  getUsersByPostReaction(reactionId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
 }
 
 input PaginationArgs {
@@ -313,6 +350,16 @@ enum CommentOrderBy {
   createdAt
 }
 
+input ReactionsOrderList {
+  direction: OrderDirection!
+  orderBy: ReactionsOrderBy!
+}
+
+"""Order By:createdAt"""
+enum ReactionsOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -351,6 +398,8 @@ type Mutation {
   updateIndustry(id: String!, data: IndustryInput!): IndustryPayload!
   deleteIndustry(id: String!): IndustryPayload!
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
+  createLikes(data: LikesInput!): LikesPayload!
+  removeLike(postId: String!): Likes!
 }
 
 input UpdateStatusUserInput {
@@ -504,4 +553,9 @@ input UnfollowUserInput {
 input IndustryInput {
   type: String!
   description: String
+}
+
+input LikesInput {
+  postId: String!
+  reactionId: String!
 }

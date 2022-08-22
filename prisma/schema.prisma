@@ -3,7 +3,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["interactiveTransactions"]
+  previewFeatures = ["interactiveTransactions", "extendedIndexes"]
 }
 
 generator dbml {
@@ -11,9 +11,9 @@ generator dbml {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
@@ -45,6 +45,7 @@ model User {
   FollowUnfollowCompany FollowUnfollowCompany[]
   FollowedToUser        FollowUserToUser[]      @relation("Followed_To_User")
   FollowedByUser        FollowUserToUser[]      @relation("Followed_By_User")
+  Like                  PostReaction[]
 
   @@unique([id, email])
 }
@@ -172,20 +173,21 @@ model TagWithPost {
 }
 
 model Post {
-  id          String        @id @default(uuid())
+  id          String         @id @default(uuid())
   text        String
-  rating      Int           @default(0)
+  rating      Int            @default(0)
   creatorId   String
-  creator     User          @relation(fields: [creatorId], references: [id])
+  creator     User           @relation(fields: [creatorId], references: [id])
   postRating  PostRating[]
   comments    Comment[]
-  createdAt   DateTime?     @default(now())
-  updatedAt   DateTime?     @updatedAt @db.Timestamp()
+  createdAt   DateTime?      @default(now())
+  updatedAt   DateTime?      @updatedAt @db.Timestamp()
   Product     Product[]
   TagWithPost TagWithPost[]
-  isSaleAble  Boolean       @default(false)
-  isDeleted   Boolean       @default(false)
+  isSaleAble  Boolean        @default(false)
+  isDeleted   Boolean        @default(false)
   companyId   String
+  Like        PostReaction[]
 }
 
 model Product {
@@ -195,6 +197,28 @@ model Product {
   image       String
   postId      String
   post        Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Reactions {
+  id           String         @id @default(uuid())
+  reactionType String         @unique
+  createdAt    DateTime?      @default(now())
+  updatedAt    DateTime?      @default(now())
+  PostReaction PostReaction[]
+}
+
+model PostReaction {
+  id         String    @id @default(uuid())
+  reactionId String
+  reactions  Reactions @relation(fields: [reactionId], references: [id])
+  postId     String
+  post       Post?     @relation(fields: [postId], references: [id])
+  userId     String
+  user       User?     @relation(fields: [userId], references: [id])
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt @db.Timestamp()
+
+  @@index([postId, reactionId, userId])
 }
 
 model PostRating {

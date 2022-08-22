@@ -29,6 +29,7 @@ const admin = {
   isSuperuser: true, // when using role this we might discard
   confirm: true,
 };
+// Todo=> error occurs while logging with companyUser
 const companyUser = {
   firstName: 'Kiran',
   lastName: 'Budhathoki',
@@ -57,6 +58,15 @@ const roles = [
   { name: 'EDITOR' },
   { name: 'STAFF' },
   { name: 'USER' },
+];
+const reactions = [
+  { reactionType: 'LIKE' },
+  { reactionType: 'USEFUL' },
+  { reactionType: 'PRAISE' },
+  { reactionType: 'APPRECIATION' },
+  { reactionType: 'INSIGHTFUL' },
+  { reactionType: 'CURIOUS' },
+  { reactionType: 'DISGUSTING' },
 ];
 const hashedPassword = async (password: string) => {
   return await bcrypt.hash(password, 10);
@@ -164,6 +174,10 @@ async function main() {
   });
   console.log('Products seeding', createProducts);
   console.log('Products seeding finished');
+
+  await prisma.reactions.createMany({
+    data: reactions,
+  });
 }
 main()
   .catch((e) => {

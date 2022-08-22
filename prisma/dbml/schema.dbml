@@ -29,6 +29,7 @@ Table User {
   FollowUnfollowCompany FollowUnfollowCompany [not null]
   FollowedToUser FollowUserToUser [not null]
   FollowedByUser FollowUserToUser [not null]
+  Like PostReaction [not null]
 
   indexes {
     (id, email) [unique]
@@ -166,6 +167,7 @@ Table Post {
   isSaleAble Boolean [not null, default: false]
   isDeleted Boolean [not null, default: false]
   companyId String [not null]
+  Like PostReaction [not null]
 }
 
 Table Product {
@@ -175,6 +177,26 @@ Table Product {
   image String [not null]
   postId String [not null]
   post Post
+}
+
+Table Reactions {
+  id String [pk]
+  reactionType String [unique, not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime [default: `now()`]
+  PostReaction PostReaction [not null]
+}
+
+Table PostReaction {
+  id String [pk]
+  reactionId String [not null]
+  reactions Reactions [not null]
+  postId String [not null]
+  post Post
+  userId String [not null]
+  user User
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Table PostRating {
@@ -305,6 +327,12 @@ Ref: TagWithPost.postId > Post.id
 Ref: Post.creatorId > User.id
 
 Ref: Product.postId > Post.id [delete: Cascade]
+
+Ref: PostReaction.reactionId > Reactions.id
+
+Ref: PostReaction.postId > Post.id
+
+Ref: PostReaction.userId > User.id
 
 Ref: PostRating.userId > User.id
 

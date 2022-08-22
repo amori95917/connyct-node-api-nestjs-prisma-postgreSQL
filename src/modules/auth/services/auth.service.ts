@@ -41,6 +41,14 @@ export class AuthService {
       },
       include: { Company: true },
     });
+    this.logger.log(
+      user,
+      'incoming user',
+      emailOrUsername,
+      'emailOrUsername',
+      password,
+      'password',
+    );
     if (
       !(
         user &&
