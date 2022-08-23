@@ -128,12 +128,12 @@ export class FollowCompanyService {
   async unfollowUser(userId: UnfollowUserInput, user: User): Promise<string> {
     try {
       // do i need to check for userId in database or?
-      const chechDeleteData = await this.prisma.followUserToUser.findFirst({
+      const checkDeleteData = await this.prisma.followUserToUser.findFirst({
         where: {
           followedToId: userId.userId,
         },
       });
-      if (!chechDeleteData) throw new Error(`User doesn't exist`);
+      if (!checkDeleteData) throw new Error(`User doesn't exist`);
       await this.prisma.followUserToUser.deleteMany({
         where: { followedById: user.id, followedToId: userId.userId },
       });

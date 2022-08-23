@@ -27,6 +27,16 @@ export class CompanyService {
     this.allowOperation = value;
   }
 
+  async getCompanyFollowersCount(companyId: string): Promise<number> {
+    try {
+      return await this.prisma.followUnfollowCompany.count({
+        where: { followedToId: companyId },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
   async list(
     paginate: PaginationArgs,
     order: OrderListCompanies,
@@ -47,6 +57,12 @@ export class CompanyService {
           },
         },
       });
+      await Promise.all(
+        nodes.map(async (company) => {
+          const followers = await this.getCompanyFollowersCount(company.id);
+          Object.assign(company, { followers });
+        }),
+      );
       const totalCount = await this.prisma.company.count({});
       const hasNextPage = haveNextPage(
         paginate.skip,
@@ -73,7 +89,8 @@ export class CompanyService {
         where: { id: companyId },
       });
       if (!company) throw new Error('company not found');
-      return company;
+      const followers = await this.getCompanyFollowersCount(companyId);
+      return Object.assign(company, { followers });
     } catch (err) {
       throw new Error(err);
     }

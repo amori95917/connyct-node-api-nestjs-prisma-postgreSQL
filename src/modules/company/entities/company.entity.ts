@@ -73,6 +73,9 @@ export class Company extends BaseEntity {
 
   @Field({ nullable: true })
   ownerId: string;
+
+  @Field({ nullable: true })
+  followers?: number;
 }
 
 @ObjectType()
