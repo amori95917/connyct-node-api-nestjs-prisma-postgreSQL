@@ -22,6 +22,8 @@ type Company {
   isActive: Boolean
   isVerified: Boolean
   ownerId: String
+  website: String
+  contactNumber: String
   followers: Float
 }
 
@@ -496,6 +498,8 @@ input CompanyEditInput {
   contactEmail: String!
   numberOfemployees: Float
   transactions: Float
+  website: String
+  contactNumber: String
 }
 
 input CompanyAddress {

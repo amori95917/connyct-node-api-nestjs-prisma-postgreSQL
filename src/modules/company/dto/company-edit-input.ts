@@ -18,31 +18,26 @@ export class CompanyAddress {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'country name must be between 3 to 35 characters' })
   country: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'city name must be between 3 to 35 characters' })
   city: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'zipCode  must be between 3 to 35 characters' })
   zipCode: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'state must be between 3 to 35 characters' })
   state: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'street must be between 3 to 35 characters' })
   street: string;
 }
 
@@ -51,7 +46,6 @@ export class CompanyEditInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'Name must be between 3 to 35 characters' })
   name: string;
 
   @Field(() => String)
@@ -75,19 +69,16 @@ export class CompanyEditInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @MinLength(8, { message: 'Description must be atleast 8 characters' })
   description: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @MinLength(8, { message: 'Mission must be atleast 8 characters' })
   mission: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @MinLength(8, { message: 'Vision must be atleast 8 characters' })
   vision: string;
 
   @Field(() => String, { nullable: true })
@@ -115,4 +106,14 @@ export class CompanyEditInput {
   @IsOptional()
   transactions: number;
   // check this field type?
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  website: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  contactNumber: string;
 }

@@ -104,6 +104,8 @@ Table Company {
   owner User [not null]
   ownerId String [not null]
   FollowUnfollowCompany FollowUnfollowCompany [not null]
+  website String
+  contactNumber String
 }
 
 Table Branch {

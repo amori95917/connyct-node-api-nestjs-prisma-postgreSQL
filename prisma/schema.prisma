@@ -123,6 +123,8 @@ model Company {
   owner                 User                    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId               String
   FollowUnfollowCompany FollowUnfollowCompany[]
+  website               String?
+  contactNumber         String?
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
