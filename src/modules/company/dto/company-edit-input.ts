@@ -16,6 +16,12 @@ import { Float } from 'type-graphql';
 @InputType()
 export class CompanyAddress {
   @Field(() => String, { nullable: true })
+  officeType: string;
+
+  @Field(() => String, { nullable: true })
+  branch: string;
+
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
   country: string;
@@ -43,6 +49,11 @@ export class CompanyAddress {
 
 @InputType()
 export class CompanyEditInput {
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  legalName: string;
+
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
@@ -116,4 +127,7 @@ export class CompanyEditInput {
   @IsOptional()
   @IsString()
   contactNumber: string;
+
+  @Field(() => String, { nullable: true })
+  slogan: string;
 }

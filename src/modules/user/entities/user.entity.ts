@@ -12,11 +12,8 @@ export class User extends BaseEntity {
   @Field(() => ID)
   public id!: string;
 
-  @Field()
-  firstName: string;
-
-  @Field()
-  lastName: string;
+  @Field({ nullable: true })
+  fullName: string;
 
   @Field()
   email: string;

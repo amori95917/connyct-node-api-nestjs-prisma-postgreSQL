@@ -19,8 +19,7 @@ enum Role {
 
 // TODO: typing needed when graphql work starts
 const admin = {
-  firstName: 'Connyct',
-  lastName: 'Admin',
+  fullName: 'Connyct Admin',
   username: 'connyct',
   email: 'admin@gmail.com',
   password: 'Connyct@123',
@@ -31,8 +30,7 @@ const admin = {
 };
 // Todo=> error occurs while logging with companyUser
 const companyUser = {
-  firstName: 'Kiran',
-  lastName: 'Budhathoki',
+  fullName: 'Kiran Budhathoki',
   username: 'kiran247437',
   email: 'owner@gmail.com',
   password: 'company@123',
@@ -41,8 +39,7 @@ const companyUser = {
   confirm: true,
 };
 const manager = {
-  firstName: 'Bishes',
-  lastName: 'Manager',
+  fullName: 'Bishes',
   username: 'manager247437',
   email: 'manager@gmail.com',
   password: 'manager@123',

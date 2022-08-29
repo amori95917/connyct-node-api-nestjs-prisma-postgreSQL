@@ -82,6 +82,9 @@ export class Company extends BaseEntity {
 
   @Field({ nullable: true })
   followers?: number;
+
+  @Field({ nullable: true })
+  slogan: string;
 }
 
 @ObjectType()

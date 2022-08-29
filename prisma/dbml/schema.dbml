@@ -4,8 +4,7 @@
 
 Table User {
   id String [pk]
-  firstName String [not null]
-  lastName String [not null]
+  fullName String
   email String [unique, not null]
   username String [unique]
   password String [not null]
@@ -106,6 +105,7 @@ Table Company {
   FollowUnfollowCompany FollowUnfollowCompany [not null]
   website String
   contactNumber String
+  slogan String
 }
 
 Table Branch {

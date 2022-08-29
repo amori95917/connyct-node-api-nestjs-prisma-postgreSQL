@@ -105,8 +105,7 @@ export class UserService {
 
     return await this.prisma.user.update({
       data: {
-        firstName: params.firstName,
-        lastName: params.lastName,
+        fullName: params.fullName,
       },
       where: {
         id: userOwnId,
@@ -159,19 +158,21 @@ export class UserService {
           },
         });
       };
+      //* create random username /
       const userName = (name: string) => {
         const result = Date.now().toString(36);
         return (name + result).toLowerCase();
       };
       // indivaidual signup
       if (!isCompanyAccount) {
+        if (!payload.fullName) throw new Error('Fullname is required');
         const user = await this.prisma.user.create({
           data: {
             ...rest,
             // generate unique username based on email or firstname and lastnamex
             // username: rest.username || rest.email,
             password: hashPassword,
-            username: userName(payload.firstName),
+            username: userName(payload.fullName),
           },
         });
         const role = await this.prisma.role.findFirst({
@@ -201,7 +202,7 @@ export class UserService {
               create: {
                 ...rest,
                 password: hashPassword,
-                username: userName(payload.firstName),
+                username: userName(payload.email.split('@')[0]),
               },
             },
           },

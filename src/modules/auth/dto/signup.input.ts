@@ -11,17 +11,10 @@ import {
 
 @InputType()
 export class SignupInput {
-  @Field(() => String)
-  @IsNotEmpty()
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'Firstname must be between 3 and 35 characters' })
-  firstName: string;
-
-  @Field(() => String)
-  @IsNotEmpty()
-  @IsString()
-  @Length(3, 35, { message: 'Lastname must be between 3 to 35 characters' })
-  lastName: string;
+  fullName?: string;
 
   @Field(() => String)
   @IsEmail()

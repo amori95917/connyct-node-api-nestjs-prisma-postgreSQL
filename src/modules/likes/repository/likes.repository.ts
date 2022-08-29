@@ -100,7 +100,7 @@ export class LikesRepository {
         where: { postId: postId, userId: userId },
       });
       /**remove reaction */
-      const createLikes = await this.prisma.postReaction.delete({
+      await this.prisma.postReaction.delete({
         where: { id: likes.id },
       });
       return {
@@ -117,22 +117,34 @@ export class LikesRepository {
         where: { postId: data.postId, userId },
       });
       console.log(checkLikes, 'incoming like');
-      /**if post is already liked, remove it*/
-      if (checkLikes) return await this.removeLike(data.postId, userId);
       /**check reaction */
       const checkReaction = await this.prisma.reactions.findFirst({
         where: { id: data.reactionId },
       });
-      if (!checkReaction) throw new Error('Invalid reaction');
-      /**create likes(reactions) */
-      const likes = await this.prisma.postReaction.create({
-        data: {
-          postId: data.postId,
-          reactionId: data.reactionId,
-          userId: userId,
-        },
+      if (!checkReaction) throw new Error('Invalid reactionId');
+
+      if (!checkLikes) {
+        /**create likes(reactions) if doesnot exist*/
+        const createLike = await this.prisma.postReaction.create({
+          data: {
+            postId: data.postId,
+            reactionId: data.reactionId,
+            userId: userId,
+          },
+        });
+        return { likes: createLike };
+      }
+      /**if post is already liked, remove it*/
+      if (!checkLikes || checkLikes.reactionId === data.reactionId)
+        return await this.removeLike(data.postId, userId);
+      /**update reaction if user changes the reactions */
+      const updateLikes = await this.prisma.postReaction.update({
+        where: { id: checkLikes.id },
+        data: { ...checkLikes, reactionId: data.reactionId },
       });
-      return { likes };
+      return {
+        likes: updateLikes,
+      };
     } catch (err) {
       throw new Error(err);
     }

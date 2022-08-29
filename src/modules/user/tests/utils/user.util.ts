@@ -12,8 +12,7 @@ export function hashPassword(password: string) {
 
 export function createUser(data?: {
   id?: string;
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
   username?: string;
   isActive?: boolean;
   isSuperuser?: boolean;
@@ -27,8 +26,7 @@ export function createUser(data?: {
   return {
     id: data?.id || faker.datatype.uuid(),
     email: data?.email || faker.internet.email(),
-    firstName: data?.firstName || faker.name.firstName(),
-    lastName: data?.lastName || faker.name.lastName(),
+    fullName: data?.fullName || faker.name.firstName(),
     username: data?.username,
     password:
       (data?.password && hashPassword(data.password)) ||

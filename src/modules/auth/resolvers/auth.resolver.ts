@@ -42,7 +42,7 @@ export class AuthResolver {
   ): Promise<Auth> {
     const { user, company, role } = await this.userService.signUp(data);
     await this.emailService.sendEmailConfirmation({
-      name: `${user.firstName} ${user.lastName}`,
+      name: `${user.fullName} `,
       email: user.email,
       emailToken: user.emailToken,
     });
@@ -91,7 +91,7 @@ export class AuthResolver {
     );
     await this.emailService.sendEmailLinkAccess({
       email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
+      name: `${user.fullName}`,
       token: accessToken,
     });
 
@@ -119,7 +119,7 @@ export class AuthResolver {
     const user = await this.auth.setNewConfirmEmailToken(data.email);
 
     await this.emailService.sendEmailConfirmation({
-      name: `${user.firstName} ${user.lastName}`,
+      name: `${user.fullName}`,
       email: user.email,
       emailToken: user.emailToken,
     });
@@ -140,7 +140,7 @@ export class AuthResolver {
 
     await this.emailService.sendEmailResetPassword({
       email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
+      name: `${user.fullName}`,
       passwordToken: user.passwordToken,
     });
 

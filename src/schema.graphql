@@ -25,6 +25,7 @@ type Company {
   website: String
   contactNumber: String
   followers: Float
+  slogan: String
 }
 
 """
@@ -113,8 +114,7 @@ type User {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  firstName: String!
-  lastName: String!
+  fullName: String
   email: String!
   isValid: Boolean!
   isSuperuser: Boolean
@@ -412,8 +412,7 @@ input UpdateStatusUserInput {
 
 input UpdateUserInput {
   userId: String
-  firstName: String
-  lastName: String
+  fullName: String
 }
 
 input ChangePasswordInput {
@@ -422,8 +421,7 @@ input ChangePasswordInput {
 }
 
 input SignupInput {
-  firstName: String!
-  lastName: String!
+  fullName: String
   email: String!
   password: String!
   isCompanyAccount: Boolean
@@ -486,6 +484,7 @@ input CreateCompanyAddressInput {
 }
 
 input CompanyEditInput {
+  legalName: String
   name: String
   registrationNumber: String!
   establishedDate: DateTime!
@@ -500,9 +499,12 @@ input CompanyEditInput {
   transactions: Float
   website: String
   contactNumber: String
+  slogan: String
 }
 
 input CompanyAddress {
+  officeType: String
+  branch: String
   country: String
   city: String
   zipCode: String

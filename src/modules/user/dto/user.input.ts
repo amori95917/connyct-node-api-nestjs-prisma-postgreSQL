@@ -8,10 +8,7 @@ export class UpdateUserInput {
   userId?: string;
 
   @Field({ nullable: true })
-  firstName?: string;
-
-  @Field({ nullable: true })
-  lastName?: string;
+  fullName?: string;
 }
 
 @InputType()
@@ -27,8 +24,7 @@ export class UpdateStatusUserInput {
 export type UserDataInput = {
   id?: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName?: string;
   username?: string;
   password: string;
   emailToken?: string;
