@@ -38,7 +38,7 @@ export class LikesResolver {
   @UseGuards(GqlAuthGuard)
   @Query(() => ReactionsPagination)
   async getUsersByPostReaction(
-    @Args('reactionId', { type: () => String }) reactionId: string,
+    @Args('reactionType', { type: () => String }) reactionType: string,
     @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
     paginate: PaginationArgs,
     @Args('order', {
@@ -48,7 +48,7 @@ export class LikesResolver {
     order: ReactionsOrderList,
   ) {
     return this.likesService.getUsersByPostReaction(
-      reactionId,
+      reactionType,
       paginate,
       order,
     );

@@ -236,6 +236,13 @@ type IndustryPayload {
   isDeletedSuccessful: Boolean
 }
 
+type Reactions {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  reactionType: String!
+}
+
 type Likes {
   id: ID!
   createdAt: DateTime!
@@ -243,6 +250,7 @@ type Likes {
   postId: String!
   reactionId: String!
   userId: String!
+  reactions: Reactions
   user: User
 }
 
@@ -263,13 +271,6 @@ type LikesPayload {
   isDisliked: Boolean
 }
 
-type Reactions {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  reactionType: String!
-}
-
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -284,7 +285,7 @@ type Query {
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
   getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
-  getUsersByPostReaction(reactionId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
+  getUsersByPostReaction(reactionType: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
 }
 
 input PaginationArgs {
@@ -564,5 +565,5 @@ input IndustryInput {
 
 input LikesInput {
   postId: String!
-  reactionId: String!
+  reactionType: String!
 }

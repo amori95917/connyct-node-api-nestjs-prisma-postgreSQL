@@ -1,6 +1,7 @@
 import { Field, InputType, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { Order } from 'src/modules/prisma/resolvers/order/order';
+import { Reactions } from '../enum/reactions.enum';
 
 @InputType()
 export class LikesInput {
@@ -13,8 +14,7 @@ export class LikesInput {
   @Field()
   @IsNotEmpty()
   @IsString()
-  @IsUUID()
-  reactionId: string;
+  reactionType: Reactions;
 }
 
 export enum ReactionsOrderBy {

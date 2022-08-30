@@ -125,6 +125,7 @@ model Company {
   website               String?
   contactNumber         String?
   slogan                String?
+  Post                  Post[]
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
@@ -189,6 +190,7 @@ model Post {
   isSaleAble  Boolean        @default(false)
   isDeleted   Boolean        @default(false)
   companyId   String
+  company     Company        @relation(fields: [companyId], references: [id])
   Like        PostReaction[]
 }
 

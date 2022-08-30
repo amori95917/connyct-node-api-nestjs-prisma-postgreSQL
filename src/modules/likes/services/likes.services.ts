@@ -31,12 +31,12 @@ export class LikesService {
     return await this.likesRepository.getLikes(postId, paginate, order);
   }
   async getUsersByPostReaction(
-    reactionId: string,
+    reactionType: string,
     paginate: PaginationArgs,
     order: ReactionsOrderList,
   ) {
     return await this.likesRepository.getUsersByPostReaction(
-      reactionId,
+      reactionType,
       paginate,
       order,
     );

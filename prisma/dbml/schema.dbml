@@ -106,6 +106,7 @@ Table Company {
   website String
   contactNumber String
   slogan String
+  Post Post [not null]
 }
 
 Table Branch {
@@ -169,6 +170,7 @@ Table Post {
   isSaleAble Boolean [not null, default: false]
   isDeleted Boolean [not null, default: false]
   companyId String [not null]
+  company Company [not null]
   Like PostReaction [not null]
 }
 
@@ -327,6 +329,8 @@ Ref: TagWithPost.tagsId > Tag.id
 Ref: TagWithPost.postId > Post.id
 
 Ref: Post.creatorId > User.id
+
+Ref: Post.companyId > Company.id
 
 Ref: Product.postId > Post.id [delete: Cascade]
 
