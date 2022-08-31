@@ -116,11 +116,11 @@ type User {
   updatedAt: DateTime!
   fullName: String
   email: String!
-  isValid: Boolean!
+  isValid: Boolean
   isSuperuser: Boolean
-  confirm: Boolean!
-  emailToken: String!
-  posts: [Post!]!
+  confirm: Boolean
+  emailToken: String
+  posts: [Post!]
   company: [Company!]
   isAdmin: Boolean!
 }
@@ -388,7 +388,7 @@ type Mutation {
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
   replyToPost(postId: String!, input: CreateCommentInput!): NewReplyPayload!
-  replyToComment(commentId: String!, input: CreateCommentInput!): NewReplyPayload!
+  replyToComment(commentId: String!, postId: String!, input: CreateCommentInput!): NewReplyPayload!
   upvoteComment(commentId: String!): RatePayload!
   downvoteComment(commentId: String!): RatePayload!
   removeRatingFromComment(commentId: String!): RatePayload!

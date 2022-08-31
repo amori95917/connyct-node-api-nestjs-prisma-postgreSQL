@@ -7,10 +7,14 @@ import type { Comment } from '../comment.models';
 import type { CreateCommentInput } from '../dto/create-comment.input';
 import type { NewReplyPayload } from '../entities/new-reply.payload';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
+import { PostsRepository } from 'src/modules/post/repository/post.repository';
 
 @Injectable()
 export class CommentsService {
-  public constructor(private readonly commentsRepository: CommentsRepository) {}
+  public constructor(
+    private readonly commentsRepository: CommentsRepository,
+    private readonly postsRepository: PostsRepository,
+  ) {}
 
   public async replyToPost(
     postId: string,
@@ -18,6 +22,8 @@ export class CommentsService {
     input: CreateCommentInput,
   ): Promise<NewReplyPayload> {
     const { text } = input;
+    const post = await this.postsRepository.findPostById(postId);
+    if (!post) throw new Error(`post doesn't exist`);
     const comment = await this.commentsRepository.createCommentToPost(
       creatorId,
       postId,
@@ -28,6 +34,7 @@ export class CommentsService {
 
   public async replyToComment(
     commentId: string,
+    postId: string,
     creatorId: string,
     input: CreateCommentInput,
   ): Promise<NewReplyPayload> {
@@ -35,6 +42,7 @@ export class CommentsService {
     const comment = await this.commentsRepository.createCommentToComment(
       creatorId,
       commentId,
+      postId,
       text,
     );
     return { comment };

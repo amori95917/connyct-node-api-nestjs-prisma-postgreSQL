@@ -31,11 +31,17 @@ export class CommentsRepository {
   public async createCommentToComment(
     creatorId: string,
     commentId: string,
+    postId: string,
     text: string,
   ): Promise<Comment> {
+    const comment = await this.prisma.comment.findFirst({
+      where: { id: commentId },
+    });
+    if (!comment) throw new Error(`Comment does not exist`);
     return this.prisma.comment.create({
       data: {
         creatorId,
+        postId,
         repliedToId: commentId,
         text,
       },

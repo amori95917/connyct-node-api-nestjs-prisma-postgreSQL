@@ -9,16 +9,13 @@ import { Post } from '../../post/post.models';
 
 @ObjectType()
 export class User extends BaseEntity {
-  @Field(() => ID)
-  public id!: string;
-
   @Field({ nullable: true })
   fullName: string;
 
   @Field()
   email: string;
 
-  @Field()
+  @Field({ nullable: true })
   isValid: boolean;
 
   @HideField()
@@ -29,13 +26,13 @@ export class User extends BaseEntity {
   @Field({ nullable: true })
   isSuperuser?: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   confirm: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   emailToken: string;
 
-  @Field(() => [Post])
+  @Field(() => [Post], { nullable: true })
   public posts?: Post[];
 
   @Field(() => [Company], { nullable: true })
