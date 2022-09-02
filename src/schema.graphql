@@ -194,6 +194,18 @@ type UpdatePostPayload implements MutationPayload {
   tags: [Tag!]
 }
 
+type TagEdge {
+  cursor: String!
+  node: Tag!
+}
+
+type TagPagination {
+  edges: [TagEdge!]
+  nodes: [Tag!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type InvitedEmployee {
   id: ID!
   invitedId: String!
@@ -279,6 +291,7 @@ type Query {
   companiesSuggestions(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   getCompanyById(id: String!): Company!
+  getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc}): TagPagination!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
   getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
@@ -342,6 +355,15 @@ enum CompaniesOrderBy {
 
 input FilterListCompanies {
   omni: String = null
+}
+
+input OrderTagList {
+  direction: OrderDirection!
+  orderBy: TagOrderBy!
+}
+
+enum TagOrderBy {
+  name
 }
 
 input OrderCommentsList {

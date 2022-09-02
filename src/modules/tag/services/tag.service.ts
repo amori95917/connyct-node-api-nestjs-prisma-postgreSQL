@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
+import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { TagRepository } from '../repository/tag.repository';
+import { OrderTagList } from '../dto/create-tag.input';
 
 /**
  * Service for manage tags.
@@ -17,7 +19,11 @@ export class TagService {
     return this.tagRepository.createTags(tags);
   }
 
-  findManyTags(args?: Prisma.TagFindManyArgs) {
-    return this.tagRepository.findManyTags(args);
+  findManyTags(
+    paginate: PaginationArgs,
+    order: OrderTagList,
+    // args?: Prisma.TagFindManyArgs,
+  ) {
+    return this.tagRepository.findManyTags(paginate, order);
   }
 }
