@@ -97,10 +97,10 @@ export class CompanyEditInput {
   @IsString()
   ownership: Ownership;
 
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsObject()
-  addresses: CompanyAddress;
+  // @Field({ nullable: true })
+  // @IsOptional()
+  // @IsObject()
+  // addresses: CompanyAddress;
 
   @Field(() => String)
   @IsEmail()

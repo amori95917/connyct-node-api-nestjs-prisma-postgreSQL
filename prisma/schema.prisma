@@ -130,28 +130,35 @@ model Company {
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
 model Branch {
-  id            String    @id @default(uuid())
-  name          String
+  id            String     @id @default(uuid())
+  name          String?
+  type          BranchType
   contactNumber String
   contactEmail  String
-  createdAt     DateTime? @default(now())
-  updatedAt     DateTime? @updatedAt @db.Timestamp()
-  address       Address[]
-  Company       Company   @relation(fields: [companyId], references: [id])
+  country       String
+  city          String
+  zipCode       String?
+  state         String?
+  street1       String?
+  street2       String?
+  createdAt     DateTime?  @default(now())
+  updatedAt     DateTime?  @updatedAt @db.Timestamp()
+  Company       Company    @relation(fields: [companyId], references: [id])
   companyId     String
+
+  @@unique([contactNumber, contactEmail])
 }
 
-model Address {
-  id        String    @id @default(uuid())
-  country   String
-  city      String
-  state     String?
-  zipCode   String?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt @db.Timestamp()
-  Branch    Branch?   @relation(fields: [branchId], references: [id])
-  branchId  String?
-}
+// model Address {
+//   id        String    @id @default(uuid())
+//   country   String
+//   city      String
+//   state     String?
+//   zipCode   String?
+//   createdAt DateTime? @default(now())
+//   updatedAt DateTime? @updatedAt @db.Timestamp()
+//   branchId  String?
+// }
 
 model CompanyEmployee {
   id         String  @id @default(uuid())
@@ -279,6 +286,11 @@ enum RatingStatus {
   NEUTRAL
   UPVOTED
   DOWNVOTED
+}
+
+enum BranchType {
+  CORPORATE
+  BRANCH_OFFICE
 }
 
 //

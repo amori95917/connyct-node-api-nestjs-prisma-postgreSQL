@@ -11,11 +11,12 @@ import { FilterListCompanies } from '../dto/filter-company.input';
 import {
   CreateCompanyGeneralInput,
   CreateCompanyInput,
-  CreateCompanyAddressInput,
 } from '../dto/company-input';
 import { CompanyEditInput } from '../dto/company-edit-input';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
+import { Branch } from '../entities/branch.entity';
+import { CompanyBranchInput } from '../dto/company-branch.input';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -61,19 +62,45 @@ export class CompanyResolver {
     return this.companyService.createCompanyGeneralInfo(generalCompany);
   }
 
-  @Roles(Role.Owner)
-  @Mutation(() => Company)
-  async createCompanyAddress(
-    @Args('data') companyAddress: CreateCompanyAddressInput,
-  ): Promise<CompanyPrisma> {
-    return this.companyService.createCompanyAddress(companyAddress);
-  }
-  @Roles(Role.Owner)
+  // @Roles(Role.Owner)
+  // @Mutation(() => Company)
+  // async createCompanyAddress(
+  //   @Args('data') companyAddress: CreateCompanyAddressInput,
+  // ): Promise<CompanyPrisma> {
+  //   return this.companyService.createCompanyAddress(companyAddress);
+  // }
+  @Roles(Role.Owner, Role.Manager)
   @Mutation(() => Company)
   async editCompany(
     @Args('id') companyId: string,
     @Args('data') companyEditData: CompanyEditInput,
   ): Promise<Company> {
     return this.companyService.editCompany(companyId, companyEditData);
+  }
+
+  @Roles(Role.Owner, Role.Manager)
+  @Mutation(() => Branch)
+  async createCompanyBranch(
+    @Args('id') companyId: string,
+    @Args('data') branchInput: CompanyBranchInput,
+  ): Promise<Branch> {
+    return this.companyService.createCompanyBranch(companyId, branchInput);
+  }
+
+  @Roles(Role.Owner, Role.Manager)
+  @Query(() => [Branch])
+  async getBranchesByCompanyId(
+    @Args('id', { type: () => String }) companyId: string,
+  ): Promise<Branch[] | []> {
+    return this.companyService.getBranchesByCompanyId(companyId);
+  }
+
+  @Roles(Role.Owner, Role.Manager)
+  @Mutation(() => Branch)
+  async deleteCompanyBranch(
+    @Args('id') branchId: string,
+    @Args('companyId') companyId: string,
+  ): Promise<Branch> {
+    return this.companyService.deleteCompanyBranch(companyId, branchId);
   }
 }

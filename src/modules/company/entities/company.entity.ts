@@ -1,11 +1,12 @@
-import { Float } from 'type-graphql';
 import { Field, ObjectType } from '@nestjs/graphql';
+import JSON from 'graphql-type-json';
+import { Float } from 'type-graphql';
+import { IsOptional } from 'class-validator';
 
 import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
-
 import { BaseEntity } from '../../prisma/entities/base.entity';
+import { Branch } from './branch.entity';
 
-import JSON from 'graphql-type-json';
 // @ObjectType()
 // export class CompanyAddress {
 //   @Field()
@@ -85,6 +86,10 @@ export class Company extends BaseEntity {
 
   @Field({ nullable: true })
   slogan: string;
+
+  @Field(() => [Branch], { nullable: true })
+  @IsOptional()
+  branches?: Branch[];
 }
 
 @ObjectType()

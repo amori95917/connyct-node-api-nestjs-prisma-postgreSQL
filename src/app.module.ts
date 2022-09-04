@@ -42,6 +42,7 @@ import { LikesModule } from './modules/likes/likes.module';
       driver: ApolloDriver,
       useFactory: async (configService: ConfigService) => {
         const graphqlConfig = configService.get<GraphqlConfig>('graphql');
+        console.log('graphql config', graphqlConfig);
         return {
           sortSchema: graphqlConfig.sortSchema,
           autoSchemaFile: './src/schema.graphql',

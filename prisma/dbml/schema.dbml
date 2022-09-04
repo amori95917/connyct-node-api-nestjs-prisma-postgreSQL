@@ -111,26 +111,24 @@ Table Company {
 
 Table Branch {
   id String [pk]
-  name String [not null]
+  name String
+  type BranchType [not null]
   contactNumber String [not null]
   contactEmail String [not null]
-  createdAt DateTime [default: `now()`]
-  updatedAt DateTime
-  address Address [not null]
-  Company Company [not null]
-  companyId String [not null]
-}
-
-Table Address {
-  id String [pk]
   country String [not null]
   city String [not null]
-  state String
   zipCode String
+  state String
+  street1 String
+  street2 String
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
-  Branch Branch
-  branchId String
+  Company Company [not null]
+  companyId String [not null]
+
+  indexes {
+    (contactNumber, contactEmail) [unique]
+  }
 }
 
 Table CompanyEmployee {
@@ -304,6 +302,11 @@ Enum RatingStatus {
   DOWNVOTED
 }
 
+Enum BranchType {
+  CORPORATE
+  BRANCH_OFFICE
+}
+
 Ref: UserRole.userId > User.id
 
 Ref: UserRole.roleId > Role.id
@@ -317,8 +320,6 @@ Ref: RoleRight.userId > User.id
 Ref: Company.ownerId > User.id [delete: Cascade]
 
 Ref: Branch.companyId > Company.id
-
-Ref: Address.branchId > Branch.id
 
 Ref: CompanyEmployee.employeeId - User.id [delete: Cascade]
 

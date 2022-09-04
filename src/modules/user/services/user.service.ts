@@ -62,7 +62,6 @@ export class UserService {
         }),
       },
     });
-    console.log('nodes', nodes);
     const totalCount = await this.prisma.user.count({
       where: { userRoles: { none: { role } } },
     });
@@ -138,7 +137,6 @@ export class UserService {
   }
 
   async signUp(payload: SignupInput): Promise<Auth> {
-    console.log('##########################payload', payload);
     try {
       const hashPassword = await this.passwordService.hashPassword(
         payload.password,

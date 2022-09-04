@@ -21,7 +21,6 @@ export class RolesGuard implements CanActivate {
     console.log('###########################', this.permissonRoles);
 
     if (!this.permissonRoles) return true;
-    console.log(context.contextType);
     if (context.contextType === 'http') {
       const contextHTTP = context.switchToHttp().getRequest();
       return await this.checkPermission(contextHTTP.user);
@@ -31,7 +30,6 @@ export class RolesGuard implements CanActivate {
       const ctx = GqlExecutionContext.create(context);
 
       if (ctx.getContext().req.headers['authorization']) {
-        console.log('inside auth check');
         const user = ctx.getContext().req?.user;
         return await this.checkPermission(user);
       }

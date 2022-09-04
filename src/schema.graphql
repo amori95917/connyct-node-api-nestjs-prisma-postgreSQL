@@ -2,6 +2,33 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Branch {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String
+  type: BranchType!
+  contactEmail: String!
+  contactNumber: String!
+  country: String!
+  city: String!
+  zipCode: String
+  state: String
+  street1: String
+  street2: String
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""The branch type can be CORPORATE and BRANCH_OFFICE"""
+enum BranchType {
+  CORPORATE
+  BRANCH_OFFICE
+}
+
 type Company {
   id: ID!
   createdAt: DateTime!
@@ -26,12 +53,8 @@ type Company {
   contactNumber: String
   followers: Float
   slogan: String
+  branches: [Branch!]
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
@@ -291,6 +314,7 @@ type Query {
   companiesSuggestions(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   getCompanyById(id: String!): Company!
+  getBranchesByCompanyId(id: String!): [Branch!]!
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc}): TagPagination!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
@@ -401,8 +425,9 @@ type Mutation {
   logout: Boolean!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
-  createCompanyAddress(data: CreateCompanyAddressInput!): Company!
   editCompany(id: String!, data: CompanyEditInput!): Company!
+  createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
+  deleteCompanyBranch(id: String!, companyId: String!): Branch!
   createPost(data: CreatePostInput!, file: [Upload!]): CreatePostPayload!
   updatePost(id: String!, productId: String, input: CreatePostInput, file: Upload): UpdatePostPayload!
   deletePost(postId: String!): DeletePostPayload!
@@ -496,16 +521,6 @@ input CreateCompanyGeneralInput {
   companyStage: String!
 }
 
-input CreateCompanyAddressInput {
-  id: String!
-  country: String!
-  city: String!
-  state: String
-  zipCode: String!
-  address1: String!
-  address2: String!
-}
-
 input CompanyEditInput {
   legalName: String
   name: String
@@ -516,7 +531,6 @@ input CompanyEditInput {
   mission: String
   vision: String
   ownership: String
-  addresses: CompanyAddress
   contactEmail: String!
   numberOfemployees: Float
   transactions: Float
@@ -525,14 +539,17 @@ input CompanyEditInput {
   slogan: String
 }
 
-input CompanyAddress {
-  officeType: String
-  branch: String
+input CompanyBranchInput {
+  type: BranchType!
+  name: String
+  contactEmail: String!
+  contactNumber: String!
   country: String
   city: String
   zipCode: String
   state: String
-  street: String
+  street1: String
+  street2: String
 }
 
 input CreatePostInput {

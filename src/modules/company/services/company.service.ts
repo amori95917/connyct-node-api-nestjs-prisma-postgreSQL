@@ -3,13 +3,15 @@ import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
 import { REQUEST } from '@nestjs/core';
 
+import { BranchType } from '@prisma/client';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { FilterListCompanies } from '../dto/filter-company.input';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateCompanyAddressInput } from '../dto/company-input';
 import { Company } from '../entities/company.entity';
+import { CompanyBranchInput } from '../dto/company-branch.input';
+import { Branch } from '../entities/branch.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -116,9 +118,9 @@ export class CompanyService {
     });
   }
 
-  async createCompanyAddress(companyAddress: CreateCompanyAddressInput) {
-    return await this.prisma.company.findFirst();
-  }
+  // async createCompanyAddress(companyAddress: CreateCompanyAddressInput) {
+  //   return await this.prisma.company.findFirst();
+  // }
 
   async editCompany(
     companyId: string,
@@ -133,10 +135,94 @@ export class CompanyService {
         where: { id: companyId },
         data: {
           ...companyEditData,
-          addresses: companyEditData.addresses as any,
+          // branches: companyEditData.b as any,
         },
       });
       return updatedData;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async isCompanyExist(companyId: string) {
+    return await this.prisma.company.findFirst({
+      where: { id: companyId },
+    });
+  }
+
+  async isHeadOfficeAlreadyExist(companyId: string) {
+    return await this.prisma.branch.findFirst({
+      where: {
+        companyId,
+        type: BranchType.CORPORATE,
+      },
+    });
+  }
+
+  async isBranchExist(id: string) {
+    return await this.prisma.branch.findFirst({
+      where: { id },
+    });
+  }
+
+  async createCompanyBranch(
+    companyId: string,
+    branchInput: CompanyBranchInput,
+  ): Promise<Branch> {
+    if (await this.isCompanyExist(companyId)) {
+      const isHeadOfficeAlreadyExist =
+        branchInput.type === BranchType.CORPORATE
+          ? await this.isHeadOfficeAlreadyExist(companyId)
+          : false;
+      if (isHeadOfficeAlreadyExist)
+        throw new Error('A company cannot have multiple corporate branch');
+      console.log('branchInput', branchInput, typeof branchInput);
+      const branch = await this.prisma.branch.create({
+        data: { ...branchInput, companyId },
+      });
+      console.log('branch', branch);
+      // return branch;
+      return branch;
+    } else {
+      throw new Error('Company with that id does not exist');
+    }
+  }
+
+  async getBranchesByCompanyId(companyId: string): Promise<Branch[] | []> {
+    try {
+      if (await this.isCompanyExist(companyId)) {
+        const branches = await this.prisma.branch.findMany({
+          where: { companyId },
+        });
+        return branches;
+      } else {
+        throw new Error('Company with that id does not exist');
+      }
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async deleteCompanyBranch(
+    companyId: string,
+    branchId: string,
+  ): Promise<Branch> {
+    try {
+      if (await this.isCompanyExist(companyId)) {
+        const branch = await this.isBranchExist(branchId);
+        if (branch) {
+          await this.prisma.branch.delete({
+            where: {
+              id: branchId,
+            },
+          });
+          return branch;
+        } else {
+          throw new Error('Branch with that id does not exist');
+        }
+      } else {
+        throw new Error('Company with that id does not exist');
+      }
     } catch (e) {
       throw new Error(e);
     }

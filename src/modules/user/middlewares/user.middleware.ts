@@ -21,7 +21,7 @@ export class UserMiddleware implements NestMiddleware {
 
   async use(req: any, res: any, next: () => void) {
     if (req.headers.authorization?.includes('Bearer')) {
-      const token = String(req.headers.authorization).split(/ /g)[1];
+      const token: string = String(req.headers.authorization).split(/ /g)[1];
 
       if (!token) throw new ForbiddenException('Invalid authorization');
       jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err) => {
