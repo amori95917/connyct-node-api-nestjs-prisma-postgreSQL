@@ -315,7 +315,7 @@ type Query {
   companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
   getCompanyById(id: String!): Company!
   getBranchesByCompanyId(id: String!): [Branch!]!
-  getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc}): TagPagination!
+  getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc}, query: TagQuery = {name: ""}): TagPagination!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
   getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
@@ -388,6 +388,10 @@ input OrderTagList {
 
 enum TagOrderBy {
   name
+}
+
+input TagQuery {
+  name: String = null
 }
 
 input OrderCommentsList {

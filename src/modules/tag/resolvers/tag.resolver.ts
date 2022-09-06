@@ -7,6 +7,7 @@ import { OrderTagList } from '../dto/create-tag.input';
 import { TagService } from '../services/tag.service';
 import { Tag } from '../../post/entities/tags.entity';
 import { TagPagination } from '../tag.models';
+import { TagQuery } from '../dto/tag-query';
 
 @Resolver(() => Tag)
 export class TagResolver {
@@ -24,7 +25,9 @@ export class TagResolver {
       defaultValue: { order: 'createdAt', direction: 'asc' }, // need to filter by total usage
     })
     order: OrderTagList,
+    @Args('query', { nullable: true, defaultValue: { name: '' } })
+    query: TagQuery,
   ) {
-    return this.tagService.findManyTags(paginate, order);
+    return this.tagService.findManyTags(paginate, order, query);
   }
 }

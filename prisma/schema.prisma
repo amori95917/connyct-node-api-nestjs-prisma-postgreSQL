@@ -3,7 +3,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["interactiveTransactions", "extendedIndexes"]
+  previewFeatures = ["interactiveTransactions", "fullTextSearch"]
 }
 
 generator dbml {
@@ -172,6 +172,8 @@ model Tag {
   id          String        @id @default(uuid())
   name        String        @unique
   TagWithPost TagWithPost[]
+
+  @@index([id, name])
 }
 
 model TagWithPost {

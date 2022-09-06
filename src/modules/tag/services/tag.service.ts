@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { TagRepository } from '../repository/tag.repository';
 import { OrderTagList } from '../dto/create-tag.input';
+import { TagQuery } from '../dto/tag-query';
 
 /**
  * Service for manage tags.
@@ -22,8 +23,9 @@ export class TagService {
   findManyTags(
     paginate: PaginationArgs,
     order: OrderTagList,
+    query: TagQuery,
     // args?: Prisma.TagFindManyArgs,
   ) {
-    return this.tagRepository.findManyTags(paginate, order);
+    return this.tagRepository.findManyTags(paginate, order, query);
   }
 }

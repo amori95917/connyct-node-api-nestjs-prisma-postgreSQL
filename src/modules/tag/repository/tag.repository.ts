@@ -5,6 +5,7 @@ import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { OrderTagList } from '../dto/create-tag.input';
+import { TagQuery } from '../dto/tag-query';
 
 @Injectable()
 export class TagRepository {
@@ -24,12 +25,18 @@ export class TagRepository {
   async findManyTags(
     paginate: PaginationArgs,
     order: OrderTagList,
+    query: TagQuery,
     // tags: Prisma.TagFindManyArgs,
   ) {
     const nodes = await this.prisma.tag.findMany({
       skip: paginate.skip,
       take: paginate.take,
       orderBy: { [order.orderBy]: order.direction },
+      where: {
+        name: {
+          search: query.name,
+        },
+      },
     });
     const totalCount = await this.prisma.tag.count();
     const hasNextPage = haveNextPage(paginate.skip, paginate.take, totalCount);
