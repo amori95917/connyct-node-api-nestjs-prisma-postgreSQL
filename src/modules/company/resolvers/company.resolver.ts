@@ -17,6 +17,7 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { Branch } from '../entities/branch.entity';
 import { CompanyBranchInput } from '../dto/company-branch.input';
+import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -93,6 +94,15 @@ export class CompanyResolver {
     @Args('id', { type: () => String }) companyId: string,
   ): Promise<Branch[] | []> {
     return this.companyService.getBranchesByCompanyId(companyId);
+  }
+
+  @Roles(Role.Owner, Role.Manager)
+  @Mutation(() => Branch)
+  async editCompanyBranch(
+    @Args('id') branchId: string,
+    @Args('data') branchEditInput: CompanyBranchEditInput,
+  ): Promise<Branch> {
+    return this.companyService.editCompanyBranch(branchId, branchEditInput);
   }
 
   @Roles(Role.Owner, Role.Manager)

@@ -431,6 +431,7 @@ type Mutation {
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
   editCompany(id: String!, data: CompanyEditInput!): Company!
   createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
+  editCompanyBranch(id: String!, data: CompanyBranchEditInput!): Branch!
   deleteCompanyBranch(id: String!, companyId: String!): Branch!
   createPost(data: CreatePostInput!, file: [Upload!]): CreatePostPayload!
   updatePost(id: String!, productId: String, input: CreatePostInput, file: Upload): UpdatePostPayload!
@@ -548,6 +549,19 @@ input CompanyBranchInput {
   name: String
   contactEmail: String!
   contactNumber: String!
+  country: String
+  city: String
+  zipCode: String
+  state: String
+  street1: String
+  street2: String
+}
+
+input CompanyBranchEditInput {
+  type: BranchType
+  name: String
+  contactEmail: String
+  contactNumber: String
   country: String
   city: String
   zipCode: String

@@ -1,39 +1,36 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
-} from 'class-validator';
+import { IsEmail, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 import { ArgsType, Field, InputType } from '@nestjs/graphql';
 
 import { BranchType } from '@prisma/client';
 
 @InputType()
 @ArgsType()
-export class CompanyBranchInput {
-  @Field(() => BranchType)
+export class CompanyBranchEditInput {
+  @Field(() => BranchType, { nullable: true })
+  @IsOptional()
   type: BranchType;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   name: string;
 
-  @Field()
-  @IsNotEmpty()
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsEmail()
   contactEmail: string;
 
-  @Field()
-  @IsNotEmpty()
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsPhoneNumber()
   contactNumber: string;
 
   @Field(() => String, { nullable: true })
   @IsString()
+  @IsOptional()
   country: string;
 
   @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsString()
   city: string;
 

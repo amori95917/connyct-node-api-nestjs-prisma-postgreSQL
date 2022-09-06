@@ -12,6 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Company } from '../entities/company.entity';
 import { CompanyBranchInput } from '../dto/company-branch.input';
 import { Branch } from '../entities/branch.entity';
+import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -198,6 +199,28 @@ export class CompanyService {
       } else {
         throw new Error('Company with that id does not exist');
       }
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async editCompanyBranch(
+    branchId: string,
+    branchEditInput: CompanyBranchEditInput,
+  ): Promise<Branch> {
+    try {
+      const branch = await this.isBranchExist(branchId);
+      const isHeadOfficeAlreadyExist =
+        branchEditInput.type === BranchType.CORPORATE
+          ? await this.isHeadOfficeAlreadyExist(branch.companyId)
+          : false;
+      if (isHeadOfficeAlreadyExist)
+        throw new Error('A company cannot have multiple corporate branch');
+      const editedBranch = await this.prisma.branch.update({
+        where: { id: branchId },
+        data: { ...branchEditInput },
+      });
+      return editedBranch;
     } catch (e) {
       throw new Error(e);
     }
