@@ -299,8 +299,7 @@ export class PostsRepository {
       const post = await this.prisma.post.findMany({
         where: { companyId },
       });
-      if (!post.length)
-        throw new Error('posts doesnot exits in related company');
+      if (!post.length) return [];
       return post;
     } catch (e) {
       throw new Error(e);

@@ -38,7 +38,7 @@ export class CompanyResolver {
     return await this.companyService.list(paginate, order, filter);
   }
 
-  @Roles(Role.Owner)
+  @Roles(Role.Owner, Role.Manager, Role.Editor)
   @Query(() => Company)
   async getCompanyById(@Args('id', { type: () => String }) id: string) {
     return this.companyService.getCompanyById(id);
