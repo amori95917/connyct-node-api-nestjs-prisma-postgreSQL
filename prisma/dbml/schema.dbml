@@ -18,7 +18,6 @@ Table User {
   updatedAt DateTime
   posts Post [not null]
   postRatings PostRating [not null]
-  comment Comment [not null]
   commentRatings CommentRating [not null]
   userRoles UserRole [not null]
   RoleRight RoleRight [not null]
@@ -29,6 +28,8 @@ Table User {
   FollowedToUser FollowUserToUser [not null]
   FollowedByUser FollowUserToUser [not null]
   Like PostReaction [not null]
+  Comment Comment [not null]
+  CommentMentions CommentMentions [not null]
 
   indexes {
     (id, email) [unique]
@@ -221,14 +222,26 @@ Table Comment {
   rating Int [not null, default: 0]
   creatorId String [not null]
   postId String
-  repliedToId String
+  repliedToCommentId String
+  repliedToReplyId String
   commentRating CommentRating [not null]
   user User [not null]
   post Post
   parentComment Comment
   comments Comment [not null]
+  parentReply Comment
+  replies Comment [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
+  CommentMentions CommentMentions [not null]
+}
+
+Table CommentMentions {
+  id String [pk]
+  mentionId String
+  user User
+  commentId String
+  comment Comment
 }
 
 Table CommentRating {
@@ -351,7 +364,13 @@ Ref: Comment.creatorId > User.id [delete: Cascade]
 
 Ref: Comment.postId > Post.id [delete: Cascade]
 
-Ref: Comment.repliedToId - Comment.id
+Ref: Comment.repliedToCommentId - Comment.id
+
+Ref: Comment.repliedToReplyId - Comment.id
+
+Ref: CommentMentions.mentionId > User.id
+
+Ref: CommentMentions.commentId > Comment.id
 
 Ref: CommentRating.userId > User.id
 

@@ -23,6 +23,7 @@ import { FollowUnfollowCompanyModule } from './modules/follow-unfollow-company/f
 import { IndustryModule } from './modules/industry/industry.module';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { LikesModule } from './modules/likes/likes.module';
+import { RepliesModule } from './modules/replies/replies.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { LikesModule } from './modules/likes/likes.module';
     FollowUnfollowCompanyModule,
     IndustryModule,
     LikesModule,
+    RepliesModule,
   ],
 })
 export class AppModule {

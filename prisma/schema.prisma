@@ -33,7 +33,6 @@ model User {
   // lastLogin
   posts          Post[]
   postRatings    PostRating[]
-  comment        Comment[]
   commentRatings CommentRating[]
   userRoles      UserRole[]
   RoleRight      RoleRight[]
@@ -45,6 +44,8 @@ model User {
   FollowedToUser        FollowUserToUser[]      @relation("Followed_To_User")
   FollowedByUser        FollowUserToUser[]      @relation("Followed_By_User")
   Like                  PostReaction[]
+  Comment               Comment[]
+  CommentMentions       CommentMentions[]
 
   @@unique([id, email])
 }
@@ -247,19 +248,33 @@ model PostRating {
 }
 
 model Comment {
-  id            String          @id @default(uuid())
-  text          String
-  rating        Int             @default(0)
-  creatorId     String
-  postId        String?
-  repliedToId   String?
-  commentRating CommentRating[]
-  user          User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  post          Post?           @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parentComment Comment?        @relation(name: "CommentToComment", fields: [repliedToId], references: [id])
-  comments      Comment[]       @relation(name: "CommentToComment")
-  createdAt     DateTime?       @default(now())
-  updatedAt     DateTime?       @updatedAt @db.Timestamp()
+  id                 String            @id @default(uuid())
+  text               String
+  rating             Int               @default(0)
+  creatorId          String
+  postId             String?
+  repliedToCommentId String?
+  repliedToReplyId   String?
+  commentRating      CommentRating[]
+  user               User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  post               Post?             @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentComment      Comment?          @relation(name: "CommentToComment", fields: [repliedToCommentId], references: [id])
+  comments           Comment[]         @relation(name: "CommentToComment")
+  parentReply        Comment?          @relation(name: "ReplyToReply", fields: [repliedToReplyId], references: [id])
+  replies            Comment[]         @relation(name: "ReplyToReply")
+  createdAt          DateTime?         @default(now())
+  updatedAt          DateTime?         @updatedAt @db.Timestamp()
+  CommentMentions    CommentMentions[]
+
+  @@index([postId, repliedToCommentId, repliedToReplyId, creatorId])
+}
+
+model CommentMentions {
+  id        String   @id @default(uuid())
+  mentionId String?
+  user      User?    @relation(fields: [mentionId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
 }
 
 model CommentRating {

@@ -103,16 +103,16 @@ CREATE TABLE "Company" (
 -- CreateTable
 CREATE TABLE "Branch" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "name" TEXT,
     "type" "BranchType" NOT NULL,
     "contactNumber" TEXT NOT NULL,
     "contactEmail" TEXT NOT NULL,
     "country" TEXT NOT NULL,
     "city" TEXT NOT NULL,
-    "zipCode" TEXT NOT NULL,
-    "state" TEXT NOT NULL,
-    "street1" TEXT NOT NULL,
-    "street2" TEXT NOT NULL,
+    "zipCode" TEXT,
+    "state" TEXT,
+    "street1" TEXT,
+    "street2" TEXT,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP,
     "companyId" TEXT NOT NULL,
@@ -208,11 +208,21 @@ CREATE TABLE "Comment" (
     "rating" INTEGER NOT NULL DEFAULT 0,
     "creatorId" TEXT NOT NULL,
     "postId" TEXT,
-    "repliedToId" TEXT,
+    "repliedToCommentId" TEXT,
+    "repliedToReplyId" TEXT,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CommentMentions" (
+    "id" TEXT NOT NULL,
+    "mentionId" TEXT,
+    "commentId" TEXT,
+
+    CONSTRAINT "CommentMentions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -298,10 +308,16 @@ CREATE UNIQUE INDEX "Company_registrationNumber_key" ON "Company"("registrationN
 CREATE UNIQUE INDEX "Company_contactEmail_key" ON "Company"("contactEmail");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Branch_contactNumber_contactEmail_key" ON "Branch"("contactNumber", "contactEmail");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "CompanyEmployee_employeeId_key" ON "CompanyEmployee"("employeeId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Tag_name_key" ON "Tag"("name");
+
+-- CreateIndex
+CREATE INDEX "Tag_id_name_idx" ON "Tag"("id", "name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Reactions_reactionType_key" ON "Reactions"("reactionType");
@@ -311,6 +327,9 @@ CREATE INDEX "PostReaction_postId_reactionId_userId_idx" ON "PostReaction"("post
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PostRating_userId_postId_key" ON "PostRating"("userId", "postId");
+
+-- CreateIndex
+CREATE INDEX "Comment_postId_repliedToCommentId_repliedToReplyId_creatorI_idx" ON "Comment"("postId", "repliedToCommentId", "repliedToReplyId", "creatorId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CommentRating_userId_commentId_key" ON "CommentRating"("userId", "commentId");
@@ -328,13 +347,13 @@ ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "RoleRight" ADD CONSTRAINT "RoleRight_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "RoleRight" ADD CONSTRAINT "RoleRight_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RoleRight" ADD CONSTRAINT "RoleRight_rightId_fkey" FOREIGN KEY ("rightId") REFERENCES "Right"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "RoleRight" ADD CONSTRAINT "RoleRight_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Company" ADD CONSTRAINT "Company_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -364,13 +383,13 @@ ALTER TABLE "Post" ADD CONSTRAINT "Post_companyId_fkey" FOREIGN KEY ("companyId"
 ALTER TABLE "Product" ADD CONSTRAINT "Product_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PostReaction" ADD CONSTRAINT "PostReaction_reactionId_fkey" FOREIGN KEY ("reactionId") REFERENCES "Reactions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PostReaction" ADD CONSTRAINT "PostReaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PostReaction" ADD CONSTRAINT "PostReaction_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PostReaction" ADD CONSTRAINT "PostReaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PostReaction" ADD CONSTRAINT "PostReaction_reactionId_fkey" FOREIGN KEY ("reactionId") REFERENCES "Reactions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PostRating" ADD CONSTRAINT "PostRating_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -385,7 +404,16 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_creatorId_fkey" FOREIGN KEY ("crea
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_repliedToId_fkey" FOREIGN KEY ("repliedToId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_repliedToCommentId_fkey" FOREIGN KEY ("repliedToCommentId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_repliedToReplyId_fkey" FOREIGN KEY ("repliedToReplyId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommentMentions" ADD CONSTRAINT "CommentMentions_mentionId_fkey" FOREIGN KEY ("mentionId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommentMentions" ADD CONSTRAINT "CommentMentions_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CommentRating" ADD CONSTRAINT "CommentRating_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

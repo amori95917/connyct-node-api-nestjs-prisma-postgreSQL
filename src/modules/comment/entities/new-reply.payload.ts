@@ -1,4 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { RepliesToReplies } from 'src/modules/replies/replies-to-replies.model';
+import { Replies } from 'src/modules/replies/replies.models';
 
 import { MutationPayload } from '../../../common/graphql/interfaces/mutation-payload';
 import { UserError } from '../../../common/graphql/types/user-error';

@@ -73,19 +73,95 @@ type CompanyPaginated {
   hasNextPage: Boolean!
 }
 
+type RepliesToReplies {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  text: String
+  creatorId: String
+  repliedToCommentId: String
+  repliedToReplyId: String
+  repliedToComment: Comment
+  repliedToReplies: Comment
+  creator: User
+}
+
+type RepliesToRepliesEdge {
+  cursor: String!
+  node: RepliesToReplies!
+}
+
+type RepliesToRepliesPagination {
+  edges: [RepliesToRepliesEdge!]
+  nodes: [RepliesToReplies!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+type Replies {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  text: String
+  postId: String
+  creatorId: String
+  repliedToCommentId: String
+  repliedTo: Comment
+  replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesToRepliesPagination!
+  creator: User!
+  mentions: [User!]!
+}
+
+input PaginationArgs {
+  skip: Float!
+  take: Float!
+}
+
+input OrderCommentsList {
+  direction: OrderDirection!
+  orderBy: CommentOrderBy!
+}
+
+"""
+Likely likely to sort a list of items when presented with an argument `orderBy`.
+"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+"""Order by:createdAt"""
+enum CommentOrderBy {
+  createdAt
+}
+
+type RepliesEdge {
+  cursor: String!
+  node: Replies!
+}
+
+type RepliesPagination {
+  edges: [RepliesEdge!]
+  nodes: [Replies!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type Comment {
   id: ID!
-  text: String!
-  creator: User!
-  rating: Int!
-  myRatingStatus: RatingStatus!
   createdAt: DateTime!
-  post: Post
-  postId: String
-  repliedTo: Comment
-  repliedToId: String
-  replies: [Comment!]!
+  updatedAt: DateTime!
+  text: String!
   creatorId: String!
+  postId: String
+  repliedToCommentId: String
+  repliedToReplyId: String
+  rating: Int
+  myRatingStatus: RatingStatus!
+  creator: User!
+  mentions: [User!]!
+  post: Post
+  replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesPagination
 }
 
 enum RatingStatus {
@@ -182,6 +258,8 @@ type Auth {
 type UserError {
   message: String!
   field: String
+  code: String
+  status: Float
 }
 
 type RatePayload implements MutationPayload {
@@ -196,6 +274,11 @@ interface MutationPayload {
 type NewReplyPayload implements MutationPayload {
   errors: [UserError!]
   comment: Comment
+}
+
+type CommentPaginationPayload {
+  errors: [UserError!]
+  comments: CommentPagination
 }
 
 type CreatePostPayload implements MutationPayload {
@@ -318,29 +401,16 @@ type Query {
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!
   getPostsByCompanyId(id: String!): [Post!]!
   getCompanyPostsFollowedByUser: [Post!]
-  getComments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPagination!
+  comments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPaginationPayload!
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
   getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
   getUsersByPostReaction(reactionType: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
 }
 
-input PaginationArgs {
-  skip: Float!
-  take: Float!
-}
-
 input OrderListUsers {
   direction: OrderDirection!
   orderBy: UsersOrderBy!
-}
-
-"""
-Likely likely to sort a list of items when presented with an argument `orderBy`.
-"""
-enum OrderDirection {
-  asc
-  desc
 }
 
 """Order by: username, createdAt, email"""
@@ -395,16 +465,6 @@ input TagQuery {
   name: String = null
 }
 
-input OrderCommentsList {
-  direction: OrderDirection!
-  orderBy: CommentOrderBy!
-}
-
-"""Order by:createdAt"""
-enum CommentOrderBy {
-  createdAt
-}
-
 input ReactionsOrderList {
   direction: OrderDirection!
   orderBy: ReactionsOrderBy!
@@ -440,8 +500,9 @@ type Mutation {
   upvotePost(postId: Int!): RatePayload!
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
-  replyToPost(postId: String!, input: CreateCommentInput!): NewReplyPayload!
-  replyToComment(commentId: String!, postId: String!, input: CreateCommentInput!): NewReplyPayload!
+  commentToPost(postId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
+  commentReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
+  replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
   upvoteComment(commentId: String!): RatePayload!
   downvoteComment(commentId: String!): RatePayload!
   removeRatingFromComment(commentId: String!): RatePayload!
@@ -584,6 +645,10 @@ scalar Upload
 
 input CreateCommentInput {
   text: String!
+}
+
+input CreateMentionsInput {
+  mentionIds: [String!]
 }
 
 input InvitedEmployeeInput {

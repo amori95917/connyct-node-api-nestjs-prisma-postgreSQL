@@ -1,5 +1,5 @@
 import { Field, InputType, registerEnumType } from '@nestjs/graphql';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Order } from 'src/modules/prisma/resolvers/order/order';
 
 @InputType()
@@ -8,6 +8,14 @@ export class CreateCommentInput {
   @IsNotEmpty()
   @IsString()
   public text!: string;
+}
+
+@InputType()
+export class CreateMentionsInput {
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  mentionIds: string[];
 }
 
 export enum CommentOrderBy {

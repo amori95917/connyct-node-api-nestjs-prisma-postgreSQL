@@ -1,4 +1,7 @@
-import { OrderCommentsList } from './../dto/create-comment.input';
+import {
+  CreateMentionsInput,
+  OrderCommentsList,
+} from './../dto/create-comment.input';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { UseGuards } from '@nestjs/common';
 import {
@@ -24,6 +27,9 @@ import { Comment, CommentPagination } from '../comment.models';
 import { CommentsService } from '../services/comment.service';
 import { CreateCommentInput } from '../dto/create-comment.input';
 import { NewReplyPayload } from '../entities/new-reply.payload';
+import { UserService } from 'src/modules/user/services/user.service';
+import { Replies, RepliesPagination } from '../../replies/replies.models';
+import { CommentPaginationPayload } from '../entities/pagination.payload';
 
 @Resolver(() => Comment)
 export class CommentsResolver {
@@ -31,36 +37,59 @@ export class CommentsResolver {
     private readonly commentsService: CommentsService,
     private readonly commentsLoader: CommentsLoader,
     private readonly ratingService: RatingService,
+    private readonly userService: UserService,
   ) {}
 
   @Mutation(() => NewReplyPayload)
   @UseGuards(GqlAuthGuard)
-  public async replyToPost(
+  public async commentToPost(
     @Args('postId', { type: () => String }) postId: string,
     @Args('input') input: CreateCommentInput,
+    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
     @CurrentUser() user: User,
   ): Promise<NewReplyPayload> {
     const userId = user.id;
-    return this.commentsService.replyToPost(postId, userId, input);
+    return this.commentsService.replyToPost(postId, userId, input, mention);
+  }
+
+  @ResolveField('mentions', () => [User])
+  async getMentionsUser(@Parent() comment: Comment): Promise<User[]> {
+    const { id } = comment;
+    return await this.commentsService.getMentionsUser(id);
   }
 
   @Mutation(() => NewReplyPayload)
   @UseGuards(GqlAuthGuard)
-  public async replyToComment(
+  public async commentReply(
     @Args('commentId', { type: () => String }) commentId: string,
-    @Args('postId', { type: () => String }) postId: string,
     @Args('input') input: CreateCommentInput,
+    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
     @CurrentUser() user: User,
   ): Promise<NewReplyPayload> {
     const userId = user.id;
     return this.commentsService.replyToComment(
       commentId,
-      postId,
       userId,
       input,
+      mention,
     );
   }
 
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => NewReplyPayload)
+  async replyToReply(
+    @Args('commentId') commentId: string,
+    @Args('input') input: CreateCommentInput,
+    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
+    @CurrentUser() user: User,
+  ) {
+    return await this.commentsService.createReplyToReply(
+      commentId,
+      input,
+      user.id,
+      mention,
+    );
+  }
   @Mutation(() => RatePayload)
   @UseGuards(GqlAuthGuard)
   public async upvoteComment(
@@ -116,26 +145,20 @@ export class CommentsResolver {
     return RatingStatus.NEUTRAL;
   }
 
-  @ResolveField('replies', () => [Comment])
-  public async replies(@Parent() comment: Comment): Promise<Comment[]> {
-    const { id } = comment;
-    return this.commentsService.getRepliesToComment(id);
-  }
-
   @ResolveField('creator', () => User)
   public async getCommentCreator(@Parent() comment: Comment): Promise<User> {
     const { creatorId } = comment;
     return this.commentsLoader.batchCreators.load(creatorId);
   }
 
-  @ResolveField('repliedTo', () => Comment)
-  public async repliedTo(@Parent() comment: Comment): Promise<Comment | null> {
-    const { repliedToId } = comment;
-    if (repliedToId !== null) {
-      return this.commentsLoader.batchRepliedTo.load(repliedToId);
-    }
-    return null;
-  }
+  // @ResolveField('repliedTo', () => Comment)
+  // public async repliedTo(@Parent() comment: Comment): Promise<Comment | null> {
+  //   const { repliedToId } = comment;
+  //   if (repliedToId !== null) {
+  //     return this.commentsLoader.batchRepliedTo.load(repliedToId);
+  //   }
+  //   return null;
+  // }
 
   @ResolveField('post', () => Post)
   public async post(@Parent() comment: Comment): Promise<Post | null> {
@@ -147,8 +170,8 @@ export class CommentsResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => CommentPagination)
-  async getComments(
+  @Query(() => CommentPaginationPayload)
+  async comments(
     @Args('postId', { type: () => String }) postId: string,
     @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
     paginate: PaginationArgs,
@@ -159,5 +182,20 @@ export class CommentsResolver {
     order: OrderCommentsList,
   ) {
     return this.commentsService.getComments(postId, paginate, order);
+  }
+
+  @ResolveField('replies', () => RepliesPagination)
+  public async replies(
+    @Parent() comment: Comment,
+    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
+    paginate: PaginationArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { order: 'createdAt', direction: 'asc' },
+    })
+    order: OrderCommentsList,
+  ) {
+    const { id } = comment;
+    return this.commentsService.getRepliesToComment(id, paginate, order);
   }
 }
