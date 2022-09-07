@@ -10,8 +10,6 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Stream } from 'stream';
-import { type } from 'os';
 /**
  * Create post input object type.
  */

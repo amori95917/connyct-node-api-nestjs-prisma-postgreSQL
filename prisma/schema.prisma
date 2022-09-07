@@ -171,6 +171,8 @@ model CompanyEmployee {
 model Tag {
   id          String        @id @default(uuid())
   name        String        @unique
+  createdAt   DateTime?     @default(now())
+  updatedAt   DateTime?     @updatedAt @db.Timestamp()
   TagWithPost TagWithPost[]
 
   @@index([id, name])

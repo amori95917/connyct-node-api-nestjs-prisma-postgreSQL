@@ -22,7 +22,7 @@ export class TagResolver {
     paginate: PaginationArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { order: 'createdAt', direction: 'asc' }, // need to filter by total usage
+      defaultValue: { orderBy: 'createdAt', direction: 'asc' }, // need to filter by total usage
     })
     order: OrderTagList,
     @Args('query', { nullable: true, defaultValue: { name: '' } })
