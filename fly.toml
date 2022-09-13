@@ -1,0 +1,56 @@
+# fly.toml file generated for connyct-node-api on 2022-09-10T15:31:49+05:45
+
+app = "connyct-node-api"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+  builder = "heroku/buildpacks:20"
+  [build.args]
+    PRISMA_SKIP_POSTINSTALL_GENERATE=true
+
+[deploy]
+  release_command = "npx prisma migrate deploy" 
+
+
+[env]
+  LOG_SQL = true
+  NODE_ENV = "development"
+  PLAYGROUND_GRAPHQL = true
+  PORT = 3006
+  SENDGRID_API_KEY = ""
+  SMTP_PROVIDER = "mock"
+  TZ = "America/Sao_Paulo"
+
+
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[[services]]
+  http_checks = []
+  internal_port = 3006
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"
