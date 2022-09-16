@@ -49,15 +49,19 @@ export class LikesRepository {
     };
   }
 
+  public async findReactionsByType(type: string): Promise<Reactions> {
+    return await this.prisma.reactions.findUnique({
+      where: { reactionType: type },
+    });
+  }
+
   public async getUsersByPostReaction(
     reactionType: string,
     paginate: PaginationArgs,
     order: ReactionsOrderList,
   ) {
     try {
-      const reaction = await this.prisma.reactions.findUnique({
-        where: { reactionType: reactionType },
-      });
+      const reaction = await this.findReactionsByType(reactionType);
       /**fetch individual reaction from post along with user */
       const allReactions = await this.prisma.postReaction.findMany({
         where: { reactionId: reaction.id },

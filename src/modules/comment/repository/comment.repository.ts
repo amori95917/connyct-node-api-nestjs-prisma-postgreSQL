@@ -22,6 +22,12 @@ export class CommentsRepository {
     private readonly userService: UserService,
   ) {}
 
+  public async findCommentById(id: string): Promise<Comment> {
+    return await this.prisma.comment.findFirst({
+      where: { id: id },
+    });
+  }
+
   public async mentions(mentions, commentId: string) {
     const commentMention = mentions.mentionIds.map((userId) => {
       return Object.assign({}, { mentionId: userId }, { commentId: commentId });
@@ -65,9 +71,7 @@ export class CommentsRepository {
     text: string,
     mention: CreateMentionsInput,
   ): Promise<NewReplyPayload> {
-    const comment = await this.prisma.comment.findFirst({
-      where: { id: commentId },
-    });
+    const comment = await this.findCommentById(commentId);
     if (!comment)
       return {
         errors: [

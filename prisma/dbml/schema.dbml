@@ -30,6 +30,7 @@ Table User {
   Like PostReaction [not null]
   Comment Comment [not null]
   CommentMentions CommentMentions [not null]
+  CommentReactions CommentReactions [not null]
 
   indexes {
     (id, email) [unique]
@@ -234,6 +235,7 @@ Table Comment {
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   CommentMentions CommentMentions [not null]
+  CommentReactions CommentReactions [not null]
 }
 
 Table CommentMentions {
@@ -242,6 +244,19 @@ Table CommentMentions {
   user User
   commentId String
   comment Comment
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table CommentReactions {
+  id String [pk]
+  reactionId String [not null]
+  commentId String [not null]
+  creatorId String [not null]
+  comment Comment [not null]
+  user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Table CommentRating {
@@ -364,13 +379,17 @@ Ref: Comment.creatorId > User.id [delete: Cascade]
 
 Ref: Comment.postId > Post.id [delete: Cascade]
 
-Ref: Comment.repliedToCommentId - Comment.id
+Ref: Comment.repliedToCommentId - Comment.id [delete: Cascade]
 
-Ref: Comment.repliedToReplyId - Comment.id
+Ref: Comment.repliedToReplyId - Comment.id [delete: Cascade]
 
-Ref: CommentMentions.mentionId > User.id
+Ref: CommentMentions.mentionId > User.id [delete: Cascade]
 
-Ref: CommentMentions.commentId > Comment.id
+Ref: CommentMentions.commentId > Comment.id [delete: Cascade]
+
+Ref: CommentReactions.commentId > Comment.id [delete: Cascade]
+
+Ref: CommentReactions.creatorId > User.id [delete: Cascade]
 
 Ref: CommentRating.userId > User.id
 

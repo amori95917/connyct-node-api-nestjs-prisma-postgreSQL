@@ -389,6 +389,46 @@ type LikesPayload {
   isDisliked: Boolean
 }
 
+type CustomError {
+  message: String!
+  code: String
+  statusCode: Float
+}
+
+type CommentReactions {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  reactionId: String
+  commentId: String
+  creatorId: String
+  comment: Comment
+  reactors: [User!]
+}
+
+type CommentReactionsEdge {
+  cursor: String!
+  node: CommentReactions!
+}
+
+type CommentReactionsPagination {
+  edges: [CommentReactionsEdge!]
+  nodes: [CommentReactions!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+type CommentReactionsPayload {
+  errors: [CustomError!]
+  commentReactions: CommentReactions
+  isDisliked: Boolean
+}
+
+type CommentReactionPaginationPayload {
+  errors: [CustomError!]
+  reactions: CommentReactionsPagination
+}
+
 type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
@@ -406,6 +446,7 @@ type Query {
   getReactions: [Reactions!]!
   getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
   getUsersByPostReaction(reactionType: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
+  commentReactions(commentId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommentReactionsOrderList = {direction: asc, orderBy: createdAt}): CommentReactionPaginationPayload!
 }
 
 input OrderListUsers {
@@ -475,6 +516,16 @@ enum ReactionsOrderBy {
   createdAt
 }
 
+input CommentReactionsOrderList {
+  direction: OrderDirection!
+  orderBy: CommentReactionsOrderBy
+}
+
+"""Order by:createdAt"""
+enum CommentReactionsOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -518,6 +569,7 @@ type Mutation {
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
   createLikes(data: LikesInput!): LikesPayload!
   removeLike(postId: String!): Likes!
+  commentReaction(input: CommentReactionsInput!): CommentReactionsPayload!
 }
 
 input UpdateStatusUserInput {
@@ -689,4 +741,9 @@ input IndustryInput {
 input LikesInput {
   postId: String!
   reactionType: String!
+}
+
+input CommentReactionsInput {
+  reactionType: String!
+  commentId: String!
 }

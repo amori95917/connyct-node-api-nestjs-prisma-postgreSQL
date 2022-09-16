@@ -15,7 +15,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  // shadowDatabaseUrl = env("FLY_DATABASE")
 }
 
 model User {
@@ -48,6 +47,7 @@ model User {
   Like                  PostReaction[]
   Comment               Comment[]
   CommentMentions       CommentMentions[]
+  CommentReactions      CommentReactions[]
 
   @@unique([id, email])
 }
@@ -250,33 +250,47 @@ model PostRating {
 }
 
 model Comment {
-  id                 String            @id @default(uuid())
+  id                 String             @id @default(uuid())
   text               String
-  rating             Int               @default(0)
+  rating             Int                @default(0)
   creatorId          String
   postId             String?
   repliedToCommentId String?
   repliedToReplyId   String?
   commentRating      CommentRating[]
-  user               User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  post               Post?             @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parentComment      Comment?          @relation(name: "CommentToComment", fields: [repliedToCommentId], references: [id])
-  comments           Comment[]         @relation(name: "CommentToComment")
-  parentReply        Comment?          @relation(name: "ReplyToReply", fields: [repliedToReplyId], references: [id])
-  replies            Comment[]         @relation(name: "ReplyToReply")
-  createdAt          DateTime?         @default(now())
-  updatedAt          DateTime?         @updatedAt @db.Timestamp()
+  user               User               @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  post               Post?              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentComment      Comment?           @relation(name: "CommentToComment", fields: [repliedToCommentId], references: [id], onDelete: Cascade)
+  comments           Comment[]          @relation(name: "CommentToComment")
+  parentReply        Comment?           @relation(name: "ReplyToReply", fields: [repliedToReplyId], references: [id], onDelete: Cascade)
+  replies            Comment[]          @relation(name: "ReplyToReply")
+  createdAt          DateTime?          @default(now())
+  updatedAt          DateTime?          @updatedAt @db.Timestamp()
   CommentMentions    CommentMentions[]
+  CommentReactions   CommentReactions[]
 
   @@index([postId, repliedToCommentId, repliedToReplyId, creatorId])
 }
 
 model CommentMentions {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   mentionId String?
-  user      User?    @relation(fields: [mentionId], references: [id])
+  user      User?     @relation(fields: [mentionId], references: [id], onDelete: Cascade)
   commentId String?
-  comment   Comment? @relation(fields: [commentId], references: [id])
+  comment   Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+}
+
+model CommentReactions {
+  id         String    @id @default(uuid())
+  reactionId String
+  commentId  String
+  creatorId  String
+  comment    Comment   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt @db.Timestamp()
 }
 
 model CommentRating {

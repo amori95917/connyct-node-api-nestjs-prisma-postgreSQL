@@ -11,3 +11,6 @@ export const USER_MESSAGE = {
   ALREADY_EXIST: 'User Already Exists',
   EMAIL_CONFLICT: 'Email Already Exists',
 };
+export const REACTION_MESSAGE = {
+  NOT_FOUND: 'Reaction Not Found',
+};

@@ -24,6 +24,7 @@ import { IndustryModule } from './modules/industry/industry.module';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { LikesModule } from './modules/likes/likes.module';
 import { RepliesModule } from './modules/replies/replies.module';
+import { CommentReactionsModule } from './modules/comment-reactions/comment-reactions.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { RepliesModule } from './modules/replies/replies.module';
     IndustryModule,
     LikesModule,
     RepliesModule,
+    CommentReactionsModule,
   ],
 })
 export class AppModule {
