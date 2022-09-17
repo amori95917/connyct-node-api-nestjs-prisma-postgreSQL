@@ -81,8 +81,7 @@ type RepliesToReplies {
   creatorId: String
   repliedToCommentId: String
   repliedToReplyId: String
-  repliedToComment: Comment
-  repliedToReplies: Comment
+  repliedToParentComment: Comment
   creator: User
 }
 
@@ -106,10 +105,11 @@ type Replies {
   postId: String
   creatorId: String
   repliedToCommentId: String
-  repliedTo: Comment
+  repliedTo: Comment!
   replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesToRepliesPagination!
   creator: User!
   mentions: [User!]!
+  post: Post
 }
 
 input PaginationArgs {
@@ -395,6 +395,16 @@ type CustomError {
   statusCode: Float
 }
 
+type ReplyToCommentPayload {
+  errors: [CustomError!]
+  replies: Replies
+}
+
+type RepliesToRepliesPayload {
+  errors: [CustomError!]
+  replies: RepliesToReplies
+}
+
 type CommentReactions {
   id: ID!
   createdAt: DateTime!
@@ -552,8 +562,6 @@ type Mutation {
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
   commentToPost(postId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
-  commentReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
-  replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
   upvoteComment(commentId: String!): RatePayload!
   downvoteComment(commentId: String!): RatePayload!
   removeRatingFromComment(commentId: String!): RatePayload!
@@ -569,6 +577,8 @@ type Mutation {
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
   createLikes(data: LikesInput!): LikesPayload!
   removeLike(postId: String!): Likes!
+  commentReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): ReplyToCommentPayload!
+  replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): RepliesToRepliesPayload!
   commentReaction(input: CommentReactionsInput!): CommentReactionsPayload!
 }
 

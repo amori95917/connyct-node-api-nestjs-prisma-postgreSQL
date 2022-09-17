@@ -14,6 +14,9 @@ import { COMMENT_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { UserService } from 'src/modules/user/services/user.service';
 import { User } from 'src/modules/user/entities/user.entity';
+import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
+import { customError } from 'src/common/errors';
+import { RepliesToRepliesPayload } from 'src/modules/replies/entities/reply-to-reply.payload';
 
 @Injectable()
 export class CommentsRepository {
@@ -46,7 +49,7 @@ export class CommentsRepository {
     postId: string,
     text: string,
     mentions: CreateMentionsInput,
-  ): Promise<Comment> {
+  ): Promise<NewReplyPayload> {
     try {
       const comment = await this.prisma.$transaction(async () => {
         const create = await this.prisma.comment.create({
@@ -56,10 +59,13 @@ export class CommentsRepository {
             text,
           },
         });
+        if (!mentions.mentionIds) return { create, user: null };
         const user = await this.mentions(mentions, create.id);
         return { create, user };
       });
-      return Object.assign(comment.create, { mentions: comment.user });
+      return {
+        comment: Object.assign(comment.create, { mentions: comment.user }),
+      };
     } catch (err) {
       throw new Error(err);
     }
@@ -70,18 +76,14 @@ export class CommentsRepository {
     commentId: string,
     text: string,
     mention: CreateMentionsInput,
-  ): Promise<NewReplyPayload> {
+  ): Promise<ReplyToCommentPayload> {
     const comment = await this.findCommentById(commentId);
     if (!comment)
-      return {
-        errors: [
-          {
-            message: COMMENT_MESSAGE.NOT_FOUND,
-            code: COMMENT_CODE.NOT_FOUND,
-            status: STATUS_CODE.NOT_FOUND,
-          },
-        ],
-      };
+      return customError(
+        COMMENT_MESSAGE.NOT_FOUND,
+        COMMENT_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
     const createReply = await this.prisma.$transaction(async () => {
       const create = await this.prisma.comment.create({
         data: {
@@ -91,12 +93,13 @@ export class CommentsRepository {
           text,
         },
       });
+      if (!mention.mentionIds) return { create, user: null };
       const user = await this.mentions(mention, create.id);
       return { create, user };
     });
 
     return {
-      comment: Object.assign(createReply.create, {
+      replies: Object.assign(createReply.create, {
         mentions: createReply.user,
       }),
     };
@@ -106,22 +109,18 @@ export class CommentsRepository {
     text: string,
     creatorId: string,
     mention: CreateMentionsInput,
-  ): Promise<NewReplyPayload> {
+  ): Promise<RepliesToRepliesPayload> {
     try {
       const comment = await this.prisma.comment.findFirst({
         where: { id: commentId },
       });
       /**check if comment exists or not */
       if (!comment)
-        return {
-          errors: [
-            {
-              message: COMMENT_MESSAGE.NOT_FOUND,
-              code: COMMENT_CODE.NOT_FOUND,
-              status: STATUS_CODE.NOT_FOUND,
-            },
-          ],
-        };
+        return customError(
+          COMMENT_MESSAGE.NOT_FOUND,
+          COMMENT_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
       const createReply = await this.prisma.$transaction(async () => {
         const create = await this.prisma.comment.create({
           data: {
@@ -131,12 +130,14 @@ export class CommentsRepository {
             postId: comment.postId,
           },
         });
+
+        if (!mention.mentionIds) return { create, user: null };
         const user = await this.mentions(mention, create.id);
         return { create, user };
       });
 
       return {
-        comment: Object.assign(createReply.create, {
+        replies: Object.assign(createReply.create, {
           mentions: createReply.user,
         }),
       };

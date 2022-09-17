@@ -19,10 +19,10 @@ export class RepliesToReplies extends BaseEntity {
   repliedToReplyId?: string;
 
   @Field(() => Comment, { nullable: true })
-  repliedToComment?: Comment;
+  repliedToParentComment?: Comment;
 
-  @Field(() => Comment, { nullable: true })
-  repliedToReplies?: Comment;
+  // @Field(() => Replies, { nullable: true })
+  // repliedToReplies?: Replies;
 
   @Field(() => User, { nullable: true })
   creator?: User;

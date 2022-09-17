@@ -15,6 +15,8 @@ import { POST_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { POST_MESSAGE } from 'src/common/errors/error.message';
 import { User } from 'src/modules/user/entities/user.entity';
+import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
+import { customError } from 'src/common/errors';
 
 @Injectable()
 export class CommentsService {
@@ -32,22 +34,17 @@ export class CommentsService {
     const { text } = input;
     const post = await this.postsRepository.findPostById(postId);
     if (!post)
-      return {
-        errors: [
-          {
-            message: POST_MESSAGE.NOT_FOUND,
-            code: POST_CODE.NOT_FOUND,
-            status: STATUS_CODE.NOT_FOUND,
-          },
-        ],
-      };
-    const comment = await this.commentsRepository.createCommentToPost(
+      return customError(
+        POST_MESSAGE.NOT_FOUND,
+        POST_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    return await this.commentsRepository.createCommentToPost(
       creatorId,
       postId,
       text,
       mention,
     );
-    return { comment };
   }
 
   public async replyToComment(
@@ -55,7 +52,7 @@ export class CommentsService {
     creatorId: string,
     input: CreateCommentInput,
     mention: CreateMentionsInput,
-  ): Promise<NewReplyPayload> {
+  ): Promise<ReplyToCommentPayload> {
     const { text } = input;
     return await this.commentsRepository.createCommentToComment(
       creatorId,
@@ -93,15 +90,11 @@ export class CommentsService {
     /*check if the post exists */
     const post = await this.postsRepository.findPostById(postId);
     if (!post)
-      return {
-        errors: [
-          {
-            message: POST_MESSAGE.NOT_FOUND,
-            code: POST_CODE.NOT_FOUND,
-            status: STATUS_CODE.NOT_FOUND,
-          },
-        ],
-      };
+      return customError(
+        POST_MESSAGE.NOT_FOUND,
+        POST_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
     const comments = await this.commentsRepository.getComments(
       postId,
       paginate,

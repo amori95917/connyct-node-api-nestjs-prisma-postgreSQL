@@ -12,20 +12,68 @@ import { UserService } from 'src/modules/user/services/user.service';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import {
   CreateCommentInput,
+  CreateMentionsInput,
   OrderCommentsList,
 } from 'src/modules/comment/dto/create-comment.input';
-import { RepliesToRepliesPagination } from '../replies-to-replies.model';
+import {
+  RepliesToReplies,
+  RepliesToRepliesPagination,
+} from '../replies-to-replies.model';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { NewReplyPayload } from 'src/modules/comment/entities/new-reply.payload';
+import { ReplyToCommentPayload } from '../entities/reply-to-comment.payload';
+import { CommentsService } from 'src/modules/comment/services/comment.service';
+import { Comment } from 'src/modules/comment/comment.models';
+import { RepliesToRepliesPayload } from '../entities/reply-to-reply.payload';
 
 @Resolver(() => Replies)
 export class RepliesResolver {
   constructor(
     private readonly userService: UserService,
     private readonly commentRepository: CommentsRepository,
+    private readonly commentsService: CommentsService,
   ) {}
+
+  @Mutation(() => ReplyToCommentPayload)
+  @UseGuards(GqlAuthGuard)
+  public async commentReply(
+    @Args('commentId', { type: () => String }) commentId: string,
+    @Args('input') input: CreateCommentInput,
+    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
+    @CurrentUser() user: User,
+  ): Promise<NewReplyPayload> {
+    const userId = user.id;
+    return this.commentsService.replyToComment(
+      commentId,
+      userId,
+      input,
+      mention,
+    );
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => RepliesToRepliesPayload)
+  async replyToReply(
+    @Args('commentId') commentId: string,
+    @Args('input') input: CreateCommentInput,
+    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
+    @CurrentUser() user: User,
+  ) {
+    return await this.commentsService.createReplyToReply(
+      commentId,
+      input,
+      user.id,
+      mention,
+    );
+  }
+
+  @ResolveField('repliedTo', () => Comment)
+  async replyTo(@Parent() replies: Replies): Promise<Comment> {
+    const { repliedToCommentId } = replies;
+    return await this.commentRepository.findCommentById(repliedToCommentId);
+  }
 
   @ResolveField('replies', () => RepliesToRepliesPagination)
   async getReplies(

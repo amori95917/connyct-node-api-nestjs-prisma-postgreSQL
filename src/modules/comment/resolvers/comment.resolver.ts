@@ -30,6 +30,7 @@ import { NewReplyPayload } from '../entities/new-reply.payload';
 import { UserService } from 'src/modules/user/services/user.service';
 import { Replies, RepliesPagination } from '../../replies/replies.models';
 import { CommentPaginationPayload } from '../entities/pagination.payload';
+import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
 
 @Resolver(() => Comment)
 export class CommentsResolver {
@@ -58,38 +59,6 @@ export class CommentsResolver {
     return await this.commentsService.getMentionsUser(id);
   }
 
-  @Mutation(() => NewReplyPayload)
-  @UseGuards(GqlAuthGuard)
-  public async commentReply(
-    @Args('commentId', { type: () => String }) commentId: string,
-    @Args('input') input: CreateCommentInput,
-    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
-    @CurrentUser() user: User,
-  ): Promise<NewReplyPayload> {
-    const userId = user.id;
-    return this.commentsService.replyToComment(
-      commentId,
-      userId,
-      input,
-      mention,
-    );
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => NewReplyPayload)
-  async replyToReply(
-    @Args('commentId') commentId: string,
-    @Args('input') input: CreateCommentInput,
-    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
-    @CurrentUser() user: User,
-  ) {
-    return await this.commentsService.createReplyToReply(
-      commentId,
-      input,
-      user.id,
-      mention,
-    );
-  }
   @Mutation(() => RatePayload)
   @UseGuards(GqlAuthGuard)
   public async upvoteComment(
