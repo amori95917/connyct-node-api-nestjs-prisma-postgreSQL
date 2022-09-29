@@ -157,11 +157,11 @@ type Comment {
   repliedToCommentId: String
   repliedToReplyId: String
   rating: Int
+  replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesPagination
   myRatingStatus: RatingStatus!
   creator: User!
   mentions: [User!]!
   post: Post
-  replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesPagination
 }
 
 enum RatingStatus {
@@ -182,11 +182,14 @@ type CommentPagination {
   hasNextPage: Boolean!
 }
 
-type Product {
+type PostImage {
   id: ID!
-  name: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  metaTitle: String
+  imageURL: String
   description: String
-  image: String!
+  postId: String
 }
 
 type Tag {
@@ -203,9 +206,9 @@ type Post {
   myRatingStatus: RatingStatus!
   creatorId: String!
   comments: [Comment!]!
-  isSaleAble: Boolean!
-  companyId: String!
-  product: [Product!]!
+  isSaleAble: Boolean
+  companyId: String
+  postImage: [PostImage!]!
   tags: [Tag!]!
 }
 
@@ -214,6 +217,7 @@ type User {
   createdAt: DateTime!
   updatedAt: DateTime!
   fullName: String
+  username: String
   email: String!
   isValid: Boolean
   isSuperuser: Boolean
@@ -281,22 +285,28 @@ type CommentPaginationPayload {
   comments: CommentPagination
 }
 
-type CreatePostPayload implements MutationPayload {
-  errors: [UserError!]
+type CustomError {
+  message: String!
+  code: String
+  statusCode: Float
+}
+
+type CreatePostPayload {
+  errors: [CustomError!]
   post: Post
-  product: [Product!]
+  postImage: [PostImage!]
   tags: [Tag!]
 }
 
-type DeletePostPayload implements MutationPayload {
-  errors: [UserError!]
-  isDeleteSuccessful: Boolean!
+type DeletePostPayload {
+  errors: [CustomError!]
+  isDeleteSuccessful: Boolean
 }
 
-type UpdatePostPayload implements MutationPayload {
-  errors: [UserError!]
+type UpdatePostPayload {
+  errors: [CustomError!]
   post: Post
-  product: Product
+  postImage: PostImage
   tags: [Tag!]
 }
 
@@ -389,12 +399,6 @@ type LikesPayload {
   isDisliked: Boolean
 }
 
-type CustomError {
-  message: String!
-  code: String
-  statusCode: Float
-}
-
 type ReplyToCommentPayload {
   errors: [CustomError!]
   replies: Replies
@@ -449,8 +453,8 @@ type Query {
   getCompanyById(id: String!): Company!
   getBranchesByCompanyId(id: String!): [Branch!]!
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!
-  getPostsByCompanyId(id: String!): [Post!]!
-  getCompanyPostsFollowedByUser: [Post!]
+  postsByCompanyId(id: String!): [Post!]!
+  companyPostsFollowedByUser: [Post!]
   comments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPaginationPayload!
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
@@ -555,9 +559,9 @@ type Mutation {
   createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
   editCompanyBranch(id: String!, data: CompanyBranchEditInput!): Branch!
   deleteCompanyBranch(id: String!, companyId: String!): Branch!
-  createPost(data: CreatePostInput!, file: [Upload!]): CreatePostPayload!
-  updatePost(id: String!, productId: String, input: CreatePostInput, file: Upload): UpdatePostPayload!
-  deletePost(postId: String!): DeletePostPayload!
+  post(data: CreatePostInput!, companyId: String!, file: [Upload!]): CreatePostPayload!
+  postUpdate(id: String!, imageURL: String, input: UpdatePostInput, file: Upload): UpdatePostPayload!
+  postDelete(postId: String!): DeletePostPayload!
   upvotePost(postId: Int!): RatePayload!
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
@@ -697,13 +701,19 @@ input CompanyBranchEditInput {
 input CreatePostInput {
   text: String!
   tags: [String!]
-  name: String
+  metaTitle: String
   description: String
-  companyId: String!
 }
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+input UpdatePostInput {
+  text: String!
+  tags: [String!]
+  metaTitle: String
+  description: String
+}
 
 input CreateCommentInput {
   text: String!

@@ -12,6 +12,9 @@ export class User extends BaseEntity {
   @Field({ nullable: true })
   fullName: string;
 
+  @Field({ nullable: true })
+  username: string;
+
   @Field()
   email: string;
 

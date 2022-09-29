@@ -159,7 +159,7 @@ Table TagWithPost {
 
 Table Post {
   id String [pk]
-  text String [not null]
+  text String
   rating Int [not null, default: 0]
   creatorId String [not null]
   creator User [not null]
@@ -171,9 +171,24 @@ Table Post {
   TagWithPost TagWithPost [not null]
   isSaleAble Boolean [not null, default: false]
   isDeleted Boolean [not null, default: false]
+  isVerified Boolean [not null, default: false]
+  isPublished Boolean [not null, default: false]
   companyId String [not null]
   company Company [not null]
   Like PostReaction [not null]
+  PostImage PostImage [not null]
+}
+
+Table PostImage {
+  id String [pk]
+  metaTitle String
+  imageURL String [unique]
+  description String
+  postId String
+  post Post
+  isDeleted Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Table Product {
@@ -361,7 +376,9 @@ Ref: TagWithPost.postId > Post.id
 
 Ref: Post.creatorId > User.id
 
-Ref: Post.companyId > Company.id
+Ref: Post.companyId > Company.id [delete: Cascade]
+
+Ref: PostImage.postId > Post.id [delete: Cascade]
 
 Ref: Product.postId > Post.id [delete: Cascade]
 

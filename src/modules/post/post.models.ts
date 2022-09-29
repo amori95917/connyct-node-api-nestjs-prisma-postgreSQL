@@ -3,7 +3,7 @@ import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Comment } from '../comment/comment.models';
 import { RatingStatus } from '../rating/entities/rating-status.enum';
 import { User } from '../user/entities/user.entity';
-import { Product } from './entities/product.entity';
+import { PostImage } from './entities/post-image.entity';
 import { Tag } from './entities/tags.entity';
 
 registerEnumType(RatingStatus, {
@@ -36,14 +36,14 @@ export class Post {
   @Field(() => [Comment])
   public comments?: Comment[];
 
-  @Field(() => Boolean)
+  @Field(() => Boolean, { nullable: true })
   isSaleAble: boolean;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   companyId: string;
 
-  @Field(() => [Product])
-  product?: Product[];
+  @Field(() => [PostImage])
+  postImage?: PostImage[];
 
   @Field(() => [Tag])
   tags?: Tag[];

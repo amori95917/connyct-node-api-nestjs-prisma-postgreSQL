@@ -1,21 +1,21 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { CustomError } from 'src/common/graphql/types/custom-error';
 
 import { MutationPayload } from '../../../common/graphql/interfaces/mutation-payload';
-import { UserError } from '../../../common/graphql/types/user-error';
 import { Post } from '../post.models';
-import { Product } from './product.entity';
+import { PostImage } from './post-image.entity';
 import { Tag } from './tags.entity';
 
-@ObjectType({ implements: () => [MutationPayload] })
-export class CreatePostPayload implements MutationPayload {
-  @Field(() => [UserError], { nullable: true })
-  public errors?: UserError[] | undefined;
+@ObjectType()
+export class CreatePostPayload {
+  @Field(() => [CustomError], { nullable: true })
+  public errors?: CustomError[] | undefined;
 
   @Field(() => Post, { nullable: true })
   public post?: Post;
 
-  @Field(() => [Product], { nullable: true })
-  product?: Product[];
+  @Field(() => [PostImage], { nullable: true })
+  postImage?: PostImage[];
 
   @Field(() => [Tag], { nullable: true })
   tags?: Tag[];

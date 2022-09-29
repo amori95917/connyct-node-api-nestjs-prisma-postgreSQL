@@ -32,6 +32,7 @@ import { Role } from 'src/modules/auth/enum/role.enum';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { Product } from '../entities/product.entity';
 import { Tag } from '../entities/tags.entity';
+import { PostImage } from '../entities/post-image.entity';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -42,54 +43,47 @@ export class PostsResolver {
     private readonly ratingService: RatingService,
   ) {}
 
-  // @Query(() => Post, { nullable: true })
-  // @UseGuards(GqlAnonymousGuard)
-  // public async getPost(
-  //   @Args('id', { type: () => Int }) id: string,
-  // ): Promise<Post> {
-  //   return this.postsService.getPostById(id);
-  // }
-
-  // @Query(() => [Post])
-  // @UseGuards(GqlAnonymousGuard)
-  // public async getPosts(): Promise<Post[]> {
-  //   return this.postsService.getPosts();
-  // }
-
   @Mutation(() => CreatePostPayload)
   @UseGuards(GqlAuthGuard)
   @Roles(Role.Owner, Role.Manager, Role.Editor)
-  async createPost(
+  /**TODO */
+  /**check if the owner,manager or editor are associated with actual company or not */
+  async post(
     @Args('data') feedData: CreatePostInput,
-    @Args({ name: 'file', nullable: true, type: () => [GraphQLUpload] })
+    @Args('companyId') companyId: string,
+    @Args({
+      name: 'file',
+      nullable: true,
+      type: () => [GraphQLUpload],
+    })
     file: FileUpload[],
     @CurrentUser() user: User,
   ): Promise<CreatePostPayload> {
     const userId = user.id;
-    return this.postsService.createPost(feedData, file, userId);
+    return this.postsService.createPost(feedData, companyId, file, userId);
   }
 
   @Mutation(() => UpdatePostPayload)
   @UseGuards(GqlAuthGuard)
   @Roles(Role.Owner, Role.Manager, Role.Editor)
-  public async updatePost(
+  public async postUpdate(
     @Args({ name: 'id', type: () => String }) id: string,
-    @Args({ name: 'productId', nullable: true, type: () => String })
-    productId: string,
-    @Args({ name: 'input', nullable: true }) input: CreatePostInput,
+    @Args({ name: 'imageURL', nullable: true, type: () => String })
+    imageURL: string,
+    @Args({ name: 'input', nullable: true }) input: UpdatePostInput,
     @Args({ name: 'file', nullable: true, type: () => GraphQLUpload })
     file: FileUpload,
     @CurrentUser()
     user: User,
   ): Promise<UpdatePostPayload> {
     const userId = user.id;
-    return this.postsService.updatePost(id, productId, input, file, userId);
+    return this.postsService.updatePost(id, imageURL, input, file, userId);
   }
 
   @Mutation(() => DeletePostPayload)
   @UseGuards(GqlAuthGuard)
   @Roles(Role.Owner, Role.Manager, Role.Editor)
-  public async deletePost(
+  public async postDelete(
     @Args('postId', { type: () => String }) postId: string,
     @CurrentUser() user: User,
   ): Promise<DeletePostPayload> {
@@ -99,15 +93,15 @@ export class PostsResolver {
 
   @Query(() => [Post])
   @UseGuards(GqlAuthGuard)
-  public async getPostsByCompanyId(
+  public async postsByCompanyId(
     @Args('id', { type: () => String }) id: string,
   ) {
     return this.postsService.findPostsByCompanyId(id);
   }
-  @ResolveField('product', () => [Product])
-  public async getProductsByPosts(@Parent() post: Post) {
+  @ResolveField('postImage', () => [PostImage])
+  public async postImageByPosts(@Parent() post: Post) {
     const { id } = post;
-    return this.postsService.findProducts(id);
+    return this.postsService.findPostImage(id);
   }
   @ResolveField('tags', () => [Tag])
   public async getTags(@Parent() post: Post) {
@@ -117,18 +111,18 @@ export class PostsResolver {
 
   @Query(() => [Post], { nullable: true })
   @UseGuards(GqlAuthGuard)
-  public async getCompanyPostsFollowedByUser(@CurrentUser() user: User) {
+  public async companyPostsFollowedByUser(@CurrentUser() user: User) {
     const { id } = user;
     return this.postsService.findCompanyPostsFollowedByUser(id);
   }
 
-  @ResolveField('product', () => [Product])
-  public async getCompanyPostProductsFollowedByUser(@Parent() post: Post) {
+  @ResolveField('postImage', () => [PostImage])
+  public async companyPostImageFollowedByUser(@Parent() post: Post) {
     const { id } = post;
-    return this.postsService.findCompanyPostProductsFollowedByUser(id);
+    return this.postsService.findCompanyPostImageFollowedByUser(id);
   }
   @ResolveField('tags', () => [Tag])
-  public async getCompanyPostTagsFollowedByUser(@Parent() post: Post) {
+  public async companyPostTagsFollowedByUser(@Parent() post: Post) {
     const { id } = post;
     return this.postsService.findCompanyPostTagsFollowedByUser(id);
   }

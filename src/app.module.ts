@@ -25,6 +25,8 @@ import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { LikesModule } from './modules/likes/likes.module';
 import { RepliesModule } from './modules/replies/replies.module';
 import { CommentReactionsModule } from './modules/comment-reactions/comment-reactions.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { FilesModule } from './modules/files/files.module';
 
 @Module({
   imports: [
@@ -86,6 +88,8 @@ import { CommentReactionsModule } from './modules/comment-reactions/comment-reac
     LikesModule,
     RepliesModule,
     CommentReactionsModule,
+    CloudinaryModule,
+    FilesModule,
   ],
 })
 export class AppModule {

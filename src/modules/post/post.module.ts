@@ -11,6 +11,9 @@ import { PostsResolver } from './resolvers/post.resolver';
 import { PostsService } from './services/post.service';
 import { TagService } from '../tag/services/tag.service';
 import { TagRepository } from '../tag/repository/tag.repository';
+import { CompanyService } from '../company/services/company.service';
+import { FilesModule } from '../files/files.module';
+import { CloudinaryService } from '../cloudinary/services/cloudinary.service';
 
 @Module({
   exports: [PostsService, PostsRepository],
@@ -19,6 +22,7 @@ import { TagRepository } from '../tag/repository/tag.repository';
     forwardRef(() => RatingModule),
     forwardRef(() => UserModule),
     forwardRef(() => CommentModule),
+    FilesModule,
   ],
   providers: [
     PostsService,
@@ -27,6 +31,8 @@ import { TagRepository } from '../tag/repository/tag.repository';
     PostsRepository,
     TagService,
     TagRepository,
+    CompanyService,
+    CloudinaryService,
   ],
 })
 export class PostModule {}

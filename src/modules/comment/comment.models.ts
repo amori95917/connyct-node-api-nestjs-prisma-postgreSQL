@@ -31,6 +31,9 @@ export class Comment extends BaseEntity {
   @Field(() => Int, { nullable: true })
   public rating!: number;
 
+  @Field(() => RepliesPagination, { nullable: true })
+  public replies?: RepliesPagination;
+
   @Field(() => RatingStatus, { defaultValue: RatingStatus.NEUTRAL })
   public myRatingStatus?: RatingStatus;
 
@@ -42,9 +45,6 @@ export class Comment extends BaseEntity {
 
   @Field(() => Post, { nullable: true })
   public post?: Post | null;
-
-  @Field(() => RepliesPagination, { nullable: true })
-  public replies?: RepliesPagination;
 }
 @ObjectType()
 export class CommentPagination extends Paginated(Comment) {}

@@ -32,20 +32,11 @@ export class CreatePostInput {
 
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @Length(3, 35, { message: 'Name must be between 3 to 35 characters ' })
   @IsString()
-  name: string;
+  metaTitle: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @MinLength(10)
   @IsString()
-  @MinLength(8, { message: 'Description must be atleast 8 characters long' })
   description: string;
-
-  @Field(() => String)
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  companyId: string;
 }

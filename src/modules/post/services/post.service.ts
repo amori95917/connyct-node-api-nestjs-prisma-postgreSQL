@@ -10,41 +10,57 @@ import type { Post } from '../post.models';
 import { FileUpload } from 'graphql-upload';
 import { Product } from '../entities/product.entity';
 import { Tag } from '../entities/tags.entity';
+import { customError } from 'src/common/errors';
+import { COMPANY_MESSAGE, POST_MESSAGE } from 'src/common/errors/error.message';
+import { COMPANY_CODE, POST_CODE } from 'src/common/errors/error.code';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import { CompanyService } from 'src/modules/company/services/company.service';
+import { UpdatePostInput } from '../dto/update-post.input';
+import { PostImage } from '../entities/post-image.entity';
 
 @Injectable()
 export class PostsService {
-  public constructor(private readonly postsRepository: PostsRepository) {}
+  public constructor(
+    private readonly postsRepository: PostsRepository,
+    private readonly companyService: CompanyService,
+  ) {}
 
-  public async getPostById(id: string): Promise<Post> {
-    const post = await this.postsRepository.findPostById(id);
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
-    return;
-    // return post;
-  }
+  // public async getPostById(id: string): Promise<Post> {
+  //   const post = await this.postsRepository.findPostById(id);
+  //   if (!post) {
+  //     throw new NotFoundException('Post not found');
+  //   }
+  //   return post;
+  // }
 
   public async createPost(
     feedData: CreatePostInput,
+    companyId: string,
     file: FileUpload[],
     creatorId: string,
   ): Promise<CreatePostPayload> {
-    const result = await this.postsRepository.createPost(
+    /**if check if company exists*/
+    if (companyId) {
+      const company = await this.companyService.getCompanyById(companyId);
+      if (!company)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+    }
+    return await this.postsRepository.createPost(
       feedData,
+      companyId,
       creatorId,
       file,
     );
-    return {
-      post: result.post,
-      tags: result.tags,
-      product: result.product,
-    };
   }
 
   public async updatePost(
     postId: string,
-    productId: string,
-    input: CreatePostInput,
+    imageURL: string,
+    input: UpdatePostInput,
     file: FileUpload,
     creatorId: string,
   ): Promise<UpdatePostPayload> {
@@ -53,25 +69,19 @@ export class PostsService {
       postId,
     );
     if (!post) {
-      return {
-        errors: [
-          {
-            message: 'Post does not exist or you are not the author',
-          },
-        ],
-      };
+      return customError(
+        POST_MESSAGE.NOT_FOUND,
+        POST_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
     }
-    const updatedResult = await this.postsRepository.updatePost(
+    return await this.postsRepository.updatePost(
       postId,
-      productId,
+      imageURL,
       input,
       file,
+      post,
     );
-    return {
-      post: updatedResult.post,
-      product: updatedResult.product,
-      tags: updatedResult.tags,
-    };
   }
 
   public async deletePost(
@@ -79,16 +89,12 @@ export class PostsService {
     userId: string,
   ): Promise<DeletePostPayload> {
     const post = await this.postsRepository.findPostByCreatorId(userId, postId);
-    if (!post) {
-      return {
-        errors: [
-          {
-            message: 'Post does not exist or you are not the author',
-          },
-        ],
-        isDeleteSuccessful: false,
-      };
-    }
+    if (!post)
+      return customError(
+        POST_MESSAGE.NOT_FOUND,
+        POST_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
     await this.postsRepository.deletePostById(post.id);
     return {
       isDeleteSuccessful: true,
@@ -97,8 +103,8 @@ export class PostsService {
   public async findPostsByCompanyId(id: string): Promise<Post[]> {
     return this.postsRepository.findPostsByCompanyId(id);
   }
-  public async findProducts(id: string): Promise<Product[]> {
-    return this.postsRepository.findProducts(id);
+  public async findPostImage(id: string): Promise<PostImage[]> {
+    return this.postsRepository.findPostImage(id);
   }
   public async findTags(id: string): Promise<Tag[]> {
     return this.postsRepository.findTags(id);
@@ -108,10 +114,10 @@ export class PostsService {
   ): Promise<Post[] | null> {
     return this.postsRepository.findCompanyPostsFollowedByUser(id);
   }
-  public async findCompanyPostProductsFollowedByUser(
+  public async findCompanyPostImageFollowedByUser(
     id: string,
-  ): Promise<Product[]> {
-    return this.postsRepository.findCompanyPostProductsFollowedByUser(id);
+  ): Promise<PostImage[]> {
+    return this.postsRepository.findCompanyPostImageFollowedByUser(id);
   }
   public async findCompanyPostTagsFollowedByUser(id: string): Promise<Tag[]> {
     return this.postsRepository.findCompanyPostTagsFollowedByUser(id);

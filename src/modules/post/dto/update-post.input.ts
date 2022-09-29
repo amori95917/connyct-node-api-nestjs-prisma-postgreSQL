@@ -14,9 +14,8 @@ import {
  */
 @InputType()
 export class UpdatePostInput {
-  @Field(() => String, { nullable: true })
+  @Field(() => String, { nullable: false })
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
   text: string;
 
@@ -31,12 +30,10 @@ export class UpdatePostInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @Length(3, 35, { message: 'Name must be between 3 to 35 characters ' })
-  name: string;
+  metaTitle: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  @MinLength(8, { message: 'Description must be atleast 8 characters long' })
   description: string;
 }

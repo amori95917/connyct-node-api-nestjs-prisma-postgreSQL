@@ -1,13 +1,11 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { CustomError } from 'src/common/graphql/types/custom-error';
 
-import { MutationPayload } from '../../../common/graphql/interfaces/mutation-payload';
-import { UserError } from '../../../common/graphql/types/user-error';
+@ObjectType()
+export class DeletePostPayload {
+  @Field(() => [CustomError], { nullable: true })
+  public errors?: CustomError[] | undefined;
 
-@ObjectType({ implements: () => [MutationPayload] })
-export class DeletePostPayload implements MutationPayload {
-  @Field(() => [UserError], { nullable: true })
-  public errors?: UserError[] | undefined;
-
-  @Field(() => Boolean)
-  public isDeleteSuccessful!: boolean;
+  @Field(() => Boolean, { nullable: true, defaultValue: false })
+  public isDeleteSuccessful?: boolean;
 }

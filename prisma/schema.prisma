@@ -14,7 +14,6 @@ generator dbml {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
@@ -191,7 +190,7 @@ model TagWithPost {
 
 model Post {
   id          String         @id @default(uuid())
-  text        String
+  text        String?
   rating      Int            @default(0)
   creatorId   String
   creator     User           @relation(fields: [creatorId], references: [id])
@@ -203,9 +202,28 @@ model Post {
   TagWithPost TagWithPost[]
   isSaleAble  Boolean        @default(false)
   isDeleted   Boolean        @default(false)
+  isVerified  Boolean        @default(false)
+  isPublished Boolean        @default(false)
   companyId   String
-  company     Company        @relation(fields: [companyId], references: [id])
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   Like        PostReaction[]
+  PostImage   PostImage[]
+
+  @@index([companyId])
+}
+
+model PostImage {
+  id          String    @id @default(uuid())
+  metaTitle   String?
+  imageURL    String?   @unique
+  description String?
+  postId      String?
+  post        Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt @db.Timestamp()
+
+  @@index([postId])
 }
 
 model Product {
