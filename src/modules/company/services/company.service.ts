@@ -13,6 +13,8 @@ import { Company } from '../entities/company.entity';
 import { CompanyBranchInput } from '../dto/company-branch.input';
 import { Branch } from '../entities/branch.entity';
 import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -41,46 +43,78 @@ export class CompanyService {
   }
 
   async list(
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderListCompanies,
     filter?: FilterListCompanies,
     companyids?: string[],
   ) {
     try {
-      const nodes = await this.prisma.company.findMany({
-        skip: paginate.skip,
-        take: paginate.take,
-        orderBy: { [order.orderBy]: order.direction },
+      const baseArgs = {
         where: {
-          ...(filter?.omni && {
-            name: { contains: filter.omni, mode: 'insensitive' },
-          }),
           id: {
             notIn: companyids,
           },
         },
-      });
+        orderBy: { [order.orderBy]: order.direction },
+      };
+      if (filter?.omni) {
+        baseArgs['name'] = {
+          contains: filter.omni,
+          mode: 'insensitive',
+        };
+      }
+      const companies = await findManyCursorConnection(
+        (args) => this.prisma.company.findMany({ ...args, ...baseArgs }),
+        () =>
+          this.prisma.company.count({
+            where: baseArgs.where,
+          }),
+        { ...paginate },
+      );
       await Promise.all(
-        nodes.map(async (company) => {
-          const followers = await this.getCompanyFollowersCount(company.id);
-          Object.assign(company, { followers });
+        companies?.edges.map(async (company) => {
+          const followers = await this.getCompanyFollowersCount(
+            company.node.id,
+          );
+          Object.assign(company, { ...company.node, followers });
         }),
       );
-      const totalCount = await this.prisma.company.count({});
-      const hasNextPage = haveNextPage(
-        paginate.skip,
-        paginate.take,
-        totalCount,
-      );
-      return {
-        nodes,
-        totalCount,
-        hasNextPage,
-        edges: nodes?.map((node) => ({
-          node,
-          cursor: Buffer.from(node.id).toString('base64'),
-        })),
-      };
+      return companies;
+
+      // const nodes = await this.prisma.company.findMany({
+      //   skip: paginate.skip,
+      //   take: paginate.take,
+      //   orderBy: { [order.orderBy]: order.direction },
+      //   where: {
+      //     ...(filter?.omni && {
+      //       name: { contains: filter.omni, mode: 'insensitive' },
+      //     }),
+      //     id: {
+      //       notIn: companyids,
+      //     },
+      //   },
+      // });
+      // await Promise.all(
+      //   nodes.map(async (company) => {
+      //     const followers = await this.getCompanyFollowersCount(company.id);
+      //     Object.assign(company, { followers });
+      //   }),
+      // );
+      // const totalCount = await this.prisma.company.count({});
+      // const hasNextPage = haveNextPage(
+      //   paginate.skip,
+      //   paginate.take,
+      //   totalCount,
+      // );
+      // return {
+      //   nodes,
+      //   totalCount,
+      //   hasNextPage,
+      //   edges: nodes?.map((node) => ({
+      //     node,
+      //     cursor: Buffer.from(node.id).toString('base64'),
+      //   })),
+      // };
     } catch (e) {
       throw new Error(e);
     }

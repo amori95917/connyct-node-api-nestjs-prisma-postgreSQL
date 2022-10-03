@@ -18,6 +18,7 @@ import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { Branch } from '../entities/branch.entity';
 import { CompanyBranchInput } from '../dto/company-branch.input';
 import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -26,8 +27,7 @@ export class CompanyResolver {
   // @Roles(Role.Admin)
   @Query(() => CompanyPaginated)
   async companies(
-    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
-    paginate: PaginationArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
       defaultValue: { orderBy: 'name', direction: 'desc' },

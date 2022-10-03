@@ -13,6 +13,7 @@ import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/paginati
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
 import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Injectable()
 export class FollowCompanyService {
@@ -183,7 +184,7 @@ export class FollowCompanyService {
 
   async companiesSuggestions(
     userId: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderListCompanies,
     filter: FilterListCompanies,
   ) {

@@ -6,6 +6,7 @@ import { IsOptional } from 'class-validator';
 import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { BaseEntity } from '../../prisma/entities/base.entity';
 import { Branch } from './branch.entity';
+import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
 
 // @ObjectType()
 // export class CompanyAddress {
@@ -93,4 +94,4 @@ export class Company extends BaseEntity {
 }
 
 @ObjectType()
-export class CompanyPaginated extends Paginated(Company) {}
+export class CompanyPaginated extends relayTypes<Company>(Company) {}

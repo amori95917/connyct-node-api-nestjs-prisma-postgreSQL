@@ -61,15 +61,21 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-type CompanyEdge {
-  cursor: String!
-  node: Company!
-}
-
 type CompanyPaginated {
   edges: [CompanyEdge!]
-  nodes: [Company!]
-  totalCount: Int!
+  pageInfo: CompanyPageInfo
+  totalCount: Float!
+}
+
+type CompanyEdge {
+  cursor: String
+  node: Company
+}
+
+type CompanyPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
@@ -505,8 +511,36 @@ type Query {
   me: User!
   getUser(userId: String!): User!
   getCompanysFollowedByUser(paginate: PaginationArgs, order: OrderFollowedCompanyList): CompanyPaginated
-  companiesSuggestions(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
-  companies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListCompanies = {direction: desc, orderBy: name}, filter: FilterListCompanies): CompanyPaginated!
+  companiesSuggestions(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListCompanies = {direction: desc, orderBy: name}
+    filter: FilterListCompanies
+  ): CompanyPaginated!
+  companies(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListCompanies = {direction: desc, orderBy: name}
+    filter: FilterListCompanies
+  ): CompanyPaginated!
   getCompanyById(id: String!): Company!
   getBranchesByCompanyId(id: String!): [Branch!]!
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!

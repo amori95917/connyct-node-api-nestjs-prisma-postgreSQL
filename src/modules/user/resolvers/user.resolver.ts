@@ -31,6 +31,7 @@ import { User, UserPaginated } from '../entities/user.entity';
 import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
 import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
 import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -127,8 +128,7 @@ export class UserResolver {
   @Query(() => CompanyPaginated)
   async companiesSuggestions(
     @UserDecorator() user: User,
-    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
-    paginate: PaginationArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
       defaultValue: { orderBy: 'name', direction: 'desc' },
