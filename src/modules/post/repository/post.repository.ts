@@ -23,6 +23,9 @@ import {
 } from 'src/common/errors/error.message';
 import { FILE_CODE, POST_IMAGE_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
+import { PostPagination } from '../post.models';
 
 @Injectable()
 export class PostsRepository {
@@ -340,13 +343,22 @@ export class PostsRepository {
       throw new Error(e);
     }
   }
-  public async findPostsByCompanyId(companyId: string): Promise<Post[]> {
+  public async findPostsByCompanyId(
+    companyId: string,
+    paginate: ConnectionArgs,
+  ) {
     try {
-      const post = await this.prisma.post.findMany({
+      const baseArgs = {
         where: { companyId, isDeleted: false },
-      });
-      if (!post.length) return [];
-      return post;
+        // orderBy: { [order.orderBy]: order.direction },
+      };
+      const posts = await findManyCursorConnection(
+        (args) => this.prisma.post.findMany({ ...args, ...baseArgs }),
+        () => this.prisma.post.count({ where: baseArgs.where }),
+        { ...paginate },
+      );
+      if (!posts.totalCount) return [];
+      return posts;
     } catch (e) {
       throw new Error(e);
     }

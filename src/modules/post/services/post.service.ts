@@ -6,7 +6,7 @@ import type { CreatePostInput } from '../dto/create-post.input';
 import type { CreatePostPayload } from '../entities/create-post.payload';
 import type { DeletePostPayload } from '../entities/delete-post.payload';
 import type { UpdatePostPayload } from '../entities/update-post.payload';
-import type { Post } from '../post.models';
+import type { Post, PostPagination } from '../post.models';
 import { FileUpload } from 'graphql-upload';
 import { Product } from '../entities/product.entity';
 import { Tag } from '../entities/tags.entity';
@@ -17,6 +17,7 @@ import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CompanyService } from 'src/modules/company/services/company.service';
 import { UpdatePostInput } from '../dto/update-post.input';
 import { PostImage } from '../entities/post-image.entity';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Injectable()
 export class PostsService {
@@ -100,8 +101,8 @@ export class PostsService {
       isDeleteSuccessful: true,
     };
   }
-  public async findPostsByCompanyId(id: string): Promise<Post[]> {
-    return this.postsRepository.findPostsByCompanyId(id);
+  public async findPostsByCompanyId(id: string, paginate: ConnectionArgs) {
+    return this.postsRepository.findPostsByCompanyId(id, paginate);
   }
   public async findPostImage(id: string): Promise<PostImage[]> {
     return this.postsRepository.findPostImage(id);

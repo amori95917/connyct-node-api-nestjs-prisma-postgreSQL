@@ -1,6 +1,7 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import { Comment } from '../comment/comment.models';
+import relayTypes from '../prisma/resolvers/pagination/relay.types';
 import { RatingStatus } from '../rating/entities/rating-status.enum';
 import { User } from '../user/entities/user.entity';
 import { PostImage } from './entities/post-image.entity';
@@ -48,3 +49,6 @@ export class Post {
   @Field(() => [Tag])
   tags?: Tag[];
 }
+
+@ObjectType()
+export class PostPagination extends relayTypes<Post>(Post) {}

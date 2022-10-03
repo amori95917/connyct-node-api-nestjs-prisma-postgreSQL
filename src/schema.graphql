@@ -88,6 +88,7 @@ type RepliesToReplies {
 type RepliesToRepliesPagination {
   edges: [RepliesToRepliesEdge!]
   pageInfo: RepliesToRepliesPageInfo
+  totalCount: Float!
 }
 
 type RepliesToRepliesEdge {
@@ -151,6 +152,7 @@ enum CommentOrderBy {
 type RepliesPagination {
   edges: [RepliesEdge!]
   pageInfo: RepliesPageInfo
+  totalCount: Float!
 }
 
 type RepliesEdge {
@@ -204,6 +206,7 @@ enum RatingStatus {
 type CommentPagination {
   edges: [CommentEdge!]
   pageInfo: CommentPageInfo
+  totalCount: Float!
 }
 
 type CommentEdge {
@@ -246,6 +249,24 @@ type Post {
   companyId: String
   postImage: [PostImage!]!
   tags: [Tag!]!
+}
+
+type PostPagination {
+  edges: [PostEdge!]
+  pageInfo: PostPageInfo
+  totalCount: Float!
+}
+
+type PostEdge {
+  cursor: String
+  node: Post
+}
+
+type PostPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
 }
 
 type User {
@@ -489,7 +510,21 @@ type Query {
   getCompanyById(id: String!): Company!
   getBranchesByCompanyId(id: String!): [Branch!]!
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!
-  postsByCompanyId(id: String!): [Post!]!
+  postsByCompanyId(
+    id: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+  ): PostPagination!
   companyPostsFollowedByUser: [Post!]
   comments(
     postId: String!

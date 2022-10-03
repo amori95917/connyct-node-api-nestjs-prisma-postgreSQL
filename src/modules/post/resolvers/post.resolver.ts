@@ -25,7 +25,7 @@ import { DeletePostPayload } from '../entities/delete-post.payload';
 import { UpdatePostInput } from '../dto/update-post.input';
 import { UpdatePostPayload } from '../entities/update-post.payload';
 import PostsLoaders from '../post.loader';
-import { Post } from '../post.models';
+import { Post, PostPagination } from '../post.models';
 import { PostsService } from '../services/post.service';
 import { Roles } from 'src/modules/auth/decorators/role.decorator';
 import { Role } from 'src/modules/auth/enum/role.enum';
@@ -33,6 +33,7 @@ import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { Product } from '../entities/product.entity';
 import { Tag } from '../entities/tags.entity';
 import { PostImage } from '../entities/post-image.entity';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -91,12 +92,13 @@ export class PostsResolver {
     return this.postsService.deletePost(postId, userId);
   }
 
-  @Query(() => [Post])
+  @Query(() => PostPagination)
   @UseGuards(GqlAuthGuard)
   public async postsByCompanyId(
     @Args('id', { type: () => String }) id: string,
+    @Args() paginate: ConnectionArgs,
   ) {
-    return this.postsService.findPostsByCompanyId(id);
+    return this.postsService.findPostsByCompanyId(id, paginate);
   }
   @ResolveField('postImage', () => [PostImage])
   public async postImageByPosts(@Parent() post: Post) {
