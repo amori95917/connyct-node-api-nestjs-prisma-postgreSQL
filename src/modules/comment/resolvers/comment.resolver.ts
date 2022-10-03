@@ -3,6 +3,7 @@ import {
   OrderCommentsList,
 } from './../dto/create-comment.input';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -142,11 +143,12 @@ export class CommentsResolver {
   @Query(() => CommentPaginationPayload)
   async comments(
     @Args('postId', { type: () => String }) postId: string,
-    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
-    paginate: PaginationArgs,
+    // @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
+    // paginate: ConnectionArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { order: 'createdAt', direction: 'asc' },
+      defaultValue: { orderBy: 'createdAt', direction: 'asc' },
     })
     order: OrderCommentsList,
   ) {
@@ -156,11 +158,10 @@ export class CommentsResolver {
   @ResolveField('replies', () => RepliesPagination)
   public async replies(
     @Parent() comment: Comment,
-    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
-    paginate: PaginationArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { order: 'createdAt', direction: 'asc' },
+      defaultValue: { orderBy: 'createdAt', direction: 'asc' },
     })
     order: OrderCommentsList,
   ) {

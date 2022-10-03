@@ -85,15 +85,20 @@ type RepliesToReplies {
   creator: User
 }
 
-type RepliesToRepliesEdge {
-  cursor: String!
-  node: RepliesToReplies!
-}
-
 type RepliesToRepliesPagination {
   edges: [RepliesToRepliesEdge!]
-  nodes: [RepliesToReplies!]
-  totalCount: Int!
+  pageInfo: RepliesToRepliesPageInfo
+}
+
+type RepliesToRepliesEdge {
+  cursor: String
+  node: RepliesToReplies
+}
+
+type RepliesToRepliesPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
@@ -106,15 +111,23 @@ type Replies {
   creatorId: String
   repliedToCommentId: String
   repliedTo: Comment!
-  replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesToRepliesPagination!
+  replies(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+  ): RepliesToRepliesPagination!
   creator: User!
   mentions: [User!]!
   post: Post
-}
-
-input PaginationArgs {
-  skip: Float!
-  take: Float!
 }
 
 input OrderCommentsList {
@@ -135,15 +148,20 @@ enum CommentOrderBy {
   createdAt
 }
 
-type RepliesEdge {
-  cursor: String!
-  node: Replies!
-}
-
 type RepliesPagination {
   edges: [RepliesEdge!]
-  nodes: [Replies!]
-  totalCount: Int!
+  pageInfo: RepliesPageInfo
+}
+
+type RepliesEdge {
+  cursor: String
+  node: Replies
+}
+
+type RepliesPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
@@ -157,7 +175,20 @@ type Comment {
   repliedToCommentId: String
   repliedToReplyId: String
   rating: Int
-  replies(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): RepliesPagination
+  replies(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+  ): RepliesPagination
   myRatingStatus: RatingStatus!
   creator: User!
   mentions: [User!]!
@@ -170,15 +201,20 @@ enum RatingStatus {
   DOWNVOTED
 }
 
-type CommentEdge {
-  cursor: String!
-  node: Comment!
-}
-
 type CommentPagination {
   edges: [CommentEdge!]
-  nodes: [Comment!]
-  totalCount: Int!
+  pageInfo: CommentPageInfo
+}
+
+type CommentEdge {
+  cursor: String
+  node: Comment
+}
+
+type CommentPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
@@ -455,12 +491,32 @@ type Query {
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!
   postsByCompanyId(id: String!): [Post!]!
   companyPostsFollowedByUser: [Post!]
-  comments(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderCommentsList = {direction: asc}): CommentPaginationPayload!
+  comments(
+    postId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+  ): CommentPaginationPayload!
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
   getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
   getUsersByPostReaction(reactionType: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
   commentReactions(commentId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommentReactionsOrderList = {direction: asc, orderBy: createdAt}): CommentReactionPaginationPayload!
+}
+
+input PaginationArgs {
+  skip: Float!
+  take: Float!
 }
 
 input OrderListUsers {

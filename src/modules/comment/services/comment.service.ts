@@ -17,6 +17,7 @@ import { POST_MESSAGE } from 'src/common/errors/error.message';
 import { User } from 'src/modules/user/entities/user.entity';
 import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
 import { customError } from 'src/common/errors';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Injectable()
 export class CommentsService {
@@ -84,7 +85,7 @@ export class CommentsService {
 
   public async getComments(
     postId: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderCommentsList,
   ) {
     /*check if the post exists */
@@ -104,7 +105,7 @@ export class CommentsService {
   }
   public async getRepliesToComment(
     id: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderCommentsList,
   ) {
     return this.commentsRepository.findRepliesToComment(id, paginate, order);

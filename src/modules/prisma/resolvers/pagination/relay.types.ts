@@ -46,17 +46,17 @@ export default function relayTypes<T>(type: Type<T>): any {
     public pageInfo!: Relay.PageInfo;
   }
 
-  @ObjectType(`${name}Page`, { isAbstract: true })
-  abstract class Page {
-    public name = `${name}Page`;
+  // @ObjectType(`${name}Page`, { isAbstract: true })
+  // abstract class Page {
+  //   public name = `${name}Page`;
 
-    @Field(() => Connection)
-    public page!: Connection;
+  //   @Field(() => Connection)
+  //   public page!: Connection;
 
-    @Field(() => PageData, { nullable: true })
-    public pageData!: PageData;
-  }
+  //   @Field(() => PageData, { nullable: true })
+  //   public pageData!: PageData;
+  // }
 
-  typeMap[`${name}`] = Page;
+  typeMap[`${name}`] = Connection;
   return typeMap[`${name}`];
 }

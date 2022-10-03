@@ -27,6 +27,7 @@ import { ReplyToCommentPayload } from '../entities/reply-to-comment.payload';
 import { CommentsService } from 'src/modules/comment/services/comment.service';
 import { Comment } from 'src/modules/comment/comment.models';
 import { RepliesToRepliesPayload } from '../entities/reply-to-reply.payload';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 
 @Resolver(() => Replies)
 export class RepliesResolver {
@@ -78,11 +79,10 @@ export class RepliesResolver {
   @ResolveField('replies', () => RepliesToRepliesPagination)
   async getReplies(
     @Parent() replies: Replies,
-    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
-    paginate: PaginationArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { order: 'createdAt', direction: 'asc' },
+      defaultValue: { orderBy: 'createdAt', direction: 'asc' },
     })
     order: OrderCommentsList,
   ) {

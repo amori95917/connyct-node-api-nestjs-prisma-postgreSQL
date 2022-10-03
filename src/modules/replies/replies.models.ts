@@ -5,6 +5,7 @@ import { User } from '../user/entities/user.entity';
 import { Comment } from '../comment/comment.models';
 import { RepliesToReplies } from './replies-to-replies.model';
 import { Post } from '../post/post.models';
+import relayTypes from '../prisma/resolvers/pagination/relay.types';
 
 @ObjectType()
 export class Replies extends BaseEntity {
@@ -37,4 +38,4 @@ export class Replies extends BaseEntity {
 }
 
 @ObjectType()
-export class RepliesPagination extends Paginated(Replies) {}
+export class RepliesPagination extends relayTypes<Replies>(Replies) {}

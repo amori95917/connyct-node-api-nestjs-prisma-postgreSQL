@@ -1,4 +1,5 @@
 import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
+import relayTypes from '../prisma/resolvers/pagination/relay.types';
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import { Post } from '../post/post.models';
@@ -47,4 +48,4 @@ export class Comment extends BaseEntity {
   public post?: Post | null;
 }
 @ObjectType()
-export class CommentPagination extends Paginated(Comment) {}
+export class CommentPagination extends relayTypes<Comment>(Comment) {}

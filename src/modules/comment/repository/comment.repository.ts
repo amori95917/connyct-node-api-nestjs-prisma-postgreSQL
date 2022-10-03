@@ -17,7 +17,8 @@ import { User } from 'src/modules/user/entities/user.entity';
 import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
 import { customError } from 'src/common/errors';
 import { RepliesToRepliesPayload } from 'src/modules/replies/entities/reply-to-reply.payload';
-
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 @Injectable()
 export class CommentsRepository {
   public constructor(
@@ -192,64 +193,84 @@ export class CommentsRepository {
   }
   public async getComments(
     postId: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderCommentsList,
   ) {
     try {
-      /* get comments*/
-      const nodes = await this.prisma.comment.findMany({
+      const baseArgs = {
         where: { postId, repliedToCommentId: null, repliedToReplyId: null },
-        skip: paginate.skip,
-        take: paginate.take,
         orderBy: { [order.orderBy]: order.direction },
-      });
-      const totalCount = await this.prisma.comment.count({
-        where: { postId, repliedToCommentId: null, repliedToReplyId: null },
-      });
-      const hasNextPage = haveNextPage(
-        paginate.skip,
-        paginate.take,
-        totalCount,
-      );
-      return {
-        nodes,
-        totalCount,
-        hasNextPage,
-        edges: nodes?.map((node) => ({
-          node,
-          cursor: Buffer.from(node.id).toString('base64'),
-        })),
       };
+      const result = await findManyCursorConnection(
+        (args) => this.prisma.comment.findMany({ ...args, ...baseArgs }),
+        () => this.prisma.comment.count({ where: baseArgs.where }),
+        { ...paginate },
+      );
+      return result;
+      /* get comments*/
+      // const nodes = await this.prisma.comment.findMany({
+      //   where: { postId, repliedToCommentId: null, repliedToReplyId: null },
+      //   skip: paginate.skip,
+      //   take: paginate.take,
+      //   orderBy: { [order.orderBy]: order.direction },
+      // });
+      // const totalCount = await this.prisma.comment.count({
+      //   where: { postId, repliedToCommentId: null, repliedToReplyId: null },
+      // });
+      // const hasNextPage = haveNextPage(
+      //   paginate.skip,
+      //   paginate.take,
+      //   totalCount,
+      // );
+      // return {
+      //   nodes,
+      //   totalCount,
+      //   hasNextPage,
+      //   edges: nodes?.map((node) => ({
+      //     node,
+      //     cursor: Buffer.from(node.id).toString('base64'),
+      //   })),
+      // };
     } catch (err) {
       throw new Error(err);
     }
   }
   public async findRepliesToComment(
     id: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderCommentsList,
   ) {
     /**get reply according to repliedToCommentId or repliedToReplyId */
-    const replies = await this.prisma.comment.findMany({
-      where: {
-        OR: [{ repliedToCommentId: id }, { repliedToReplyId: id }],
-      },
-      take: paginate.take,
-      skip: paginate.skip,
-      orderBy: { [order.orderBy]: order.direction },
-    });
-    const totalCount = await this.prisma.comment.count({
+    const baseArgs = {
       where: { OR: [{ repliedToCommentId: id }, { repliedToReplyId: id }] },
-    });
-    const hasNextPage = haveNextPage(paginate.skip, paginate.take, totalCount);
-    return {
-      nodes: replies,
-      totalCount,
-      hasNextPage,
-      edges: replies?.map((node) => ({
-        node,
-        cursor: Buffer.from(node.id).toString('base64'),
-      })),
+      orderBy: { [order.orderBy]: order.direction },
     };
+    const replies = await findManyCursorConnection(
+      (args) => this.prisma.comment.findMany({ ...args, ...baseArgs }),
+      () => this.prisma.comment.count({ where: baseArgs.where }),
+      { ...paginate },
+    );
+    return replies;
+    // const replies = await this.prisma.comment.findMany({
+    //   where: {
+    //     OR: [{ repliedToCommentId: id }, { repliedToReplyId: id }],
+    //   },
+    //   take: paginate.take,
+    //   skip: paginate.skip,
+    //   orderBy: { [order.orderBy]: order.direction },
+    // });
+    // const totalCount = await this.prisma.comment.count({
+    //   where: { OR: [{ repliedToCommentId: id }, { repliedToReplyId: id }] },
+    // });
+    // const hasNextPage = haveNextPage(paginate.skip, paginate.take, totalCount);
+    // return {
+    //   nodes: replies,
+    //   totalCount,
+    //   hasNextPage,
+    //   edges: replies?.map((node) => ({
+    //     node,
+    //     cursor: Buffer.from(node.id).toString('base64'),
+    //   })),
+    // };
   }
 }

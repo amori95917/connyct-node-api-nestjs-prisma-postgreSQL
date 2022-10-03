@@ -55,6 +55,7 @@
     "dataloader": "^2.1.0",
     "dotenv": "^16.0.1",
     "graphql": "^16.5.0",
+    "graphql-fields": "^2.0.3",
     "graphql-relay": "^0.10.0",
     "graphql-tools": "^8.2.8",
     "graphql-type-json": "^0.3.2",

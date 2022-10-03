@@ -2,6 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Comment } from '../comment/comment.models';
 import { BaseEntity } from '../prisma/entities/base.entity';
 import { Paginated } from '../prisma/resolvers/pagination/pagination';
+import relayTypes from '../prisma/resolvers/pagination/relay.types';
 import { User } from '../user/entities/user.entity';
 
 @ObjectType()
@@ -28,4 +29,6 @@ export class RepliesToReplies extends BaseEntity {
   creator?: User;
 }
 @ObjectType()
-export class RepliesToRepliesPagination extends Paginated(RepliesToReplies) {}
+export class RepliesToRepliesPagination extends relayTypes<RepliesToReplies>(
+  RepliesToReplies,
+) {}
