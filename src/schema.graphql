@@ -291,15 +291,21 @@ type User {
   isAdmin: Boolean!
 }
 
-type UserEdge {
-  cursor: String!
-  node: User!
-}
-
 type UserPaginated {
   edges: [UserEdge!]
-  nodes: [User!]
-  totalCount: Int!
+  pageInfo: UserPageInfo
+  totalCount: Float!
+}
+
+type UserEdge {
+  cursor: String
+  node: User
+}
+
+type UserPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
@@ -507,7 +513,21 @@ type CommentReactionPaginationPayload {
 }
 
 type Query {
-  listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
+  listUsers(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListUsers = {direction: desc, orderBy: username}
+    filter: FilterListUsers
+  ): UserPaginated!
   me: User!
   getUser(userId: String!): User!
   getCompanysFollowedByUser(
@@ -609,11 +629,6 @@ type Query {
   commentReactions(commentId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommentReactionsOrderList = {direction: asc, orderBy: createdAt}): CommentReactionPaginationPayload!
 }
 
-input PaginationArgs {
-  skip: Float!
-  take: Float!
-}
-
 input OrderListUsers {
   direction: OrderDirection!
   orderBy: UsersOrderBy!
@@ -655,6 +670,11 @@ enum CompaniesOrderBy {
 
 input FilterListCompanies {
   omni: String = null
+}
+
+input PaginationArgs {
+  skip: Float!
+  take: Float!
 }
 
 input OrderTagList {

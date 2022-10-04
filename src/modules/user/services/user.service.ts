@@ -23,6 +23,8 @@ import {
 
 import { v4 } from 'uuid';
 import { Auth } from 'src/modules/auth/entities/auth.entity';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UserService {
@@ -42,16 +44,14 @@ export class UserService {
   }
 
   async list(
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderListUsers,
     filter?: FilterListUsers,
   ) {
     const role = await this.prisma.role.findUnique({
       where: { name: Role.Admin },
     });
-    const nodes = await this.prisma.user.findMany({
-      skip: paginate.skip,
-      take: paginate.take,
+    const baseArgs = {
       orderBy: { [order.orderBy]: order.direction },
       where: {
         userRoles: { none: { role } },
@@ -61,24 +61,21 @@ export class UserService {
           lastName: { contains: filter.omni, mode: 'insensitive' },
         }),
       },
-    });
-    const totalCount = await this.prisma.user.count({
-      where: { userRoles: { none: { role } } },
-    });
-    const hasNextPage = haveNextPage(paginate.skip, paginate.take, totalCount);
-    return {
-      nodes,
-      totalCount,
-      hasNextPage,
-      edges: nodes?.map((node) => ({
-        node,
-        cursor: Buffer.from(node.id).toString('base64'),
-      })),
     };
+    const users = await findManyCursorConnection(
+      async (args) => await this.prisma.user.findMany({ ...args, ...baseArgs }),
+      async () =>
+        await this.prisma.user.count({
+          where: { userRoles: { none: { role } } },
+        }),
+      { ...paginate },
+    );
+    return users;
   }
 
   async getUser(userId: string): Promise<User> {
-    return await this.prisma.user.findFirst({ where: { id: userId } });
+    const user = await this.prisma.user.findFirst({ where: { id: userId } });
+    return user;
   }
   async getUserByEmail(email: string): Promise<User> {
     return await this.prisma.user.findFirst({ where: { email } });

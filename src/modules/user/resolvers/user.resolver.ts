@@ -57,8 +57,7 @@ export class UserResolver {
   @Roles(Role.Admin)
   @Query(() => UserPaginated)
   async listUsers(
-    @Args('paginate', { nullable: true, defaultValue: { skip: 0, take: 50 } })
-    paginate: PaginationArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
       defaultValue: { orderBy: 'username', direction: 'desc' },
@@ -67,6 +66,7 @@ export class UserResolver {
     @Args('filter', { nullable: true })
     filter: FilterListUsers,
   ) {
+    console.log('list of users ############################');
     return await this.userService.list(paginate, order, filter);
   }
 
@@ -79,7 +79,7 @@ export class UserResolver {
   @UseGuards(GqlAuthGuard)
   @Query(() => User)
   @Roles(Role.Admin, Role.User)
-  async getUser(@Args('userId') userId: string): Promise<UserPrisma> {
+  async getUser(@Args('userId') userId: string): Promise<User> {
     return await this.userService.getUser(userId);
   }
 
