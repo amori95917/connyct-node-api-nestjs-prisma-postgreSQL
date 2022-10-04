@@ -510,7 +510,20 @@ type Query {
   listUsers(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderListUsers = {direction: desc, orderBy: username}, filter: FilterListUsers): UserPaginated!
   me: User!
   getUser(userId: String!): User!
-  getCompanysFollowedByUser(paginate: PaginationArgs, order: OrderFollowedCompanyList): CompanyPaginated
+  getCompanysFollowedByUser(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderFollowedCompanyList
+  ): CompanyPaginated
   companiesSuggestions(
     """Paginate before opaque cursor"""
     before: String

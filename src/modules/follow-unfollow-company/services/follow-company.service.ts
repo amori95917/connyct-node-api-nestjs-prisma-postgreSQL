@@ -14,6 +14,7 @@ import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination
 import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
 import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 
 @Injectable()
 export class FollowCompanyService {
@@ -146,37 +147,27 @@ export class FollowCompanyService {
 
   async getCompanyFollowedByUser(
     userId: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: OrderFollowedCompanyList,
   ) {
     try {
-      const companyFollowedByUser =
-        await this.prisma.followUnfollowCompany.findMany({
-          skip: paginate.skip,
-          take: paginate.take,
-          orderBy: { [order.orderBy]: order.direction },
-          where: { followedById: userId },
-          include: { followedTo: true },
-        });
-      if (!companyFollowedByUser.length) return null;
-      const nodes = companyFollowedByUser.map((company) => {
-        return company.followedTo;
-      });
-      const totalCount = await this.prisma.followUnfollowCompany.count();
-      const hasNextPage = haveNextPage(
-        paginate.skip,
-        paginate.take,
-        totalCount,
-      );
-      return {
-        nodes,
-        totalCount,
-        hasNextPage,
-        edges: nodes?.map((node) => ({
-          node,
-          cursor: Buffer.from(node.id).toString('base64'),
-        })),
+      const baseArgs = {
+        orderBy: { [order.orderBy]: order.direction },
+        where: { followedById: userId },
+        include: { followedTo: true },
       };
+      const companyFollowedByUser = await findManyCursorConnection(
+        (args) =>
+          this.prisma.followUnfollowCompany.findMany({ ...args, ...baseArgs }),
+        () =>
+          this.prisma.followUnfollowCompany.count({ where: baseArgs.where }),
+        { ...paginate },
+      );
+      console.log('companyFollowedByUser api', companyFollowedByUser);
+      return companyFollowedByUser;
+      // const nodes = companyFollowedByUser.map((company) => {
+      //   return company.followedTo;
+      // });
     } catch (e) {
       throw new Error(e);
     }

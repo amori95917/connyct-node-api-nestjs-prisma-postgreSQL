@@ -87,7 +87,7 @@ export class UserResolver {
   @Roles(Role.User)
   @Query(() => CompanyPaginated, { nullable: true })
   async getCompanysFollowedByUser(
-    @Args('paginate', { nullable: true }) paginate: PaginationArgs,
+    @Args() paginate: ConnectionArgs,
     @Args('order', { nullable: true }) order: OrderFollowedCompanyList,
     @UserDecorator() user: User,
   ) {
