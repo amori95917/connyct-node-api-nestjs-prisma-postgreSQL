@@ -26,6 +26,7 @@ import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 import { PostPagination } from '../post.models';
+import { OrderPosts } from '../dto/order-posts.input';
 
 @Injectable()
 export class PostsRepository {
@@ -390,7 +391,9 @@ export class PostsRepository {
   }
   public async findCompanyPostsFollowedByUser(
     userId: string,
-  ): Promise<Post[] | null> {
+    paginate: ConnectionArgs,
+    order: OrderPosts,
+  ) {
     try {
       const followedCompany = await this.prisma.followUnfollowCompany.findMany({
         where: { followedById: userId },
@@ -400,13 +403,15 @@ export class PostsRepository {
       const followedIds = followedCompany.map(
         (company) => company.followedToId,
       );
-
-      const posts = await this.prisma.post.findMany({
-        where: {
-          companyId: { in: followedIds },
-        },
-      });
-      if (!posts.length) return null;
+      const baseArgs = {
+        where: { companyId: { in: followedIds } },
+        orderBy: { [order.orderBy]: order.direction },
+      };
+      const posts = await findManyCursorConnection(
+        (args) => this.prisma.post.findMany({ ...args, ...baseArgs }),
+        () => this.prisma.post.count({ where: baseArgs.where }),
+        { ...paginate },
+      );
       return posts;
     } catch (e) {
       throw new Error(e);

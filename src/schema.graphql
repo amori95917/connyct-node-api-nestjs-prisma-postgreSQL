@@ -572,7 +572,20 @@ type Query {
     """Paginate last"""
     last: Float
   ): PostPagination!
-  companyPostsFollowedByUser: [Post!]
+  companyPostsFollowedByUser(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderPosts = {direction: desc, orderBy: createdAt}
+  ): PostPagination
   comments(
     postId: String!
 
@@ -656,6 +669,16 @@ enum TagOrderBy {
 
 input TagQuery {
   name: String = null
+}
+
+input OrderPosts {
+  direction: OrderDirection!
+  orderBy: PostsOrderBy!
+}
+
+"""Order by: createdAt"""
+enum PostsOrderBy {
+  createdAt
 }
 
 input ReactionsOrderList {

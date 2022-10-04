@@ -34,6 +34,7 @@ import { Product } from '../entities/product.entity';
 import { Tag } from '../entities/tags.entity';
 import { PostImage } from '../entities/post-image.entity';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { OrderPosts } from '../dto/order-posts.input';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -111,11 +112,23 @@ export class PostsResolver {
     return this.postsService.findTags(id);
   }
 
-  @Query(() => [Post], { nullable: true })
+  @Query(() => PostPagination, { nullable: true })
   @UseGuards(GqlAuthGuard)
-  public async companyPostsFollowedByUser(@CurrentUser() user: User) {
+  public async companyPostsFollowedByUser(
+    @CurrentUser() user: User,
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'createdAt', direction: 'desc' },
+    })
+    order: OrderPosts,
+  ) {
     const { id } = user;
-    return this.postsService.findCompanyPostsFollowedByUser(id);
+    return this.postsService.findCompanyPostsFollowedByUser(
+      id,
+      paginate,
+      order,
+    );
   }
 
   @ResolveField('postImage', () => [PostImage])

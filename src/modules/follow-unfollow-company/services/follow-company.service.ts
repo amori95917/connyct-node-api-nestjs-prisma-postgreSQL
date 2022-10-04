@@ -156,14 +156,31 @@ export class FollowCompanyService {
         where: { followedById: userId },
         include: { followedTo: true },
       };
-      const companyFollowedByUser = await findManyCursorConnection(
+      const result = await findManyCursorConnection(
         (args) =>
           this.prisma.followUnfollowCompany.findMany({ ...args, ...baseArgs }),
         () =>
           this.prisma.followUnfollowCompany.count({ where: baseArgs.where }),
         { ...paginate },
       );
-      console.log('companyFollowedByUser api', companyFollowedByUser);
+      //   {
+      //   id: '8156e0b3-e5cb-41ed-8869-727a6b2daf7f',
+      //   followedById: '36f0377d-9a42-4f29-82da-29a00059c029',
+      //   followedToId: 'c50abde9-5e63-45b9-a2a0-ddc54f892097',
+      //   createdAt: 2022-10-04T02:45:23.466Z,
+      //   updatedAt: 2022-10-04T02:45:23.466Z,
+      //   followedTo: [Object]
+      // },
+      const companyFollowedByUser = {
+        ...result,
+        edges: result.edges.map((companyEdge) => {
+          const { followedTo, ...rest } = companyEdge.node;
+          return {
+            ...companyEdge,
+            node: { ...companyEdge.node, ...followedTo, ...rest },
+          };
+        }),
+      };
       return companyFollowedByUser;
       // const nodes = companyFollowedByUser.map((company) => {
       //   return company.followedTo;

@@ -18,6 +18,7 @@ import { CompanyService } from 'src/modules/company/services/company.service';
 import { UpdatePostInput } from '../dto/update-post.input';
 import { PostImage } from '../entities/post-image.entity';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { OrderPosts } from '../dto/order-posts.input';
 
 @Injectable()
 export class PostsService {
@@ -112,8 +113,14 @@ export class PostsService {
   }
   public async findCompanyPostsFollowedByUser(
     id: string,
-  ): Promise<Post[] | null> {
-    return this.postsRepository.findCompanyPostsFollowedByUser(id);
+    paginate: ConnectionArgs,
+    order: OrderPosts,
+  ) {
+    return this.postsRepository.findCompanyPostsFollowedByUser(
+      id,
+      paginate,
+      order,
+    );
   }
   public async findCompanyPostImageFollowedByUser(
     id: string,
