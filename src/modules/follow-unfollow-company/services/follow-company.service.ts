@@ -175,9 +175,10 @@ export class FollowCompanyService {
         ...result,
         edges: result.edges.map((companyEdge) => {
           const { followedTo, ...rest } = companyEdge.node;
+          // need followedCreatedAt, companyCreatedAt
           return {
             ...companyEdge,
-            node: { ...companyEdge.node, ...followedTo, ...rest },
+            node: { ...companyEdge.node, ...rest, ...followedTo },
           };
         }),
       };
