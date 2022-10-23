@@ -17,9 +17,18 @@ import { AnonymousStrategy } from './strategies/anonymous.strategy';
 import { AuthResolver } from './resolvers/auth.resolver';
 import { RolesGuard } from './guards/roles.guard';
 import { GqlAnonymousGuard } from './guards/gql-anonymous.guard';
+import { FilesModule } from '../files/files.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { SharpModule } from 'nestjs-sharp';
 
 @Module({
-  imports: [...DEPENDENCIES_AUTH_MODULES, PrismaModule],
+  imports: [
+    ...DEPENDENCIES_AUTH_MODULES,
+    PrismaModule,
+    FilesModule,
+    CloudinaryModule,
+    SharpModule,
+  ],
   providers: [
     TokenService,
     AuthResolver,

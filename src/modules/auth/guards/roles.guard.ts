@@ -31,20 +31,22 @@ export class RolesGuard implements CanActivate {
 
       if (ctx.getContext().req.headers['authorization']) {
         const user = ctx.getContext().req?.user;
+        // console.log(!!(await this.checkPermission(user)), 'incoming check');
         return await this.checkPermission(user);
       }
     }
     return false;
   }
 
-  async checkPermission(user): Promise<boolean> {
+  async checkPermission(user): Promise<any> {
     if (!user) return false;
     const _user = await this.prisma.user.findFirst({
       where: { id: user.id },
       include: { userRoles: { include: { role: true } } },
     });
-    return _user.userRoles.some((role) => {
-      if (this.permissonRoles.includes(role.role.name as any)) {
+
+    return _user.userRoles.map((role) => {
+      if (this.permissonRoles?.includes(role.role.name as any)) {
         return true;
       }
     });

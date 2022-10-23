@@ -1,3 +1,4 @@
+import { FileUploadService } from './../files/services/file.service';
 import { CompanyService } from './../company/services/company.service';
 import { FollowCompanyService } from './../follow-unfollow-company/services/follow-company.service';
 import { Module } from '@nestjs/common';
@@ -12,9 +13,11 @@ import { AuthModule } from '../auth/auth.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { UserResolver } from './resolvers/user.resolver';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { CloudinaryService } from '../cloudinary/services/cloudinary.service';
+import { SharpModule } from 'nestjs-sharp';
 
 @Module({
-  imports: [PrismaModule, AuthModule],
+  imports: [PrismaModule, AuthModule, SharpModule],
   providers: [
     UserResolver,
     UserService,
@@ -24,6 +27,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
     ValidationService,
     FollowCompanyService,
     CompanyService,
+    FileUploadService,
+    CloudinaryService,
     {
       provide: 'APP_GUARD',
       useClass: RolesGuard,

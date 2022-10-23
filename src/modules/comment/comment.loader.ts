@@ -30,5 +30,5 @@ export default class CommentsLoader {
     private readonly userService: UserService,
     private readonly commentsRepository: CommentsRepository,
     private readonly postsRepository: PostsRepository,
-  ) { }
+  ) {}
 }

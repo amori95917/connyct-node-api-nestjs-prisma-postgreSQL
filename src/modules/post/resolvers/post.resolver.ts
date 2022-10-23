@@ -35,6 +35,8 @@ import { Tag } from '../entities/tags.entity';
 import { PostImage } from '../entities/post-image.entity';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderPosts } from '../dto/order-posts.input';
+import { Company } from 'src/modules/company/entities/company.entity';
+import { CompanyService } from 'src/modules/company/services/company.service';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -43,6 +45,7 @@ export class PostsResolver {
     private readonly postsLoaders: PostsLoaders,
     private readonly commentsService: CommentsService,
     private readonly ratingService: RatingService,
+    private readonly companyService: CompanyService,
   ) {}
 
   @Mutation(() => CreatePostPayload)
@@ -140,6 +143,12 @@ export class PostsResolver {
   public async companyPostTagsFollowedByUser(@Parent() post: Post) {
     const { id } = post;
     return this.postsService.findCompanyPostTagsFollowedByUser(id);
+  }
+
+  @ResolveField(() => Company)
+  @UseGuards(GqlAuthGuard)
+  async company(@Parent() post: Post): Promise<Company> {
+    return await this.companyService.getCompanyById(post.companyId);
   }
 
   @Mutation(() => RatePayload)

@@ -1,6 +1,7 @@
 export const COMPANY_MESSAGE = {
   NOT_FOUND: 'Company Not Found',
   ALREADY_EXIST: 'Company Already Exists',
+  INVALID_LEGALNAME_FORMAT: 'Legal name must be longer than 3 characters',
 };
 export const POST_MESSAGE = {
   NOT_FOUND: 'Post Not Found',
@@ -29,7 +30,9 @@ export const USER_MESSAGE = {
   NOT_FOUND: 'User Not Found',
   ALREADY_EXIST: 'User Already Exists',
   EMAIL_CONFLICT: 'Email Already Exists',
+  FULLNAME_REQUIRED: 'FullName is required',
 };
+
 export const REACTION_MESSAGE = {
   NOT_FOUND: 'Reaction Not Found',
 };

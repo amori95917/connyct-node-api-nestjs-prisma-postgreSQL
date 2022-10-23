@@ -15,6 +15,14 @@ import { Branch } from '../entities/branch.entity';
 import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
+import { FileUpload } from 'graphql-upload';
+import { FileUploadService } from 'src/modules/files/services/file.service';
+import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
+import { CompanyPayload } from '../entities/company.payload';
+import { customError } from 'src/common/errors';
+import { COMPANY_MESSAGE } from 'src/common/errors/error.message';
+import { COMPANY_CODE } from 'src/common/errors/error.code';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -24,6 +32,8 @@ export class CompanyService {
     @Inject(REQUEST) private request,
     @Inject(CONTEXT) private context,
     private prisma: PrismaService,
+    private fileUploadService: FileUploadService,
+    private cloudinary: CloudinaryService,
   ) {
     this.allowOperation = this.context?.req?.user?.isAdmin;
   }
@@ -160,22 +170,57 @@ export class CompanyService {
   async editCompany(
     companyId: string,
     companyEditData: CompanyEditInput,
-  ): Promise<Company> {
+    file: FileUpload,
+  ): Promise<CompanyPayload> {
     try {
       const companyData = await this.prisma.company.findFirst({
         where: { id: companyId },
       });
-      if (!companyData) throw new Error('Company does not exist');
+      if (!companyData)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+      /**only if file exist */
+      /**TODO */
+      /**1. Image dimension check */
+      let fileUrl;
+      if (file) {
+        if (companyData.avatar) {
+          await this.fileUploadService.deleteImage(
+            'company-avatar',
+            this.cloudinary.getPublicId(companyData.avatar),
+          );
+        }
+        fileUrl = await this.fileUploadService.uploadImage(
+          'company-avatar',
+          file,
+        );
+        /**check if error exist */
+        if (fileUrl.errors) return { errors: fileUrl.errors };
+      }
+
       const updatedData = await this.prisma.company.update({
         where: { id: companyId },
         data: {
+          ...companyData,
           ...companyEditData,
-          // branches: companyEditData.b as any,
+          avatar: fileUrl,
         },
       });
-      return updatedData;
+      return { company: updatedData };
     } catch (e) {
       throw new Error(e);
+    }
+  }
+  async getCompanyByUserId(userId: string): Promise<Company> {
+    try {
+      return await this.prisma.company.findFirst({
+        where: { ownerId: userId },
+      });
+    } catch (err) {
+      throw new Error(err);
     }
   }
 

@@ -91,6 +91,9 @@ export class Company extends BaseEntity {
   @Field(() => [Branch], { nullable: true })
   @IsOptional()
   branches?: Branch[];
+
+  @Field({ nullable: true })
+  avatar: string;
 }
 
 @ObjectType()

@@ -32,6 +32,11 @@ import { FollowCompanyService } from 'src/modules/follow-unfollow-company/servic
 import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
 import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { UserProfilePayload } from '../entities/userProfile.payload';
+import { UserProfileInput } from '../dto/userProfile.input';
+import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { CompanyService } from 'src/modules/company/services/company.service';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -39,6 +44,7 @@ export class UserResolver {
     private readonly userService: UserService,
     private readonly validationService: ValidationService,
     private readonly followCompanyService: FollowCompanyService,
+    private readonly companyService: CompanyService,
   ) {}
 
   @ResolveField(() => Boolean)
@@ -142,5 +148,24 @@ export class UserResolver {
       order,
       filter,
     );
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Roles(Role.User)
+  @Mutation(() => UserProfilePayload)
+  async editUserProfile(
+    @Args('userProfile') userProfile: UserProfileInput,
+    @Args({ name: 'file', nullable: true, type: () => GraphQLUpload })
+    file: FileUpload,
+    @CurrentUser() user: User,
+  ): Promise<UserProfilePayload> {
+    const { id } = user;
+    return await this.userService.editUserProfile(userProfile, file, id);
+  }
+
+  @ResolveField(() => Company)
+  @UseGuards(GqlAuthGuard)
+  async company(@Parent() user: User): Promise<Company> {
+    return await this.companyService.getCompanyByUserId(user.id);
   }
 }

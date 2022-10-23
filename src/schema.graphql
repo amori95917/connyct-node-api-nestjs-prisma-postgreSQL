@@ -2,6 +2,12 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type CustomError {
+  message: String!
+  code: String
+  statusCode: Float
+}
+
 type Branch {
   id: ID!
   createdAt: DateTime!
@@ -54,6 +60,7 @@ type Company {
   followers: Float
   slogan: String
   branches: [Branch!]
+  avatar: String
 }
 
 """
@@ -255,6 +262,7 @@ type Post {
   companyId: String
   postImage: [PostImage!]!
   tags: [Tag!]!
+  company: Company
 }
 
 type PostPagination {
@@ -311,21 +319,42 @@ type UserPageInfo {
 
 type Token {
   """JWT access token"""
-  accessToken: String!
+  accessToken: String
 
   """JWT refresh token"""
-  refreshToken: String!
+  refreshToken: String
 }
 
 type Auth {
   """JWT access token"""
-  accessToken: String!
+  accessToken: String
 
   """JWT refresh token"""
-  refreshToken: String!
-  user: User!
-  role: String!
+  refreshToken: String
+  errors: [CustomError!]
+  user: User
+  role: String
   company: [Company!]
+}
+
+type UserProfile {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  address: String
+  phoneNo: String
+  profileImage: String
+  user: User
+}
+
+type UserProfilePayload {
+  errors: CustomError
+  userProfile: UserProfile
+}
+
+type CompanyPayload {
+  errors: [CustomError!]
+  company: Company
 }
 
 type UserError {
@@ -352,12 +381,6 @@ type NewReplyPayload implements MutationPayload {
 type CommentPaginationPayload {
   errors: [UserError!]
   comments: CommentPagination
-}
-
-type CustomError {
-  message: String!
-  code: String
-  statusCode: Float
 }
 
 type CreatePostPayload {
@@ -725,6 +748,7 @@ type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
   changePassword(data: ChangePasswordInput!): User!
+  editUserProfile(userProfile: UserProfileInput!, file: Upload): UserProfilePayload!
   signup(data: SignupInput!): Auth!
   login(data: LoginInput!): Auth!
   loginLinkAccess(data: LoginLinkAccessInput!): Boolean!
@@ -736,7 +760,7 @@ type Mutation {
   logout: Boolean!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
-  editCompany(id: String!, data: CompanyEditInput!): Company!
+  editCompany(id: String!, data: CompanyEditInput!, file: Upload): CompanyPayload!
   createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
   editCompanyBranch(id: String!, data: CompanyBranchEditInput!): Branch!
   deleteCompanyBranch(id: String!, companyId: String!): Branch!
@@ -781,6 +805,14 @@ input ChangePasswordInput {
   oldPassword: String!
   newPassword: String!
 }
+
+input UserProfileInput {
+  address: String!
+  phoneNo: String!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input SignupInput {
   fullName: String
@@ -885,9 +917,6 @@ input CreatePostInput {
   metaTitle: String
   description: String
 }
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 input UpdatePostInput {
   text: String!

@@ -31,6 +31,7 @@ Table User {
   Comment Comment [not null]
   CommentMentions CommentMentions [not null]
   CommentReactions CommentReactions [not null]
+  UserProfile UserProfile
 
   indexes {
     (id, email) [unique]
@@ -61,6 +62,17 @@ Table UserRole {
   user User [not null]
   roleId String [not null]
   role Role [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table UserProfile {
+  id String [pk]
+  address String
+  phoneNo String
+  profileImage String
+  userId String [unique, not null]
+  user User [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
@@ -109,6 +121,7 @@ Table Company {
   contactNumber String
   slogan String
   Post Post [not null]
+  avatar String
 }
 
 Table Branch {
@@ -355,6 +368,8 @@ Enum BranchType {
 Ref: UserRole.userId > User.id
 
 Ref: UserRole.roleId > Role.id
+
+Ref: UserProfile.userId - User.id [delete: Cascade]
 
 Ref: RoleRight.roleId > Role.id
 

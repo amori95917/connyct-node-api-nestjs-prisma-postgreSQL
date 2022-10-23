@@ -1,6 +1,7 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 import { Comment } from '../comment/comment.models';
+import { Company } from '../company/entities/company.entity';
 import relayTypes from '../prisma/resolvers/pagination/relay.types';
 import { RatingStatus } from '../rating/entities/rating-status.enum';
 import { User } from '../user/entities/user.entity';
@@ -48,6 +49,9 @@ export class Post {
 
   @Field(() => [Tag])
   tags?: Tag[];
+
+  @Field(() => Company, { nullable: true })
+  company?: Company;
 }
 
 @ObjectType()

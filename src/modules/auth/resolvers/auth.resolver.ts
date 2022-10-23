@@ -40,30 +40,37 @@ export class AuthResolver {
     @Args('data') data: SignupInput,
     @Context() context,
   ): Promise<Auth> {
-    const { user, company, role } = await this.userService.signUp(data);
-    await this.emailService.sendEmailConfirmation({
-      name: `${user.fullName} `,
-      email: user.email,
-      emailToken: user.emailToken,
-    });
+    try {
+      const { user, company, role, errors } = await this.userService.signUp(
+        data,
+      );
 
-    const token = this.tokenService.generateTokens({
-      userId: user.id,
-    });
-    context.res.cookie('cookie', {
-      accessToken: token.accessToken,
-      refreshToken: token.refreshToken,
-      user: user,
-    });
-    const { accessToken, refreshToken } = token;
+      await this.emailService.sendEmailConfirmation({
+        name: `${user.fullName} `,
+        email: user.email,
+        emailToken: user.emailToken,
+      });
 
-    return {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      user,
-      role,
-      company,
-    };
+      const token = this.tokenService.generateTokens({
+        userId: user.id,
+      });
+      context.res.cookie('cookie', {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        user: user,
+      });
+      const { accessToken, refreshToken } = token;
+
+      return {
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        user,
+        role,
+        company,
+      };
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   @Mutation(() => Auth)

@@ -8,9 +8,11 @@ import { TagService } from '../tag/services/tag.service';
 import { TagRepository } from '../tag/repository/tag.repository';
 import { CompanyService } from '../company/services/company.service';
 import { PostModule } from '../post/post.module';
+import { FilesModule } from '../files/files.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
-  imports: [PrismaModule, PostModule],
+  imports: [PrismaModule, PostModule, FilesModule, CloudinaryModule],
   providers: [LikesResolver, LikesService, LikesRepository, CompanyService],
 })
 export class LikesModule {}

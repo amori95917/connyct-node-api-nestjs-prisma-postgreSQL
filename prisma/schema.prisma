@@ -47,6 +47,7 @@ model User {
   Comment               Comment[]
   CommentMentions       CommentMentions[]
   CommentReactions      CommentReactions[]
+  UserProfile           UserProfile?
 
   @@unique([id, email])
 }
@@ -77,6 +78,17 @@ model UserRole {
   role      Role      @relation(fields: [roleId], references: [id])
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt @db.Timestamp()
+}
+
+model UserProfile {
+  id           String    @id @default(uuid())
+  address      String?
+  phoneNo      String?
+  profileImage String?
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt @db.Timestamp()
 }
 
 model RoleRight {
@@ -128,6 +140,7 @@ model Company {
   contactNumber         String?
   slogan                String?
   Post                  Post[]
+  avatar                String?
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt

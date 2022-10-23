@@ -19,6 +19,8 @@ import { Branch } from '../entities/branch.entity';
 import { CompanyBranchInput } from '../dto/company-branch.input';
 import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { CompanyPayload } from '../entities/company.payload';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -45,6 +47,7 @@ export class CompanyResolver {
   async getCompanyById(@Args('id', { type: () => String }) id: string) {
     return this.companyService.getCompanyById(id);
   }
+
   @UseGuards(GqlAuthGuard)
   @Roles(Role.Owner)
   @Mutation(() => Company)
@@ -72,12 +75,14 @@ export class CompanyResolver {
   //   return this.companyService.createCompanyAddress(companyAddress);
   // }
   @Roles(Role.Owner, Role.Manager)
-  @Mutation(() => Company)
+  @Mutation(() => CompanyPayload)
   async editCompany(
     @Args('id') companyId: string,
     @Args('data') companyEditData: CompanyEditInput,
-  ): Promise<Company> {
-    return this.companyService.editCompany(companyId, companyEditData);
+    @Args({ name: 'file', nullable: true, type: () => GraphQLUpload })
+    file: FileUpload,
+  ): Promise<CompanyPayload> {
+    return this.companyService.editCompany(companyId, companyEditData, file);
   }
 
   @Roles(Role.Owner, Role.Manager)
