@@ -1,3 +1,4 @@
+import { OtpVerificationModule } from './../otp-verification/otp-verification.module';
 import { DEPENDENCIES_AUTH_MODULES } from 'src/config';
 
 import { Module } from '@nestjs/common';
@@ -28,6 +29,7 @@ import { SharpModule } from 'nestjs-sharp';
     FilesModule,
     CloudinaryModule,
     SharpModule,
+    OtpVerificationModule,
   ],
   providers: [
     TokenService,

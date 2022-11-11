@@ -25,6 +25,7 @@ import { RequestConfirmEmailInput } from '../dto/confirm.input';
 import { LoginInput, LoginLinkAccessInput } from '../dto/login.input';
 import { SignupInput } from '../dto/signup.input';
 import { Token } from '../entities/token.entity';
+import { OTPService } from 'src/modules/otp-verification/services/otp.service';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -33,6 +34,7 @@ export class AuthResolver {
     private readonly userService: UserService,
     private emailService: EmailService,
     private tokenService: TokenService,
+    private otpService: OTPService,
   ) {}
 
   @Mutation(() => Auth)
@@ -60,13 +62,14 @@ export class AuthResolver {
         user: user,
       });
       const { accessToken, refreshToken } = token;
-
+      const otp = await this.otpService.sendOTP(user.id);
       return {
         accessToken: accessToken,
         refreshToken: refreshToken,
         user,
         role,
         company,
+        otp,
       };
     } catch (err) {
       throw new Error(err);
@@ -80,6 +83,7 @@ export class AuthResolver {
   ) {
     const { accessToken, refreshToken, user, role, company } =
       await this.auth.login(emailOrUsername.toLowerCase(), password, context);
+    // if (errors.length) return { errors: errors };
     return {
       accessToken,
       refreshToken,

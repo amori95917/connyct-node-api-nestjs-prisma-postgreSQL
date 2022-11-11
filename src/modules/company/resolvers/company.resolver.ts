@@ -21,6 +21,7 @@ import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CompanyPayload } from '../entities/company.payload';
+import { CompanyAccountStatus } from '../dto/company-account-status.input';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -118,5 +119,14 @@ export class CompanyResolver {
     @Args('companyId') companyId: string,
   ): Promise<Branch> {
     return this.companyService.deleteCompanyBranch(companyId, branchId);
+  }
+
+  @Roles(Role.Admin)
+  @Mutation(() => CompanyPayload)
+  async companyAccountStatus(
+    @Args('data') data: CompanyAccountStatus,
+    @Args('companyId') companyId: string,
+  ): Promise<CompanyPayload> {
+    return await this.companyService.companyAccountStatus(data, companyId);
   }
 }

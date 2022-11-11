@@ -14,6 +14,7 @@ Table User {
   isValid Boolean [not null, default: false]
   isActive Boolean [not null, default: false]
   isSuperuser Boolean [not null, default: false]
+  isEmailVerified Boolean [not null, default: false]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   posts Post [not null]
@@ -32,6 +33,7 @@ Table User {
   CommentMentions CommentMentions [not null]
   CommentReactions CommentReactions [not null]
   UserProfile UserProfile
+  OTP OTP [not null]
 
   indexes {
     (id, email) [unique]
@@ -122,6 +124,8 @@ Table Company {
   slogan String
   Post Post [not null]
   avatar String
+  accountStatus AccountStatus [not null, default: 'PENDING']
+  reason String
 }
 
 Table Branch {
@@ -341,6 +345,16 @@ Table Industry {
   updatedAt DateTime
 }
 
+Table OTP {
+  id String [pk]
+  otp Int [not null]
+  expirationDate DateTime [not null]
+  userId String [not null]
+  user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
 Enum CompanyStage {
   STARTUP
   SCALEUP
@@ -363,6 +377,12 @@ Enum RatingStatus {
 Enum BranchType {
   CORPORATE
   BRANCH_OFFICE
+}
+
+Enum AccountStatus {
+  APPROVED
+  PENDING
+  REJECTED
 }
 
 Ref: UserRole.userId > User.id
@@ -438,3 +458,5 @@ Ref: FollowUnfollowCompany.followedToId > Company.id [delete: Cascade]
 Ref: FollowUserToUser.followedToId > User.id [delete: Cascade]
 
 Ref: FollowUserToUser.followedById > User.id [delete: Cascade]
+
+Ref: OTP.userId > User.id

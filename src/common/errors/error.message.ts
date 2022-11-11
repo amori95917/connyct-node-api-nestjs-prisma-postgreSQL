@@ -2,6 +2,7 @@ export const COMPANY_MESSAGE = {
   NOT_FOUND: 'Company Not Found',
   ALREADY_EXIST: 'Company Already Exists',
   INVALID_LEGALNAME_FORMAT: 'Legal name must be longer than 3 characters',
+  ACCOUNT_STATUS_REASON: 'Reason is required',
 };
 export const POST_MESSAGE = {
   NOT_FOUND: 'Post Not Found',
@@ -31,6 +32,8 @@ export const USER_MESSAGE = {
   ALREADY_EXIST: 'User Already Exists',
   EMAIL_CONFLICT: 'Email Already Exists',
   FULLNAME_REQUIRED: 'FullName is required',
+  USER_NOT_FOUND: 'User does not exist',
+  LOGIN_ERROR: 'Username or password incorrect',
 };
 
 export const REACTION_MESSAGE = {

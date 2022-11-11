@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { InvalidToken, UserNotFound } from 'src/common/errors';
+import { customError, InvalidToken, UserNotFound } from 'src/common/errors';
 
 import { TokenService } from './token.service';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
@@ -16,6 +16,9 @@ import { Operations } from '../enum/operations.enum';
 
 import { Token } from '../entities/token.entity';
 import { Auth } from '../entities/auth.entity';
+import { USER_MESSAGE } from 'src/common/errors/error.message';
+import { USER_CODE } from 'src/common/errors/error.code';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 
 @Injectable()
 export class AuthService {
@@ -41,13 +44,25 @@ export class AuthService {
       },
       include: { Company: true },
     });
+    console.log(user, 'incoming user');
+    if (!user) throw new Error('User does not exist');
+    // return customError(
+    //   USER_MESSAGE.USER_NOT_FOUND,
+    //   USER_CODE.USER_NOT_FOUND,
+    //   STATUS_CODE.NOT_FOUND,
+    // );
     if (
       !(
         user &&
         (await this.passwordService.validatePassword(password, user.password))
       )
     )
-      throw new BadRequestException('Username or password incorrect');
+      throw new Error('Username or password incorrect');
+    // return customError(
+    //   USER_MESSAGE.LOGIN_ERROR,
+    //   USER_CODE.LOGIN_ERROR,
+    //   STATUS_CODE.BAD_CONFLICT,
+    // );
     const token = this.tokenService.generateTokens({
       userId: user.id,
     });

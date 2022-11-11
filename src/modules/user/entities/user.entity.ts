@@ -36,6 +36,9 @@ export class User extends BaseEntity {
   @Field({ nullable: true })
   emailToken: string;
 
+  @Field({ nullable: true })
+  isEmailVerified: boolean;
+
   @Field(() => [Post], { nullable: true })
   public posts?: Post[];
 

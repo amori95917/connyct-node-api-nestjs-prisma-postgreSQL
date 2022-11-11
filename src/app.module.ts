@@ -27,6 +27,7 @@ import { RepliesModule } from './modules/replies/replies.module';
 import { CommentReactionsModule } from './modules/comment-reactions/comment-reactions.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { FilesModule } from './modules/files/files.module';
+import { OtpVerificationModule } from './modules/otp-verification/otp-verification.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { FilesModule } from './modules/files/files.module';
     CommentReactionsModule,
     CloudinaryModule,
     FilesModule,
+    OtpVerificationModule,
   ],
 })
 export class AppModule {

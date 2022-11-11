@@ -94,6 +94,12 @@ export class Company extends BaseEntity {
 
   @Field({ nullable: true })
   avatar: string;
+
+  @Field({ nullable: true })
+  accountStatus: string;
+
+  @Field({ nullable: true })
+  reason: string;
 }
 
 @ObjectType()

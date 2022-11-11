@@ -23,6 +23,8 @@ import { customError } from 'src/common/errors';
 import { COMPANY_MESSAGE } from 'src/common/errors/error.message';
 import { COMPANY_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import { CompanyAccountStatus } from '../dto/company-account-status.input';
+import { STATUS_CODES } from 'http';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -327,6 +329,57 @@ export class CompanyService {
       }
     } catch (e) {
       throw new Error(e);
+    }
+  }
+
+  async updateAccountStatus(
+    id: string,
+    accountStatus,
+    reason?: string,
+  ): Promise<Company> {
+    return await this.prisma.company.update({
+      where: { id },
+      data: {
+        accountStatus,
+        reason,
+      },
+    });
+  }
+
+  async companyAccountStatus(
+    data: CompanyAccountStatus,
+    id: string,
+  ): Promise<CompanyPayload> {
+    try {
+      const company = await this.prisma.company.findFirst({ where: { id } });
+      if (!company)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+      if (data.accountStatus === 'REJECTED') {
+        if (!data.reason)
+          return customError(
+            COMPANY_MESSAGE.ACCOUNT_STATUS_REASON,
+            COMPANY_CODE.ACCOUNT_STATUS_REASON,
+            STATUS_CODE.BAD_CONFLICT,
+          );
+        const status = await this.updateAccountStatus(
+          id,
+          data.accountStatus,
+          data.reason,
+        );
+        return { company: status };
+      }
+      const companyStatus = await this.updateAccountStatus(
+        id,
+        data.accountStatus,
+        data.reason,
+      );
+      return { company: companyStatus };
+    } catch (err) {
+      throw new Error(err);
     }
   }
 }

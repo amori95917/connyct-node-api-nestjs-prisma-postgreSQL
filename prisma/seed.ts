@@ -165,12 +165,6 @@ async function main() {
       { postId: getPost[Math.floor(Math.random() * 500)].id },
     ),
   );
-  const createProducts = await prisma.product.createMany({
-    data: newProducts,
-    skipDuplicates: true,
-  });
-  console.log('Products seeding', createProducts);
-  console.log('Products seeding finished');
 
   await prisma.reactions.createMany({
     data: reactions,

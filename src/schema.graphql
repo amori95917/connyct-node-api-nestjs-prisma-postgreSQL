@@ -2,12 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type CustomError {
-  message: String!
-  code: String
-  statusCode: Float
-}
-
 type Branch {
   id: ID!
   createdAt: DateTime!
@@ -61,6 +55,8 @@ type Company {
   slogan: String
   branches: [Branch!]
   avatar: String
+  accountStatus: String
+  reason: String
 }
 
 """
@@ -294,6 +290,7 @@ type User {
   isSuperuser: Boolean
   confirm: Boolean
   emailToken: String
+  isEmailVerified: Boolean
   posts: [Post!]
   company: [Company!]
   isAdmin: Boolean!
@@ -317,6 +314,25 @@ type UserPageInfo {
   hasNextPage: Boolean!
 }
 
+type OTP {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  otp: Float
+  expirationDate: DateTime
+  userId: String
+}
+
+type OTPPayload {
+  otpCheck: Boolean
+}
+
+type CustomError {
+  message: String!
+  code: String
+  statusCode: Float
+}
+
 type Token {
   """JWT access token"""
   accessToken: String
@@ -334,6 +350,7 @@ type Auth {
   errors: [CustomError!]
   user: User
   role: String
+  otp: OTP
   company: [Company!]
 }
 
@@ -758,12 +775,15 @@ type Mutation {
   resetPassword(data: ResetPasswordInput!): Token!
   requestResetPassword(data: RequestResetPasswordInput!): Boolean!
   logout: Boolean!
+  otpVerification(otp: Float!): OTPPayload!
+  resendOtp: OTP!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
   editCompany(id: String!, data: CompanyEditInput!, file: Upload): CompanyPayload!
   createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
   editCompanyBranch(id: String!, data: CompanyBranchEditInput!): Branch!
   deleteCompanyBranch(id: String!, companyId: String!): Branch!
+  companyAccountStatus(data: CompanyAccountStatus!, companyId: String!): CompanyPayload!
   post(data: CreatePostInput!, companyId: String!, file: [Upload!]): CreatePostPayload!
   postUpdate(id: String!, imageURL: String, input: UpdatePostInput, file: Upload): UpdatePostPayload!
   postDelete(postId: String!): DeletePostPayload!
@@ -909,6 +929,11 @@ input CompanyBranchEditInput {
   state: String
   street1: String
   street2: String
+}
+
+input CompanyAccountStatus {
+  accountStatus: String!
+  reason: String
 }
 
 input CreatePostInput {

@@ -22,6 +22,7 @@ export function createUser(data?: {
   passwordToken?: string;
   typeEntityId?: number;
   confirm?: boolean;
+  isEmailVerified?: boolean;
 }): User {
   return {
     id: data?.id || faker.datatype.uuid(),
@@ -37,6 +38,7 @@ export function createUser(data?: {
     isValid: true,
     isActive: true,
     isSuperuser: false,
+    isEmailVerified: false,
     createdAt: new Date(),
     updatedAt: null,
   };

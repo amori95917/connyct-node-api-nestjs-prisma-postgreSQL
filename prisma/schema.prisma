@@ -17,26 +17,27 @@ datasource db {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  fullName       String?
-  email          String           @unique
-  username       String?          @unique
-  password       String
-  emailToken     String?          @map("email_token")
-  passwordToken  String?          @map("password_token")
-  confirm        Boolean          @default(true)
-  isValid        Boolean          @default(false) @map("is_valid")
-  isActive       Boolean          @default(false)
-  isSuperuser    Boolean          @default(false)
-  createdAt      DateTime?        @default(now())
-  updatedAt      DateTime?        @updatedAt @db.Timestamp()
+  id              String           @id @default(uuid())
+  fullName        String?
+  email           String           @unique
+  username        String?          @unique
+  password        String
+  emailToken      String?          @map("email_token")
+  passwordToken   String?          @map("password_token")
+  confirm         Boolean          @default(true)
+  isValid         Boolean          @default(false) @map("is_valid")
+  isActive        Boolean          @default(false)
+  isSuperuser     Boolean          @default(false)
+  isEmailVerified Boolean          @default(false)
+  createdAt       DateTime?        @default(now())
+  updatedAt       DateTime?        @updatedAt @db.Timestamp()
   // lastLogin
-  posts          Post[]
-  postRatings    PostRating[]
-  commentRatings CommentRating[]
-  userRoles      UserRole[]
-  RoleRight      RoleRight[]
-  employee       CompanyEmployee? @relation("EmployeeUser")
+  posts           Post[]
+  postRatings     PostRating[]
+  commentRatings  CommentRating[]
+  userRoles       UserRole[]
+  RoleRight       RoleRight[]
+  employee        CompanyEmployee? @relation("EmployeeUser")
 
   Company               Company[]
   InvitedEmployee       InvitedEmployee[]
@@ -48,6 +49,7 @@ model User {
   CommentMentions       CommentMentions[]
   CommentReactions      CommentReactions[]
   UserProfile           UserProfile?
+  OTP                   OTP[]
 
   @@unique([id, email])
 }
@@ -141,6 +143,8 @@ model Company {
   slogan                String?
   Post                  Post[]
   avatar                String?
+  accountStatus         AccountStatus           @default(PENDING)
+  reason                String?
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
@@ -359,6 +363,12 @@ enum BranchType {
   BRANCH_OFFICE
 }
 
+enum AccountStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
 //
 
 model InvitedEmployee {
@@ -401,4 +411,14 @@ model Industry {
   pirorityOrder Int       @default(autoincrement())
   createdAt     DateTime? @default(now())
   updatedAt     DateTime? @updatedAt @db.Timestamp()
+}
+
+model OTP {
+  id             String    @id @default(uuid())
+  otp            Int
+  expirationDate DateTime
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @updatedAt @db.Timestamp()
 }
