@@ -34,6 +34,10 @@ Table User {
   CommentReactions CommentReactions [not null]
   UserProfile UserProfile
   OTP OTP [not null]
+  DiscussionVote DiscussionVote [not null]
+  DiscussionAnswer DiscussionAnswer [not null]
+  CompanyDiscussions CompanyDiscussions [not null]
+  DiscussionAnswerVote DiscussionAnswerVote [not null]
 
   indexes {
     (id, email) [unique]
@@ -126,6 +130,7 @@ Table Company {
   avatar String
   accountStatus AccountStatus [not null, default: 'PENDING']
   reason String
+  CompanyDiscussions CompanyDiscussions [not null]
 }
 
 Table Branch {
@@ -355,6 +360,61 @@ Table OTP {
   updatedAt DateTime
 }
 
+Table CompanyDiscussions {
+  id String [pk]
+  title String [not null]
+  description String [not null]
+  userId String [not null]
+  user User [not null]
+  companyId String [not null]
+  company Company [not null]
+  DiscussionVote DiscussionVote [not null]
+  DiscussionAnswer DiscussionAnswer [not null]
+  slug String
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  DiscussionAnswerVote DiscussionAnswerVote [not null]
+}
+
+Table DiscussionVote {
+  id String [pk]
+  vote Vote [not null]
+  userId String [not null]
+  user User [not null]
+  discussionId String [not null]
+  companyDiscussion CompanyDiscussions [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table DiscussionAnswer {
+  id String [pk]
+  answer String [not null]
+  discussionId String [not null]
+  discussion CompanyDiscussions [not null]
+  userId String [not null]
+  user User [not null]
+  repliedToAnswerId String
+  parentAnswer DiscussionAnswer
+  DiscussionAnswer DiscussionAnswer [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  DiscussionAnswerVote DiscussionAnswerVote [not null]
+}
+
+Table DiscussionAnswerVote {
+  id String [pk]
+  vote Vote [not null]
+  discussionId String [not null]
+  discussion CompanyDiscussions [not null]
+  discussionAnswerId String [not null]
+  discussionAnswer DiscussionAnswer [not null]
+  userId String [not null]
+  user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
 Enum CompanyStage {
   STARTUP
   SCALEUP
@@ -383,6 +443,11 @@ Enum AccountStatus {
   APPROVED
   PENDING
   REJECTED
+}
+
+Enum Vote {
+  UPVOTE
+  DOWNVOTE
 }
 
 Ref: UserRole.userId > User.id
@@ -460,3 +525,23 @@ Ref: FollowUserToUser.followedToId > User.id [delete: Cascade]
 Ref: FollowUserToUser.followedById > User.id [delete: Cascade]
 
 Ref: OTP.userId > User.id
+
+Ref: CompanyDiscussions.userId > User.id [delete: Cascade]
+
+Ref: CompanyDiscussions.companyId > Company.id [delete: Cascade]
+
+Ref: DiscussionVote.userId > User.id [delete: Cascade]
+
+Ref: DiscussionVote.discussionId > CompanyDiscussions.id [delete: Cascade]
+
+Ref: DiscussionAnswer.discussionId > CompanyDiscussions.id [delete: Cascade]
+
+Ref: DiscussionAnswer.userId > User.id [delete: Cascade]
+
+Ref: DiscussionAnswer.repliedToAnswerId - DiscussionAnswer.id
+
+Ref: DiscussionAnswerVote.discussionId > CompanyDiscussions.id [delete: Cascade]
+
+Ref: DiscussionAnswerVote.discussionAnswerId > DiscussionAnswer.id [delete: Cascade]
+
+Ref: DiscussionAnswerVote.userId > User.id [delete: Cascade]

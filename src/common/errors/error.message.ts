@@ -34,8 +34,16 @@ export const USER_MESSAGE = {
   FULLNAME_REQUIRED: 'FullName is required',
   USER_NOT_FOUND: 'User does not exist',
   LOGIN_ERROR: 'Username or password incorrect',
+  ACCOUNT_IS_VERIFIED: 'Account is verified',
 };
 
 export const REACTION_MESSAGE = {
   NOT_FOUND: 'Reaction Not Found',
+};
+
+export const COMPANY_DISCUSSION_MESSAGE = {
+  NOT_FOUND: 'Discussion not found',
+  DISCUSSION_ANSWER_NOT_FOUND: 'Discussion answer not found',
+  COMPANY_NOT_FOLLOWED:
+    'You must follow company inorder to create a discussion',
 };

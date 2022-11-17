@@ -218,4 +218,14 @@ export class FollowCompanyService {
       throw new Error(err);
     }
   }
+
+  async checkIfUserFollowCompany(companyId: string, userId: string) {
+    try {
+      return await this.prisma.followUnfollowCompany.findFirst({
+        where: { followedById: userId, followedToId: companyId },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
 }

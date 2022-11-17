@@ -314,6 +314,12 @@ type UserPageInfo {
   hasNextPage: Boolean!
 }
 
+type CustomError {
+  message: String!
+  code: String
+  statusCode: Float
+}
+
 type OTP {
   id: ID!
   createdAt: DateTime!
@@ -324,13 +330,9 @@ type OTP {
 }
 
 type OTPPayload {
+  errors: [CustomError!]
+  otp: OTP
   otpCheck: Boolean
-}
-
-type CustomError {
-  message: String!
-  code: String
-  statusCode: Float
 }
 
 type Token {
@@ -552,6 +554,141 @@ type CommentReactionPaginationPayload {
   reactions: CommentReactionsPagination
 }
 
+type DiscussionAnswer {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  answer: String
+  discussionId: String
+  discussion: CompanyDiscussion
+  userId: String
+  user: User
+  reply: [DiscussionAnswer!]
+}
+
+type DiscussionAnswerPaginated {
+  edges: [DiscussionAnswerEdge!]
+  pageInfo: DiscussionAnswerPageInfo
+  totalCount: Float!
+}
+
+type DiscussionAnswerEdge {
+  cursor: String
+  node: DiscussionAnswer
+}
+
+type DiscussionAnswerPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
+type CompanyDiscussion {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  title: String
+  description: String
+  companyId: String
+  company: Company
+  discussionAnswer(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
+  ): DiscussionAnswerPaginated!
+}
+
+input OrderListDiscussionAnswer {
+  direction: OrderDirection!
+  orderBy: DiscussionAnswerOrderBy!
+}
+
+"""Order by:createdAt"""
+enum DiscussionAnswerOrderBy {
+  createdAt
+}
+
+type DiscussionPaginated {
+  edges: [CompanyDiscussionEdge!]
+  pageInfo: CompanyDiscussionPageInfo
+  totalCount: Float!
+}
+
+type CompanyDiscussionEdge {
+  cursor: String
+  node: CompanyDiscussion
+}
+
+type CompanyDiscussionPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
+type CompanyDiscussionPayload {
+  errors: [CustomError!]
+  companyDiscussion: CompanyDiscussion
+}
+
+type CompanyDiscussionDeletePayload {
+  errors: [CustomError!]
+  isDeleted: Boolean
+}
+
+type DiscussionAnswerVote {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  vote: String
+  discussionId: String
+  discussion: CompanyDiscussion
+  userId: String
+  user: User
+  discussionAnswer: DiscussionAnswer
+}
+
+type DiscussionAnswerVotePayload {
+  errors: [CustomError!]
+  discussionAnswerVote: DiscussionAnswerVote
+}
+
+type DiscussionAnswerPayload {
+  errors: [CustomError!]
+  discussionAnswer: DiscussionAnswer
+}
+
+type DiscussionAnswerDeletePayload {
+  errors: [CustomError!]
+  isDeleted: Boolean
+}
+
+type DiscussionVote {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  vote: String
+  userId: String
+  user: [User!]
+  discussionId: String
+  discussion: CompanyDiscussion
+}
+
+type DiscussionVotePayload {
+  errors: [CustomError!]
+  discussionVote: DiscussionVote
+}
+
 type Query {
   listUsers(
     """Paginate before opaque cursor"""
@@ -667,6 +804,39 @@ type Query {
   getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
   getUsersByPostReaction(reactionType: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
   commentReactions(commentId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommentReactionsOrderList = {direction: asc, orderBy: createdAt}): CommentReactionPaginationPayload!
+  getCompanyDiscussion(
+    companyId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListDiscussion = {direction: desc, orderBy: createdAt}
+  ): DiscussionPaginated!
+  getCompanyDiscussionByUser: [CompanyDiscussion!]!
+  getDiscussionAnswer(
+    discussionId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
+  ): DiscussionAnswerPaginated!
 }
 
 input OrderListUsers {
@@ -761,6 +931,16 @@ enum CommentReactionsOrderBy {
   createdAt
 }
 
+input OrderListDiscussion {
+  direction: OrderDirection!
+  orderBy: DiscussionOrderBy!
+}
+
+"""Order by:createdAt"""
+enum DiscussionOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -776,7 +956,7 @@ type Mutation {
   requestResetPassword(data: RequestResetPasswordInput!): Boolean!
   logout: Boolean!
   otpVerification(otp: Float!): OTPPayload!
-  resendOtp: OTP!
+  resendOtp: OTPPayload!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
   editCompany(id: String!, data: CompanyEditInput!, file: Upload): CompanyPayload!
@@ -809,6 +989,15 @@ type Mutation {
   commentReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): ReplyToCommentPayload!
   replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): RepliesToRepliesPayload!
   commentReaction(input: CommentReactionsInput!): CommentReactionsPayload!
+  companyDiscussion(input: CompanyDiscussionInput!): CompanyDiscussionPayload!
+  updateCompanyDiscussion(input: CompanyDiscussionUpdateInput!, id: String!): CompanyDiscussionPayload!
+  deleteCompanyDiscussion(id: String!): CompanyDiscussionDeletePayload!
+  discussionVote(input: DiscussionVoteInput!): DiscussionVotePayload!
+  createDiscussionAnswer(answer: DiscussionAnswerInput!): DiscussionAnswerPayload!
+  updateAnswer(updateAnswer: DiscussionAnswerUpdateInput!, id: String!): DiscussionAnswerPayload!
+  deleteAnswer(id: String!): DiscussionAnswerDeletePayload!
+  replyToAnswer(input: ReplyToAnswerInput!): DiscussionAnswerDeletePayload!
+  discussionAnswerVote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
 }
 
 input UpdateStatusUserInput {
@@ -1001,4 +1190,41 @@ input LikesInput {
 input CommentReactionsInput {
   reactionType: String!
   commentId: String!
+}
+
+input CompanyDiscussionInput {
+  title: String!
+  description: String!
+  companyId: String!
+}
+
+input CompanyDiscussionUpdateInput {
+  title: String!
+  description: String!
+}
+
+input DiscussionVoteInput {
+  discussionId: String!
+  vote: String!
+}
+
+input DiscussionAnswerInput {
+  answer: String!
+  discussionId: String!
+}
+
+input DiscussionAnswerUpdateInput {
+  answer: String!
+}
+
+input ReplyToAnswerInput {
+  repliedToAnswerId: String!
+  answer: String!
+  discussionId: String!
+}
+
+input DiscussionAnswerVoteInput {
+  discussionId: String!
+  discussionAnswerId: String!
+  vote: String!
 }

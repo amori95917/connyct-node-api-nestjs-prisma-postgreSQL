@@ -50,6 +50,10 @@ model User {
   CommentReactions      CommentReactions[]
   UserProfile           UserProfile?
   OTP                   OTP[]
+  DiscussionVote        DiscussionVote[]
+  DiscussionAnswer      DiscussionAnswer[]
+  CompanyDiscussions    CompanyDiscussions[]
+  DiscussionAnswerVote  DiscussionAnswerVote[]
 
   @@unique([id, email])
 }
@@ -145,6 +149,7 @@ model Company {
   avatar                String?
   accountStatus         AccountStatus           @default(PENDING)
   reason                String?
+  CompanyDiscussions    CompanyDiscussions[]
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
@@ -369,6 +374,11 @@ enum AccountStatus {
   REJECTED
 }
 
+enum Vote {
+  UPVOTE
+  DOWNVOTE
+}
+
 //
 
 model InvitedEmployee {
@@ -421,4 +431,59 @@ model OTP {
   user           User      @relation(fields: [userId], references: [id])
   createdAt      DateTime? @default(now())
   updatedAt      DateTime? @updatedAt @db.Timestamp()
+}
+
+model CompanyDiscussions {
+  id                   String                 @id @default(uuid())
+  title                String
+  description          String
+  userId               String
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId            String
+  company              Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  DiscussionVote       DiscussionVote[]
+  DiscussionAnswer     DiscussionAnswer[]
+  slug                 String?
+  createdAt            DateTime?              @default(now())
+  updatedAt            DateTime?              @updatedAt @db.Timestamp()
+  DiscussionAnswerVote DiscussionAnswerVote[]
+}
+
+model DiscussionVote {
+  id                String             @id @default(uuid())
+  vote              Vote
+  userId            String
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discussionId      String
+  companyDiscussion CompanyDiscussions @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  createdAt         DateTime?          @default(now())
+  updatedAt         DateTime?          @updatedAt @db.Timestamp()
+}
+
+model DiscussionAnswer {
+  id                   String                 @id @default(uuid())
+  answer               String
+  discussionId         String
+  discussion           CompanyDiscussions     @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repliedToAnswerId    String?
+  parentAnswer         DiscussionAnswer?      @relation("ReplyToAnswer", fields: [repliedToAnswerId], references: [id])
+  DiscussionAnswer     DiscussionAnswer[]     @relation("ReplyToAnswer")
+  createdAt            DateTime?              @default(now())
+  updatedAt            DateTime?              @updatedAt @db.Timestamp()
+  DiscussionAnswerVote DiscussionAnswerVote[]
+}
+
+model DiscussionAnswerVote {
+  id                 String             @id @default(uuid())
+  vote               Vote
+  discussionId       String
+  discussion         CompanyDiscussions @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  discussionAnswerId String
+  discussionAnswer   DiscussionAnswer   @relation(fields: [discussionAnswerId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime?          @default(now())
+  updatedAt          DateTime?          @updatedAt @db.Timestamp()
 }

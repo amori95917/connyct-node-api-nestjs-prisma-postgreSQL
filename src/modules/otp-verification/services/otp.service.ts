@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { customError } from 'src/common/errors';
+import { USER_CODE } from 'src/common/errors/error.code';
+import { USER_MESSAGE } from 'src/common/errors/error.message';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { User } from 'src/modules/user/entities/user.entity';
+import { OTPPayload } from '../entities/otp.payload';
 
 @Injectable()
 export class OTPService {
@@ -16,12 +22,10 @@ export class OTPService {
       const getOtp = await this.prisma.oTP.findFirst({
         where: { otp, userId },
       });
-      console.log(getOtp, 'incoming otp');
-      console.log(
-        getOtp.otp === otp && getOtp.expirationDate > new Date(),
-        'incoming check',
-      );
-      if (getOtp.otp === otp && getOtp.expirationDate > new Date()) return true;
+      if (getOtp.otp === otp && getOtp.expirationDate > new Date()) {
+        await this.prisma.oTP.delete({ where: { id: getOtp.id } });
+        return true;
+      }
       return false;
     } catch (err) {
       throw new Error(err);
@@ -40,10 +44,19 @@ export class OTPService {
     }
   }
 
-  async resendOtp(userId: string) {
+  async resendOtp(user: User): Promise<OTPPayload> {
     try {
-      const getOtp = await this.prisma.oTP.findFirst({ where: { userId } });
-      if (getOtp.expirationDate > new Date()) return getOtp;
+      const { id, isEmailVerified } = user;
+      if (isEmailVerified)
+        return customError(
+          USER_MESSAGE.ACCOUNT_IS_VERIFIED,
+          USER_CODE.ACCOUNT_IS_VERIFIED,
+          STATUS_CODE.BAD_REQUEST_EXCEPTION,
+        );
+      const getOtp = await this.prisma.oTP.findFirst({
+        where: { userId: id },
+      });
+      if (getOtp.expirationDate > new Date()) return { otp: getOtp };
       const { randomOTP, expirationDate } = await this.generateOTP();
       const updateOtp = await this.prisma.oTP.update({
         where: { id: getOtp.id },
@@ -52,7 +65,7 @@ export class OTPService {
           expirationDate,
         },
       });
-      return updateOtp;
+      return { otp: updateOtp };
     } catch (err) {
       throw new Error(err);
     }

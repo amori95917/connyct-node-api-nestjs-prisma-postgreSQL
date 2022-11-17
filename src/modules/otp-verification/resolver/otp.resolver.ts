@@ -22,8 +22,8 @@ export class OTPResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => OTP)
-  async resendOtp(@CurrentUser() user: User) {
-    return this.OTPService.resendOtp(user.id);
+  @Mutation(() => OTPPayload)
+  async resendOtp(@CurrentUser() user: User): Promise<OTPPayload> {
+    return this.OTPService.resendOtp(user);
   }
 }

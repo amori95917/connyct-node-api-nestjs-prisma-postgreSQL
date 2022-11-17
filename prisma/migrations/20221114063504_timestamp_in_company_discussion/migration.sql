@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE "CompanyDiscussions" ADD COLUMN     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "updatedAt" TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "DiscussionAnswer" ADD COLUMN     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "updatedAt" TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "DiscussionVote" ADD COLUMN     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "updatedAt" TIMESTAMP;

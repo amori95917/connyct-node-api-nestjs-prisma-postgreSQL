@@ -28,6 +28,7 @@ import { CommentReactionsModule } from './modules/comment-reactions/comment-reac
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { FilesModule } from './modules/files/files.module';
 import { OtpVerificationModule } from './modules/otp-verification/otp-verification.module';
+import { CompanyDiscussionModule } from './modules/company-discussion/company-discussion.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { OtpVerificationModule } from './modules/otp-verification/otp-verificati
     CloudinaryModule,
     FilesModule,
     OtpVerificationModule,
+    CompanyDiscussionModule,
   ],
 })
 export class AppModule {

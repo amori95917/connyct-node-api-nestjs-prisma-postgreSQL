@@ -132,12 +132,12 @@ export class CompanyService {
     }
   }
 
-  async getCompanyById(companyId: string): Promise<Company> {
+  async getCompanyById(companyId: string): Promise<Company | null> {
     try {
       const company = await this.prisma.company.findFirst({
         where: { id: companyId },
       });
-      if (!company) throw new Error('company not found');
+      if (!company) return null;
       const followers = await this.getCompanyFollowersCount(companyId);
       return Object.assign(company, { followers });
     } catch (err) {
