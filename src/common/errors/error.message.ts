@@ -44,6 +44,5 @@ export const REACTION_MESSAGE = {
 export const COMPANY_DISCUSSION_MESSAGE = {
   NOT_FOUND: 'Discussion not found',
   DISCUSSION_ANSWER_NOT_FOUND: 'Discussion answer not found',
-  COMPANY_NOT_FOLLOWED:
-    'You must follow company inorder to create a discussion',
+  COMPANY_NOT_FOLLOWED: 'You must follow company in order complete this action',
 };

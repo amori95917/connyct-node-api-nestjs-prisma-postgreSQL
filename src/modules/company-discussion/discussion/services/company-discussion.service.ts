@@ -1,4 +1,4 @@
-import { FollowCompanyService } from './../../follow-unfollow-company/services/follow-company.service';
+import { FollowCompanyService } from '../../../follow-unfollow-company/services/follow-company.service';
 import { Injectable } from '@nestjs/common';
 import { customError } from 'src/common/errors';
 import {
@@ -20,22 +20,11 @@ import {
   CompanyDiscussionPayload,
 } from '../entities/company-discussion.payload';
 import { CompanyDiscussionRepository } from '../repository/company-discussion.repository';
-import {
-  DiscussionAnswerDeletePayload,
-  DiscussionAnswerPayload,
-} from '../entities/discussion-answer.payload';
-import {
-  DiscussionAnswerInput,
-  DiscussionAnswerUpdateInput,
-  ReplyToAnswerInput,
-} from '../dto/discussion-answer.input';
+
 import { DiscussionVoteInput } from '../dto/discussion-vote.input';
-import { DiscussionVotePayload } from '../entities/discussion-vote.payload';
-import { DiscussionAnswerVotePayload } from '../entities/discussion-answer-vote.payload';
-import { DiscussionAnswerVoteInput } from '../dto/discussion-answer-vote';
+import { DiscussionVotePayload } from '../../discussion-answer/entities/discussion-vote.payload';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderListDiscussion } from '../dto/order-discussion.input';
-import { OrderListDiscussionAnswer } from '../dto/order-discussion-answer.input';
 
 @Injectable()
 export class CompanyDiscussionService {
@@ -96,7 +85,7 @@ export class CompanyDiscussionService {
   ): Promise<CompanyDiscussionPayload> {
     try {
       const discussion =
-        await this.companyDiscussionRepository.getDiscussionAnswerByIdAndUserId(
+        await this.companyDiscussionRepository.getDiscussionByIdAndUserId(
           id,
           userId,
         );
@@ -105,6 +94,17 @@ export class CompanyDiscussionService {
           COMPANY_DISCUSSION_MESSAGE.NOT_FOUND,
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
+        );
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          discussion.companyId,
+          userId,
+        );
+      if (!followedCompany)
+        return customError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          STATUS_CODE.BAD_CONFLICT,
         );
       return await this.companyDiscussionRepository.update(input, id);
     } catch (err) {
@@ -117,8 +117,13 @@ export class CompanyDiscussionService {
     userId: string,
   ): Promise<CompanyDiscussionDeletePayload> {
     try {
+      const checkOwner = await this.companyDiscussionRepository.checkOwner(
+        id,
+        userId,
+      );
+      if (checkOwner) return await this.companyDiscussionRepository.delete(id);
       const discussion =
-        await this.companyDiscussionRepository.getDiscussionAnswerByIdAndUserId(
+        await this.companyDiscussionRepository.getDiscussionByIdAndUserId(
           id,
           userId,
         );
@@ -128,10 +133,25 @@ export class CompanyDiscussionService {
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          discussion.companyId,
+          userId,
+        );
+      if (!followedCompany)
+        return customError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          STATUS_CODE.BAD_CONFLICT,
+        );
       return await this.companyDiscussionRepository.delete(id);
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  async countVote(id: string) {
+    return await this.companyDiscussionRepository.countVote(id);
   }
 
   async createVote(
@@ -149,32 +169,30 @@ export class CompanyDiscussionService {
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          discussion.companyId,
+          userId,
+        );
+      if (!followedCompany)
+        return customError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          STATUS_CODE.BAD_CONFLICT,
+        );
       return this.companyDiscussionRepository.createVote(input, userId);
     } catch (err) {
       throw new Error(err);
     }
   }
-
-  async getDiscussionAnswer(
-    discussionId: string,
-    paginate: ConnectionArgs,
-    order: OrderListDiscussionAnswer,
-  ) {
-    return await this.companyDiscussionRepository.getDiscussionAnswerByDiscussionId(
-      discussionId,
-      paginate,
-      order,
-    );
-  }
-
-  async createDiscussionAnswer(
-    answer: DiscussionAnswerInput,
+  async downVote(
+    input: DiscussionVoteInput,
     userId: string,
-  ): Promise<DiscussionAnswerPayload> {
+  ): Promise<DiscussionVotePayload> {
     try {
       const discussion =
         await this.companyDiscussionRepository.getDiscussionById(
-          answer.discussionId,
+          input.discussionId,
         );
       if (!discussion)
         return customError(
@@ -182,80 +200,18 @@ export class CompanyDiscussionService {
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
-      return this.companyDiscussionRepository.createAnswer(answer, userId);
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async updateAnswer(
-    updateAnswer: DiscussionAnswerUpdateInput,
-    id: string,
-    userId: string,
-  ): Promise<DiscussionAnswerPayload> {
-    try {
-      const discussionAnswer =
-        await this.companyDiscussionRepository.getDiscussionAnswerByIdAndUserId(
-          id,
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          discussion.companyId,
           userId,
         );
-      if (!discussionAnswer)
+      if (!followedCompany)
         return customError(
-          COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
-          COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          STATUS_CODE.BAD_CONFLICT,
         );
-      return await this.companyDiscussionRepository.updateAnswer(
-        updateAnswer,
-        id,
-      );
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async deleteAnswer(
-    id: string,
-    userId: string,
-  ): Promise<DiscussionAnswerDeletePayload> {
-    try {
-      const discussionAnswer =
-        await this.companyDiscussionRepository.getDiscussionAnswerByIdAndUserId(
-          id,
-          userId,
-        );
-      if (!discussionAnswer)
-        return customError(
-          COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
-          COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
-        );
-      return await this.companyDiscussionRepository.deleteAnswer(id);
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async replyToAnswer(input: ReplyToAnswerInput, userId: string) {
-    return await this.companyDiscussionRepository.replyToAnswer(input, userId);
-  }
-
-  async createAnswerVote(
-    input: DiscussionAnswerVoteInput,
-    userId: string,
-  ): Promise<DiscussionAnswerVotePayload> {
-    try {
-      const discussion =
-        await this.companyDiscussionRepository.getDiscussionAnswerById(
-          input.discussionId,
-        );
-      if (!discussion)
-        return customError(
-          COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
-          COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
-        );
-      return this.companyDiscussionRepository.createVote(input, userId);
+      return this.companyDiscussionRepository.downVote(input, userId);
     } catch (err) {
       throw new Error(err);
     }

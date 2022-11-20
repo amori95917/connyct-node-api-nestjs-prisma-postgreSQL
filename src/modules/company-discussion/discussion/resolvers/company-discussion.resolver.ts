@@ -15,14 +15,9 @@ import {
   CompanyDiscussionInput,
   CompanyDiscussionUpdateInput,
 } from '../dto/company-discussion.inputs';
-import { DiscussionAnswerVoteInput } from '../dto/discussion-answer-vote';
-import {
-  DiscussionAnswerInput,
-  DiscussionAnswerUpdateInput,
-  ReplyToAnswerInput,
-} from '../dto/discussion-answer.input';
+
 import { DiscussionVoteInput } from '../dto/discussion-vote.input';
-import { OrderListDiscussionAnswer } from '../dto/order-discussion-answer.input';
+import { OrderListDiscussionAnswer } from '../../discussion-answer/dto/order-discussion-answer.input';
 import { OrderListDiscussion } from '../dto/order-discussion.input';
 import {
   CompanyDiscussion,
@@ -32,21 +27,21 @@ import {
   CompanyDiscussionDeletePayload,
   CompanyDiscussionPayload,
 } from '../entities/company-discussion.payload';
-import { DiscussionAnswerVotePayload } from '../entities/discussion-answer-vote.payload';
-import {
-  DiscussionAnswer,
-  DiscussionAnswerPaginated,
-} from '../entities/discussion-answer.entity';
-import {
-  DiscussionAnswerDeletePayload,
-  DiscussionAnswerPayload,
-} from '../entities/discussion-answer.payload';
-import { DiscussionVotePayload } from '../entities/discussion-vote.payload';
+
+import { DiscussionVotePayload } from '../../discussion-answer/entities/discussion-vote.payload';
 import { CompanyDiscussionService } from '../services/company-discussion.service';
+import { DiscussionAnswerRepository } from '../../discussion-answer/repository/discussion-answer.repository';
+import { DiscussionAnswerPaginated } from '../../discussion-answer/entities/discussion-answer.entity';
+import { Company } from 'src/modules/company/entities/company.entity';
+import { CompanyService } from 'src/modules/company/services/company.service';
 
 @Resolver(() => CompanyDiscussion)
 export class CompanyDiscussionResolver {
-  constructor(private companyDiscussionService: CompanyDiscussionService) {}
+  constructor(
+    private companyDiscussionService: CompanyDiscussionService,
+    private discussionAnswerRepository: DiscussionAnswerRepository,
+    private companyService: CompanyService,
+  ) {}
 
   @UseGuards(GqlAuthGuard)
   @Query(() => DiscussionPaginated)
@@ -78,27 +73,32 @@ export class CompanyDiscussionResolver {
       input,
       user.id,
     );
-    console.log(result, 'incoming result');
     return result;
   }
 
   @UseGuards(GqlAuthGuard)
   @Mutation(() => CompanyDiscussionPayload)
-  async updateCompanyDiscussion(
+  async companyDiscussionUpdate(
     @Args('input') input: CompanyDiscussionUpdateInput,
-    @Args('id') id: string,
+    @Args('discussionId') discussionId: string,
     @CurrentUser() user: User,
   ): Promise<CompanyDiscussionPayload> {
-    return this.companyDiscussionService.update(input, id, user.id);
+    return this.companyDiscussionService.update(input, discussionId, user.id);
   }
 
   @UseGuards(GqlAuthGuard)
   @Mutation(() => CompanyDiscussionDeletePayload)
-  async deleteCompanyDiscussion(
+  async companyDiscussionDelete(
     @Args('id') id: string,
     @CurrentUser() user: User,
   ): Promise<CompanyDiscussionDeletePayload> {
     return this.companyDiscussionService.delete(id, user.id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => Number)
+  async discussionVoteCount(@Args('discussionId') discussionId: string) {
+    return this.companyDiscussionService.countVote(discussionId);
   }
 
   @UseGuards(GqlAuthGuard)
@@ -111,66 +111,12 @@ export class CompanyDiscussionResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => DiscussionAnswerPaginated)
-  async getDiscussionAnswer(
-    @Args('discussionId') discussionId: string,
-    @Args() paginate: ConnectionArgs,
-    @Args('order', {
-      nullable: true,
-      defaultValue: { orderBy: 'createdAt', direction: 'asc' },
-    })
-    order: OrderListDiscussionAnswer,
-  ) {
-    return await this.companyDiscussionService.getDiscussionAnswer(
-      discussionId,
-      paginate,
-      order,
-    );
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => DiscussionAnswerPayload)
-  async createDiscussionAnswer(
-    @Args('answer') answer: DiscussionAnswerInput,
+  @Mutation(() => DiscussionVotePayload)
+  async discussionDownvote(
+    @Args('input') input: DiscussionVoteInput,
     @CurrentUser() user: User,
-  ): Promise<DiscussionAnswerPayload> {
-    {
-      return await this.companyDiscussionService.createDiscussionAnswer(
-        answer,
-        user.id,
-      );
-    }
-  }
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => DiscussionAnswerPayload)
-  async updateAnswer(
-    @Args('updateAnswer') updateAnswer: DiscussionAnswerUpdateInput,
-    @Args('id') id: string,
-    @CurrentUser() user: User,
-  ): Promise<DiscussionAnswerPayload> {
-    return await this.companyDiscussionService.updateAnswer(
-      updateAnswer,
-      id,
-      user.id,
-    );
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => DiscussionAnswerDeletePayload)
-  async deleteAnswer(
-    @Args('id') id: string,
-    @CurrentUser() user: User,
-  ): Promise<DiscussionAnswerDeletePayload> {
-    return await this.companyDiscussionService.deleteAnswer(id, user.id);
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => DiscussionAnswerDeletePayload)
-  async replyToAnswer(
-    @Args('input') input: ReplyToAnswerInput,
-    @CurrentUser() user: User,
-  ) {
-    return await this.companyDiscussionService.replyToAnswer(input, user.id);
+  ): Promise<DiscussionVotePayload> {
+    return await this.companyDiscussionService.downVote(input, user.id);
   }
 
   @ResolveField('discussionAnswer', () => DiscussionAnswerPaginated)
@@ -185,19 +131,16 @@ export class CompanyDiscussionResolver {
   ) {
     const { id } = discussion;
     console.log(id, 'incoming id');
-    return await this.companyDiscussionService.getDiscussionAnswer(
+    return await this.discussionAnswerRepository.getDiscussionAnswerByDiscussionId(
       id,
       paginate,
       order,
     );
   }
 
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => DiscussionAnswerVotePayload)
-  async discussionAnswerVote(
-    @Args('input') input: DiscussionAnswerVoteInput,
-    @CurrentUser() user: User,
-  ): Promise<DiscussionAnswerVotePayload> {
-    return this.companyDiscussionService.createAnswerVote(input, user.id);
+  @ResolveField('company', () => Company)
+  async company(@Parent() discussion: CompanyDiscussion): Promise<Company> {
+    const { companyId } = discussion;
+    return await this.companyService.getCompanyById(companyId);
   }
 }

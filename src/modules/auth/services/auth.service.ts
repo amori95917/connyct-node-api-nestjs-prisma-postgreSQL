@@ -44,7 +44,6 @@ export class AuthService {
       },
       include: { Company: true },
     });
-    console.log(user, 'incoming user');
     if (!user) throw new Error('User does not exist');
     // return customError(
     //   USER_MESSAGE.USER_NOT_FOUND,

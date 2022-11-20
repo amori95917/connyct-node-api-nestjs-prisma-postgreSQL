@@ -584,6 +584,17 @@ type DiscussionAnswerPageInfo {
   hasNextPage: Boolean!
 }
 
+type DiscussionVote {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  vote: String
+  userId: String
+  user: [User!]
+  discussionId: String
+  discussion: CompanyDiscussion
+}
+
 type CompanyDiscussion {
   id: ID!
   createdAt: DateTime!
@@ -606,6 +617,7 @@ type CompanyDiscussion {
     last: Float
     order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
   ): DiscussionAnswerPaginated!
+  discussionVote: [DiscussionVote!]
 }
 
 input OrderListDiscussionAnswer {
@@ -646,6 +658,12 @@ type CompanyDiscussionDeletePayload {
   isDeleted: Boolean
 }
 
+type DiscussionVotePayload {
+  errors: [CustomError!]
+  discussionVote: DiscussionVote
+  removeVote: Boolean
+}
+
 type DiscussionAnswerVote {
   id: ID!
   createdAt: DateTime!
@@ -671,22 +689,6 @@ type DiscussionAnswerPayload {
 type DiscussionAnswerDeletePayload {
   errors: [CustomError!]
   isDeleted: Boolean
-}
-
-type DiscussionVote {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  vote: String
-  userId: String
-  user: [User!]
-  discussionId: String
-  discussion: CompanyDiscussion
-}
-
-type DiscussionVotePayload {
-  errors: [CustomError!]
-  discussionVote: DiscussionVote
 }
 
 type Query {
@@ -821,6 +823,7 @@ type Query {
     order: OrderListDiscussion = {direction: desc, orderBy: createdAt}
   ): DiscussionPaginated!
   getCompanyDiscussionByUser: [CompanyDiscussion!]!
+  discussionVoteCount(discussionId: String!): Float!
   getDiscussionAnswer(
     discussionId: String!
 
@@ -990,9 +993,10 @@ type Mutation {
   replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): RepliesToRepliesPayload!
   commentReaction(input: CommentReactionsInput!): CommentReactionsPayload!
   companyDiscussion(input: CompanyDiscussionInput!): CompanyDiscussionPayload!
-  updateCompanyDiscussion(input: CompanyDiscussionUpdateInput!, id: String!): CompanyDiscussionPayload!
-  deleteCompanyDiscussion(id: String!): CompanyDiscussionDeletePayload!
+  companyDiscussionUpdate(input: CompanyDiscussionUpdateInput!, discussionId: String!): CompanyDiscussionPayload!
+  companyDiscussionDelete(id: String!): CompanyDiscussionDeletePayload!
   discussionVote(input: DiscussionVoteInput!): DiscussionVotePayload!
+  discussionDownvote(input: DiscussionVoteInput!): DiscussionVotePayload!
   createDiscussionAnswer(answer: DiscussionAnswerInput!): DiscussionAnswerPayload!
   updateAnswer(updateAnswer: DiscussionAnswerUpdateInput!, id: String!): DiscussionAnswerPayload!
   deleteAnswer(id: String!): DiscussionAnswerDeletePayload!

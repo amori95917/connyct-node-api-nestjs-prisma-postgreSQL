@@ -1,13 +1,13 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity } from 'src/modules/prisma/entities/base.entity';
+import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
 import { User } from 'src/modules/user/entities/user.entity';
-import { CompanyDiscussion } from './company-discussion.entity';
-import { DiscussionAnswer } from './discussion-answer.entity';
+import { CompanyDiscussion } from '../../discussion/entities/company-discussion.entity';
 
 @ObjectType()
-export class DiscussionAnswerVote extends BaseEntity {
+export class DiscussionAnswer extends BaseEntity {
   @Field({ nullable: true })
-  vote: string;
+  answer: string;
 
   @Field({ nullable: true })
   discussionId: string;
@@ -21,6 +21,10 @@ export class DiscussionAnswerVote extends BaseEntity {
   @Field(() => User, { nullable: true })
   user?: User;
 
-  @Field(() => DiscussionAnswer, { nullable: true })
-  discussionAnswer?: DiscussionAnswer;
+  @Field(() => [DiscussionAnswer], { nullable: true })
+  reply?: DiscussionAnswer[];
 }
+@ObjectType()
+export class DiscussionAnswerPaginated extends relayTypes<DiscussionAnswer>(
+  DiscussionAnswer,
+) {}

@@ -6,25 +6,16 @@ import {
   CompanyDiscussionInput,
   CompanyDiscussionUpdateInput,
 } from '../dto/company-discussion.inputs';
-import { DiscussionAnswerVoteInput } from '../dto/discussion-answer-vote';
-import {
-  DiscussionAnswerInput,
-  DiscussionAnswerUpdateInput,
-  ReplyToAnswerInput,
-} from '../dto/discussion-answer.input';
+
 import { DiscussionVoteInput } from '../dto/discussion-vote.input';
-import { OrderListDiscussionAnswer } from '../dto/order-discussion-answer.input';
 import { OrderListDiscussion } from '../dto/order-discussion.input';
 import {
   CompanyDiscussionDeletePayload,
   CompanyDiscussionPayload,
 } from '../entities/company-discussion.payload';
-import { DiscussionAnswerVotePayload } from '../entities/discussion-answer-vote.payload';
-import {
-  DiscussionAnswerDeletePayload,
-  DiscussionAnswerPayload,
-} from '../entities/discussion-answer.payload';
-import { DiscussionVotePayload } from '../entities/discussion-vote.payload';
+
+import { DiscussionVotePayload } from '../../discussion-answer/entities/discussion-vote.payload';
+import { Vote } from '@prisma/client';
 
 @Injectable()
 export class CompanyDiscussionRepository {
@@ -128,12 +119,36 @@ export class CompanyDiscussionRepository {
     }
   }
 
+  async checkOwner(discussionId: string, userId: string): Promise<boolean> {
+    try {
+      const discussion = await this.prisma.companyDiscussions.findFirst({
+        where: { id: discussionId },
+      });
+      const company = await this.prisma.company.findFirst({
+        where: { id: discussion.companyId, ownerId: userId },
+      });
+      if (company) return true;
+    } catch (err) {}
+  }
+
   async delete(id: string): Promise<CompanyDiscussionDeletePayload> {
     try {
       await this.prisma.companyDiscussions.delete({
         where: { id },
       });
       return { isDeleted: true };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async countVote(discussionId: string) {
+    try {
+      const count = await this.prisma.discussionVote.count({
+        where: { discussionId, vote: 'UPVOTE' },
+      });
+      console.log(count, 'incoming count');
+      return count;
     } catch (err) {
       throw new Error(err);
     }
@@ -156,118 +171,35 @@ export class CompanyDiscussionRepository {
         });
         return { discussionVote: createVote };
       }
-      const removeVote = await this.prisma.discussionVote.delete({
+      await this.prisma.discussionVote.delete({
         where: { id: checkVote.id },
       });
-      return { discussionVote: removeVote };
+      return { removeVote: true };
     } catch (err) {
       throw new Error(err);
     }
   }
-
-  async getDiscussionAnswerById(id: string) {
-    return await this.prisma.discussionAnswer.findFirst({ where: { id } });
-  }
-  async getDiscussionAnswerByIdAndUserId(id: string, userId: string) {
-    return await this.prisma.discussionAnswer.findFirst({
-      where: { userId, id },
-    });
-  }
-  async getDiscussionAnswerByDiscussionId(
-    discussionId: string,
-    paginate: ConnectionArgs,
-    order: OrderListDiscussionAnswer,
-  ) {
-    try {
-      const answer = await findManyCursorConnection(
-        (args) =>
-          this.prisma.discussionAnswer.findMany({
-            ...args,
-            where: { discussionId },
-          }),
-        () => this.prisma.discussionAnswer.count({ where: { discussionId } }),
-        { ...paginate },
-      );
-      console.log(answer, 'incoming answer');
-      return answer;
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-  async createAnswer(
-    answer: DiscussionAnswerInput,
+  async downVote(
+    input: DiscussionVoteInput,
     userId: string,
-  ): Promise<DiscussionAnswerPayload> {
+  ): Promise<DiscussionVotePayload> {
     try {
-      const discussionAnswer = await this.prisma.discussionAnswer.create({
-        data: {
-          ...answer,
-          userId,
-        },
-      });
-      return { discussionAnswer };
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async updateAnswer(
-    updateAnswer: DiscussionAnswerUpdateInput,
-    id: string,
-  ): Promise<DiscussionAnswerPayload> {
-    try {
-      const updateDiscussionAnswer = await this.prisma.discussionAnswer.update({
-        where: { id },
-        data: {
-          ...updateAnswer,
-        },
-      });
-      return { discussionAnswer: updateDiscussionAnswer };
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async deleteAnswer(id: string): Promise<DiscussionAnswerDeletePayload> {
-    try {
-      await this.prisma.discussionAnswer.delete({ where: { id } });
-      return { isDeleted: true };
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async replyToAnswer(input: ReplyToAnswerInput, userId: string) {
-    try {
-      const replyToAnswer = await this.prisma.discussionAnswer.create({
-        data: { ...input, userId },
-      });
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async createAnswerVote(
-    input: DiscussionAnswerVoteInput,
-    userId: string,
-  ): Promise<DiscussionAnswerVotePayload> {
-    try {
-      const checkVote = await this.prisma.discussionAnswerVote.findFirst({
+      const checkVote = await this.prisma.discussionVote.findFirst({
         where: { vote: input.vote, userId },
       });
       if (!checkVote) {
-        const createVote = await this.prisma.discussionAnswerVote.create({
+        const downVote = await this.prisma.discussionVote.create({
           data: {
             ...input,
             userId,
           },
         });
-        return { discussionAnswerVote: createVote };
+        return { discussionVote: downVote };
       }
-      const removeVote = await this.prisma.discussionAnswerVote.delete({
+      await this.prisma.discussionVote.delete({
         where: { id: checkVote.id },
       });
-      return { discussionAnswerVote: removeVote };
+      return { removeVote: true };
     } catch (err) {
       throw new Error(err);
     }
