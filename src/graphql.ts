@@ -27,6 +27,10 @@ export enum RatingStatus {
     DOWNVOTED = "DOWNVOTED"
 }
 
+export enum DiscussionAnswerOrderBy {
+    createdAt = "createdAt"
+}
+
 export enum UsersOrderBy {
     username = "username",
     createdAt = "createdAt",
@@ -47,6 +51,10 @@ export enum TagOrderBy {
     createdAt = "createdAt"
 }
 
+export enum PostsOrderBy {
+    createdAt = "createdAt"
+}
+
 export enum ReactionsOrderBy {
     createdAt = "createdAt"
 }
@@ -55,14 +63,18 @@ export enum CommentReactionsOrderBy {
     createdAt = "createdAt"
 }
 
-export class PaginationArgs {
-    skip: number;
-    take: number;
+export enum DiscussionOrderBy {
+    createdAt = "createdAt"
 }
 
 export class OrderCommentsList {
     direction: OrderDirection;
     orderBy: CommentOrderBy;
+}
+
+export class OrderListDiscussionAnswer {
+    direction: OrderDirection;
+    orderBy: DiscussionAnswerOrderBy;
 }
 
 export class OrderListUsers {
@@ -89,6 +101,11 @@ export class FilterListCompanies {
     omni?: Nullable<string>;
 }
 
+export class PaginationArgs {
+    skip: number;
+    take: number;
+}
+
 export class OrderTagList {
     direction: OrderDirection;
     orderBy: TagOrderBy;
@@ -96,6 +113,11 @@ export class OrderTagList {
 
 export class TagQuery {
     name?: Nullable<string>;
+}
+
+export class OrderPosts {
+    direction: OrderDirection;
+    orderBy: PostsOrderBy;
 }
 
 export class ReactionsOrderList {
@@ -106,6 +128,11 @@ export class ReactionsOrderList {
 export class CommentReactionsOrderList {
     direction: OrderDirection;
     orderBy?: Nullable<CommentReactionsOrderBy>;
+}
+
+export class OrderListDiscussion {
+    direction: OrderDirection;
+    orderBy: DiscussionOrderBy;
 }
 
 export class UpdateStatusUserInput {
@@ -121,6 +148,11 @@ export class UpdateUserInput {
 export class ChangePasswordInput {
     oldPassword: string;
     newPassword: string;
+}
+
+export class UserProfileInput {
+    address: string;
+    phoneNo: string;
 }
 
 export class SignupInput {
@@ -220,6 +252,11 @@ export class CompanyBranchEditInput {
     street2?: Nullable<string>;
 }
 
+export class CompanyAccountStatus {
+    accountStatus: string;
+    reason?: Nullable<string>;
+}
+
 export class CreatePostInput {
     text: string;
     tags?: Nullable<string[]>;
@@ -287,6 +324,43 @@ export class CommentReactionsInput {
     commentId: string;
 }
 
+export class CompanyDiscussionInput {
+    title: string;
+    description: string;
+    companyId: string;
+}
+
+export class CompanyDiscussionUpdateInput {
+    title: string;
+    description: string;
+}
+
+export class DiscussionVoteInput {
+    discussionId: string;
+    vote: string;
+}
+
+export class DiscussionAnswerInput {
+    answer: string;
+    discussionId: string;
+}
+
+export class DiscussionAnswerUpdateInput {
+    answer: string;
+}
+
+export class ReplyToAnswerInput {
+    repliedToAnswerId: string;
+    answer: string;
+    discussionId: string;
+}
+
+export class DiscussionAnswerVoteInput {
+    discussionId: string;
+    discussionAnswerId: string;
+    vote: string;
+}
+
 export interface MutationPayload {
     errors?: Nullable<UserError[]>;
 }
@@ -332,17 +406,26 @@ export class Company {
     followers?: Nullable<number>;
     slogan?: Nullable<string>;
     branches?: Nullable<Branch[]>;
-}
-
-export class CompanyEdge {
-    cursor: string;
-    node: Company;
+    avatar?: Nullable<string>;
+    accountStatus?: Nullable<string>;
+    reason?: Nullable<string>;
 }
 
 export class CompanyPaginated {
     edges?: Nullable<CompanyEdge[]>;
-    nodes?: Nullable<Company[]>;
+    pageInfo?: Nullable<CompanyPageInfo>;
     totalCount: number;
+}
+
+export class CompanyEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<Company>;
+}
+
+export class CompanyPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
     hasNextPage: boolean;
 }
 
@@ -358,15 +441,21 @@ export class RepliesToReplies {
     creator?: Nullable<User>;
 }
 
-export class RepliesToRepliesEdge {
-    cursor: string;
-    node: RepliesToReplies;
-}
-
 export class RepliesToRepliesPagination {
     edges?: Nullable<RepliesToRepliesEdge[]>;
-    nodes?: Nullable<RepliesToReplies[]>;
+    pageInfo?: Nullable<RepliesToRepliesPageInfo>;
     totalCount: number;
+}
+
+export class RepliesToRepliesEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<RepliesToReplies>;
+}
+
+export class RepliesToRepliesPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
     hasNextPage: boolean;
 }
 
@@ -385,15 +474,21 @@ export class Replies {
     post?: Nullable<Post>;
 }
 
-export class RepliesEdge {
-    cursor: string;
-    node: Replies;
-}
-
 export class RepliesPagination {
     edges?: Nullable<RepliesEdge[]>;
-    nodes?: Nullable<Replies[]>;
+    pageInfo?: Nullable<RepliesPageInfo>;
     totalCount: number;
+}
+
+export class RepliesEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<Replies>;
+}
+
+export class RepliesPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
     hasNextPage: boolean;
 }
 
@@ -414,15 +509,21 @@ export class Comment {
     post?: Nullable<Post>;
 }
 
-export class CommentEdge {
-    cursor: string;
-    node: Comment;
-}
-
 export class CommentPagination {
     edges?: Nullable<CommentEdge[]>;
-    nodes?: Nullable<Comment[]>;
+    pageInfo?: Nullable<CommentPageInfo>;
     totalCount: number;
+}
+
+export class CommentEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<Comment>;
+}
+
+export class CommentPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
     hasNextPage: boolean;
 }
 
@@ -454,6 +555,25 @@ export class Post {
     companyId?: Nullable<string>;
     postImage: PostImage[];
     tags: Tag[];
+    company?: Nullable<Company>;
+}
+
+export class PostPagination {
+    edges?: Nullable<PostEdge[]>;
+    pageInfo?: Nullable<PostPageInfo>;
+    totalCount: number;
+}
+
+export class PostEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<Post>;
+}
+
+export class PostPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
 }
 
 export class User {
@@ -467,34 +587,84 @@ export class User {
     isSuperuser?: Nullable<boolean>;
     confirm?: Nullable<boolean>;
     emailToken?: Nullable<string>;
+    isEmailVerified?: Nullable<boolean>;
     posts?: Nullable<Post[]>;
     company?: Nullable<Company[]>;
     isAdmin: boolean;
 }
 
-export class UserEdge {
-    cursor: string;
-    node: User;
-}
-
 export class UserPaginated {
     edges?: Nullable<UserEdge[]>;
-    nodes?: Nullable<User[]>;
+    pageInfo?: Nullable<UserPageInfo>;
     totalCount: number;
+}
+
+export class UserEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<User>;
+}
+
+export class UserPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
     hasNextPage: boolean;
 }
 
+export class CustomError {
+    message: string;
+    code?: Nullable<string>;
+    statusCode?: Nullable<number>;
+}
+
+export class OTP {
+    id: string;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    otp?: Nullable<number>;
+    expirationDate?: Nullable<DateTime>;
+    userId?: Nullable<string>;
+}
+
+export class OTPPayload {
+    errors?: Nullable<CustomError[]>;
+    otp?: Nullable<OTP>;
+    otpCheck?: Nullable<boolean>;
+}
+
 export class Token {
-    accessToken: string;
-    refreshToken: string;
+    accessToken?: Nullable<string>;
+    refreshToken?: Nullable<string>;
 }
 
 export class Auth {
-    accessToken: string;
-    refreshToken: string;
-    user: User;
-    role: string;
+    accessToken?: Nullable<string>;
+    refreshToken?: Nullable<string>;
+    errors?: Nullable<CustomError[]>;
+    user?: Nullable<User>;
+    role?: Nullable<string>;
+    otp?: Nullable<OTP>;
     company?: Nullable<Company[]>;
+}
+
+export class UserProfile {
+    id: string;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    address?: Nullable<string>;
+    phoneNo?: Nullable<string>;
+    profileImage?: Nullable<string>;
+    user?: Nullable<User>;
+}
+
+export class UserProfilePayload {
+    errors?: Nullable<CustomError>;
+    userProfile?: Nullable<UserProfile>;
+}
+
+export class CompanyPayload {
+    errors?: Nullable<CustomError[]>;
+    company?: Nullable<Company>;
 }
 
 export class UserError {
@@ -517,12 +687,6 @@ export class NewReplyPayload implements MutationPayload {
 export class CommentPaginationPayload {
     errors?: Nullable<UserError[]>;
     comments?: Nullable<CommentPagination>;
-}
-
-export class CustomError {
-    message: string;
-    code?: Nullable<string>;
-    statusCode?: Nullable<number>;
 }
 
 export class CreatePostPayload {
@@ -677,18 +841,130 @@ export class CommentReactionPaginationPayload {
     reactions?: Nullable<CommentReactionsPagination>;
 }
 
+export class DiscussionAnswer {
+    id: string;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    answer?: Nullable<string>;
+    discussionId?: Nullable<string>;
+    discussion?: Nullable<CompanyDiscussion>;
+    userId?: Nullable<string>;
+    user?: Nullable<User>;
+    reply?: Nullable<DiscussionAnswer[]>;
+}
+
+export class DiscussionAnswerPaginated {
+    edges?: Nullable<DiscussionAnswerEdge[]>;
+    pageInfo?: Nullable<DiscussionAnswerPageInfo>;
+    totalCount: number;
+}
+
+export class DiscussionAnswerEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<DiscussionAnswer>;
+}
+
+export class DiscussionAnswerPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class CompanyDiscussion {
+    id: string;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    title?: Nullable<string>;
+    description?: Nullable<string>;
+    companyId?: Nullable<string>;
+    company?: Nullable<Company>;
+    discussionAnswer: DiscussionAnswerPaginated;
+}
+
+export class DiscussionPaginated {
+    edges?: Nullable<CompanyDiscussionEdge[]>;
+    pageInfo?: Nullable<CompanyDiscussionPageInfo>;
+    totalCount: number;
+}
+
+export class CompanyDiscussionEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<CompanyDiscussion>;
+}
+
+export class CompanyDiscussionPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class CompanyDiscussionPayload {
+    errors?: Nullable<CustomError[]>;
+    companyDiscussion?: Nullable<CompanyDiscussion>;
+}
+
+export class CompanyDiscussionDeletePayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleted?: Nullable<boolean>;
+}
+
+export class DiscussionAnswerVote {
+    id: string;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    vote?: Nullable<string>;
+    discussionId?: Nullable<string>;
+    discussion?: Nullable<CompanyDiscussion>;
+    userId?: Nullable<string>;
+    user?: Nullable<User>;
+    discussionAnswer?: Nullable<DiscussionAnswer>;
+}
+
+export class DiscussionAnswerVotePayload {
+    errors?: Nullable<CustomError[]>;
+    discussionAnswerVote?: Nullable<DiscussionAnswerVote>;
+}
+
+export class DiscussionAnswerPayload {
+    errors?: Nullable<CustomError[]>;
+    discussionAnswer?: Nullable<DiscussionAnswer>;
+}
+
+export class DiscussionAnswerDeletePayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleted?: Nullable<boolean>;
+}
+
+export class DiscussionVote {
+    id: string;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    vote?: Nullable<string>;
+    userId?: Nullable<string>;
+    user?: Nullable<User[]>;
+    discussionId?: Nullable<string>;
+    discussion?: Nullable<CompanyDiscussion>;
+}
+
+export class DiscussionVotePayload {
+    errors?: Nullable<CustomError[]>;
+    discussionVote?: Nullable<DiscussionVote>;
+}
+
 export abstract class IQuery {
-    abstract listUsers(paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderListUsers>, filter?: Nullable<FilterListUsers>): UserPaginated | Promise<UserPaginated>;
+    abstract listUsers(before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListUsers>, filter?: Nullable<FilterListUsers>): UserPaginated | Promise<UserPaginated>;
 
     abstract me(): User | Promise<User>;
 
     abstract getUser(userId: string): User | Promise<User>;
 
-    abstract getCompanysFollowedByUser(paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderFollowedCompanyList>): Nullable<CompanyPaginated> | Promise<Nullable<CompanyPaginated>>;
+    abstract getCompanysFollowedByUser(before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderFollowedCompanyList>): Nullable<CompanyPaginated> | Promise<Nullable<CompanyPaginated>>;
 
-    abstract companiesSuggestions(paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderListCompanies>, filter?: Nullable<FilterListCompanies>): CompanyPaginated | Promise<CompanyPaginated>;
+    abstract companiesSuggestions(before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListCompanies>, filter?: Nullable<FilterListCompanies>): CompanyPaginated | Promise<CompanyPaginated>;
 
-    abstract companies(paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderListCompanies>, filter?: Nullable<FilterListCompanies>): CompanyPaginated | Promise<CompanyPaginated>;
+    abstract companies(before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListCompanies>, filter?: Nullable<FilterListCompanies>): CompanyPaginated | Promise<CompanyPaginated>;
 
     abstract getCompanyById(id: string): Company | Promise<Company>;
 
@@ -696,11 +972,11 @@ export abstract class IQuery {
 
     abstract getTags(paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderTagList>, query?: Nullable<TagQuery>): TagPagination | Promise<TagPagination>;
 
-    abstract postsByCompanyId(id: string): Post[] | Promise<Post[]>;
+    abstract postsByCompanyId(id: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>): PostPagination | Promise<PostPagination>;
 
-    abstract companyPostsFollowedByUser(): Nullable<Post[]> | Promise<Nullable<Post[]>>;
+    abstract companyPostsFollowedByUser(before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderPosts>): Nullable<PostPagination> | Promise<Nullable<PostPagination>>;
 
-    abstract comments(postId: string, paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderCommentsList>): CommentPaginationPayload | Promise<CommentPaginationPayload>;
+    abstract comments(postId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderCommentsList>): CommentPaginationPayload | Promise<CommentPaginationPayload>;
 
     abstract getIndustry(): IndustryPayload | Promise<IndustryPayload>;
 
@@ -711,6 +987,12 @@ export abstract class IQuery {
     abstract getUsersByPostReaction(reactionType: string, paginate?: Nullable<PaginationArgs>, order?: Nullable<ReactionsOrderList>): ReactionsPagination | Promise<ReactionsPagination>;
 
     abstract commentReactions(commentId: string, paginate?: Nullable<PaginationArgs>, order?: Nullable<CommentReactionsOrderList>): CommentReactionPaginationPayload | Promise<CommentReactionPaginationPayload>;
+
+    abstract getCompanyDiscussion(companyId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListDiscussion>): DiscussionPaginated | Promise<DiscussionPaginated>;
+
+    abstract getCompanyDiscussionByUser(): CompanyDiscussion[] | Promise<CompanyDiscussion[]>;
+
+    abstract getDiscussionAnswer(discussionId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListDiscussionAnswer>): DiscussionAnswerPaginated | Promise<DiscussionAnswerPaginated>;
 }
 
 export abstract class IMutation {
@@ -719,6 +1001,8 @@ export abstract class IMutation {
     abstract updateUser(data: UpdateUserInput): User | Promise<User>;
 
     abstract changePassword(data: ChangePasswordInput): User | Promise<User>;
+
+    abstract editUserProfile(userProfile: UserProfileInput, file?: Nullable<Upload>): UserProfilePayload | Promise<UserProfilePayload>;
 
     abstract signup(data: SignupInput): Auth | Promise<Auth>;
 
@@ -738,17 +1022,23 @@ export abstract class IMutation {
 
     abstract logout(): boolean | Promise<boolean>;
 
+    abstract otpVerification(otp: number): OTPPayload | Promise<OTPPayload>;
+
+    abstract resendOtp(): OTPPayload | Promise<OTPPayload>;
+
     abstract createCompany(data: CreateCompanyInput): Company | Promise<Company>;
 
     abstract createCompanyGeneralInfo(data: CreateCompanyGeneralInput): Company | Promise<Company>;
 
-    abstract editCompany(id: string, data: CompanyEditInput): Company | Promise<Company>;
+    abstract editCompany(id: string, data: CompanyEditInput, file?: Nullable<Upload>): CompanyPayload | Promise<CompanyPayload>;
 
     abstract createCompanyBranch(id: string, data: CompanyBranchInput): Branch | Promise<Branch>;
 
     abstract editCompanyBranch(id: string, data: CompanyBranchEditInput): Branch | Promise<Branch>;
 
     abstract deleteCompanyBranch(id: string, companyId: string): Branch | Promise<Branch>;
+
+    abstract companyAccountStatus(data: CompanyAccountStatus, companyId: string): CompanyPayload | Promise<CompanyPayload>;
 
     abstract post(data: CreatePostInput, companyId: string, file?: Nullable<Upload[]>): CreatePostPayload | Promise<CreatePostPayload>;
 
@@ -799,6 +1089,24 @@ export abstract class IMutation {
     abstract replyToReply(commentId: string, input: CreateCommentInput, mention?: Nullable<CreateMentionsInput>): RepliesToRepliesPayload | Promise<RepliesToRepliesPayload>;
 
     abstract commentReaction(input: CommentReactionsInput): CommentReactionsPayload | Promise<CommentReactionsPayload>;
+
+    abstract companyDiscussion(input: CompanyDiscussionInput): CompanyDiscussionPayload | Promise<CompanyDiscussionPayload>;
+
+    abstract updateCompanyDiscussion(input: CompanyDiscussionUpdateInput, id: string): CompanyDiscussionPayload | Promise<CompanyDiscussionPayload>;
+
+    abstract deleteCompanyDiscussion(id: string): CompanyDiscussionDeletePayload | Promise<CompanyDiscussionDeletePayload>;
+
+    abstract discussionVote(input: DiscussionVoteInput): DiscussionVotePayload | Promise<DiscussionVotePayload>;
+
+    abstract createDiscussionAnswer(answer: DiscussionAnswerInput): DiscussionAnswerPayload | Promise<DiscussionAnswerPayload>;
+
+    abstract updateAnswer(updateAnswer: DiscussionAnswerUpdateInput, id: string): DiscussionAnswerPayload | Promise<DiscussionAnswerPayload>;
+
+    abstract deleteAnswer(id: string): DiscussionAnswerDeletePayload | Promise<DiscussionAnswerDeletePayload>;
+
+    abstract replyToAnswer(input: ReplyToAnswerInput): DiscussionAnswerDeletePayload | Promise<DiscussionAnswerDeletePayload>;
+
+    abstract discussionAnswerVote(input: DiscussionAnswerVoteInput): DiscussionAnswerVotePayload | Promise<DiscussionAnswerVotePayload>;
 }
 
 export type DateTime = any;

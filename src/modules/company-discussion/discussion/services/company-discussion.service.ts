@@ -54,25 +54,37 @@ export class CompanyDiscussionService {
     userId: string,
   ): Promise<CompanyDiscussionPayload> {
     try {
+      console.log('input', input);
       const company = await this.companyService.getCompanyById(input.companyId);
-      if (!company)
-        return customError(
-          COMPANY_MESSAGE.NOT_FOUND,
-          COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
-        );
-      const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
-          input.companyId,
-          userId,
-        );
-      if (!followedCompany)
-        return customError(
-          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
-        );
-      return this.companyDiscussionRepository.createDiscussion(input, userId);
+      console.log('company', company);
+      if (!company) {
+        // if its not from a company account then it might be from followed user
+        const followedCompany =
+          await this.followCompanyService.checkIfUserFollowCompany(
+            input.companyId,
+            userId,
+          );
+        if (!followedCompany)
+          return customError(
+            COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+            COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+            STATUS_CODE.BAD_CONFLICT,
+          );
+        else {
+          return this.companyDiscussionRepository.createDiscussion(
+            input,
+            userId,
+          );
+        }
+      } else {
+        // if its from a company user then allow to create a discussion
+        return this.companyDiscussionRepository.createDiscussion(input, userId);
+      }
+      // return customError(
+      //   COMPANY_MESSAGE.NOT_FOUND,
+      //   COMPANY_CODE.NOT_FOUND,
+      //   STATUS_CODE.NOT_FOUND,
+      // );
     } catch (err) {
       throw new Error(err);
     }
