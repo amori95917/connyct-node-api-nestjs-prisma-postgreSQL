@@ -7,6 +7,7 @@ import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { BaseEntity } from '../../prisma/entities/base.entity';
 import { Post } from '../../post/post.models';
 import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
+import { UserProfile } from '../userProfile.model';
 
 @ObjectType()
 export class User extends BaseEntity {
@@ -44,6 +45,9 @@ export class User extends BaseEntity {
 
   @Field(() => [Company], { nullable: true })
   company?: Company[];
+
+  @Field(() => UserProfile, { nullable: true })
+  userProfile?: UserProfile;
 }
 
 @ObjectType()

@@ -279,6 +279,16 @@ type PostPageInfo {
   hasNextPage: Boolean!
 }
 
+type UserProfile {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  address: String
+  phoneNo: String
+  profileImage: String
+  user: User
+}
+
 type User {
   id: ID!
   createdAt: DateTime!
@@ -293,6 +303,7 @@ type User {
   isEmailVerified: Boolean
   posts: [Post!]
   company: [Company!]
+  userProfile: UserProfile
   isAdmin: Boolean!
 }
 
@@ -354,16 +365,6 @@ type Auth {
   role: String
   otp: OTP
   company: [Company!]
-}
-
-type UserProfile {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  address: String
-  phoneNo: String
-  profileImage: String
-  user: User
 }
 
 type UserProfilePayload {
@@ -554,6 +555,37 @@ type CommentReactionPaginationPayload {
   reactions: CommentReactionsPagination
 }
 
+type DiscussionAnswerReply {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  answer: String
+  discussionId: String
+  discussion: CompanyDiscussion
+  userId: String
+  user: User!
+  repliedToAnswerId: String
+  parentAnswer: DiscussionAnswer
+}
+
+type DiscussionAnswerReplyPaginated {
+  edges: [DiscussionAnswerReplyEdge!]
+  pageInfo: DiscussionAnswerReplyPageInfo
+  totalCount: Float!
+}
+
+type DiscussionAnswerReplyEdge {
+  cursor: String
+  node: DiscussionAnswerReply
+}
+
+type DiscussionAnswerReplyPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
 type DiscussionAnswer {
   id: ID!
   createdAt: DateTime!
@@ -562,8 +594,31 @@ type DiscussionAnswer {
   discussionId: String
   discussion: CompanyDiscussion
   userId: String
-  user: User
-  reply: [DiscussionAnswer!]
+  user: User!
+  answerReply(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
+  ): DiscussionAnswerReplyPaginated
+}
+
+input OrderListDiscussionAnswer {
+  direction: OrderDirection!
+  orderBy: DiscussionAnswerOrderBy!
+}
+
+"""Order by:createdAt"""
+enum DiscussionAnswerOrderBy {
+  createdAt
 }
 
 type DiscussionAnswerPaginated {
@@ -582,6 +637,12 @@ type DiscussionAnswerPageInfo {
   endCursor: String
   hasPreviousPage: Boolean!
   hasNextPage: Boolean!
+}
+
+type CreatedBy {
+  id: String
+  fullName: String
+  image: String
 }
 
 type DiscussionVote {
@@ -603,6 +664,8 @@ type CompanyDiscussion {
   description: String
   companyId: String
   company: Company
+  userId: String
+  user: User!
   discussionAnswer(
     """Paginate before opaque cursor"""
     before: String
@@ -616,18 +679,10 @@ type CompanyDiscussion {
     """Paginate last"""
     last: Float
     order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
-  ): DiscussionAnswerPaginated!
+  ): DiscussionAnswerPaginated
   discussionVote: [DiscussionVote!]
-}
-
-input OrderListDiscussionAnswer {
-  direction: OrderDirection!
-  orderBy: DiscussionAnswerOrderBy!
-}
-
-"""Order by:createdAt"""
-enum DiscussionAnswerOrderBy {
-  createdAt
+  upVote: Float
+  createdBy: CreatedBy
 }
 
 type DiscussionPaginated {
@@ -684,6 +739,11 @@ type DiscussionAnswerVotePayload {
 type DiscussionAnswerPayload {
   errors: [CustomError!]
   discussionAnswer: DiscussionAnswer
+}
+
+type DiscussionAnswerReplyPayload {
+  errors: [CustomError!]
+  discussionAnswerReply: DiscussionAnswerReply
 }
 
 type DiscussionAnswerDeletePayload {
@@ -822,9 +882,10 @@ type Query {
     last: Float
     order: OrderListDiscussion = {direction: desc, orderBy: createdAt}
   ): DiscussionPaginated!
+  getCompanyDiscussionById(discussionId: String!): CompanyDiscussion!
   getCompanyDiscussionByUser: [CompanyDiscussion!]!
   discussionVoteCount(discussionId: String!): Float!
-  getDiscussionAnswer(
+  getDiscussionAnswerByDiscussionId(
     discussionId: String!
 
     """Paginate before opaque cursor"""
@@ -998,10 +1059,11 @@ type Mutation {
   discussionVote(input: DiscussionVoteInput!): DiscussionVotePayload!
   discussionDownvote(input: DiscussionVoteInput!): DiscussionVotePayload!
   createDiscussionAnswer(answer: DiscussionAnswerInput!): DiscussionAnswerPayload!
-  updateAnswer(updateAnswer: DiscussionAnswerUpdateInput!, id: String!): DiscussionAnswerPayload!
-  deleteAnswer(id: String!): DiscussionAnswerDeletePayload!
-  replyToAnswer(input: ReplyToAnswerInput!): DiscussionAnswerDeletePayload!
+  discussionAnswerUpdate(updateAnswer: DiscussionAnswerUpdateInput!, answerId: String!): DiscussionAnswerPayload!
+  discussionAnswerDelete(id: String!): DiscussionAnswerDeletePayload!
   discussionAnswerVote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
+  discussionAnswerDownvote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
+  discussionAnswerReply(input: ReplyToAnswerInput!): DiscussionAnswerReplyPayload!
 }
 
 input UpdateStatusUserInput {
@@ -1221,14 +1283,14 @@ input DiscussionAnswerUpdateInput {
   answer: String!
 }
 
-input ReplyToAnswerInput {
-  repliedToAnswerId: String!
-  answer: String!
-  discussionId: String!
-}
-
 input DiscussionAnswerVoteInput {
   discussionId: String!
   discussionAnswerId: String!
   vote: String!
+}
+
+input ReplyToAnswerInput {
+  repliedToAnswerId: String!
+  answer: String!
+  discussionId: String!
 }

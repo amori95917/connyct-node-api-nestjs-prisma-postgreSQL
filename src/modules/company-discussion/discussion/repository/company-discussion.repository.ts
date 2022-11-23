@@ -15,7 +15,7 @@ import {
 } from '../entities/company-discussion.payload';
 
 import { DiscussionVotePayload } from '../../discussion-answer/entities/discussion-vote.payload';
-import { Vote } from '@prisma/client';
+import { CreatedBy } from '../entities/createdBy.entity';
 
 @Injectable()
 export class CompanyDiscussionRepository {
@@ -147,7 +147,6 @@ export class CompanyDiscussionRepository {
       const count = await this.prisma.discussionVote.count({
         where: { discussionId, vote: 'UPVOTE' },
       });
-      console.log(count, 'incoming count');
       return count;
     } catch (err) {
       throw new Error(err);
@@ -200,6 +199,30 @@ export class CompanyDiscussionRepository {
         where: { id: checkVote.id },
       });
       return { removeVote: true };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  async createdBy(userId: string): Promise<CreatedBy> {
+    try {
+      const company = await this.prisma.company.findFirst({
+        where: { ownerId: userId },
+      });
+      if (company)
+        return {
+          id: company.id,
+          fullName: company.legalName,
+          image: company.avatar,
+        };
+      const user = await this.prisma.user.findFirst({
+        where: { id: userId },
+        include: { UserProfile: true },
+      });
+      return {
+        id: userId,
+        fullName: user.fullName,
+        image: user.UserProfile.profileImage,
+      };
     } catch (err) {
       throw new Error(err);
     }

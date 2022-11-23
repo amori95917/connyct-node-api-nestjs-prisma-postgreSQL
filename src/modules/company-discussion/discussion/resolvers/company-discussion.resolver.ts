@@ -34,6 +34,9 @@ import { DiscussionAnswerRepository } from '../../discussion-answer/repository/d
 import { DiscussionAnswerPaginated } from '../../discussion-answer/entities/discussion-answer.entity';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { CompanyService } from 'src/modules/company/services/company.service';
+import { UserService } from 'src/modules/user/services/user.service';
+import { CompanyDiscussionRepository } from '../repository/company-discussion.repository';
+import { CreatedBy } from '../entities/createdBy.entity';
 
 @Resolver(() => CompanyDiscussion)
 export class CompanyDiscussionResolver {
@@ -41,6 +44,8 @@ export class CompanyDiscussionResolver {
     private companyDiscussionService: CompanyDiscussionService,
     private discussionAnswerRepository: DiscussionAnswerRepository,
     private companyService: CompanyService,
+    private readonly userService: UserService,
+    private readonly companyDiscussionRepository: CompanyDiscussionRepository,
   ) {}
 
   @UseGuards(GqlAuthGuard)
@@ -57,6 +62,11 @@ export class CompanyDiscussionResolver {
     return this.companyDiscussionService.find(companyId, paginate, order);
   }
 
+  @UseGuards(GqlAuthGuard)
+  @Query(() => CompanyDiscussion)
+  async getCompanyDiscussionById(@Args('discussionId') discussionId: string) {
+    return await this.companyDiscussionService.getDiscussionById(discussionId);
+  }
   @UseGuards(GqlAuthGuard)
   @Query(() => [CompanyDiscussion])
   async getCompanyDiscussionByUser(@CurrentUser() user: User) {
@@ -120,7 +130,7 @@ export class CompanyDiscussionResolver {
   }
 
   @ResolveField('discussionAnswer', () => DiscussionAnswerPaginated)
-  async answer(
+  async discussionAnswer(
     @Parent() discussion: CompanyDiscussion,
     @Args() paginate: ConnectionArgs,
     @Args('order', {
@@ -130,7 +140,6 @@ export class CompanyDiscussionResolver {
     order: OrderListDiscussionAnswer,
   ) {
     const { id } = discussion;
-    console.log(id, 'incoming id');
     return await this.discussionAnswerRepository.getDiscussionAnswerByDiscussionId(
       id,
       paginate,
@@ -142,5 +151,21 @@ export class CompanyDiscussionResolver {
   async company(@Parent() discussion: CompanyDiscussion): Promise<Company> {
     const { companyId } = discussion;
     return await this.companyService.getCompanyById(companyId);
+  }
+
+  @ResolveField('user', () => User)
+  async getUser(@Parent() discussion: CompanyDiscussion) {
+    const { userId } = discussion;
+    return await this.userService.findUserById(userId);
+  }
+  @ResolveField('upVote', () => Number)
+  async upVote(@Parent() discussion: CompanyDiscussion) {
+    const { id } = discussion;
+    return await this.companyDiscussionService.countVote(id);
+  }
+  @ResolveField('createdBy', () => CreatedBy)
+  async createdBy(@Parent() discussion: CompanyDiscussion) {
+    const { userId } = discussion;
+    return await this.companyDiscussionRepository.createdBy(userId);
   }
 }

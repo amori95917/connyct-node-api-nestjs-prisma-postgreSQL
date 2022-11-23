@@ -38,6 +38,7 @@ import { COMPANY_CODE, USER_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
 import { SharpService } from 'nestjs-sharp';
+import { UserProfile } from '../userProfile.model';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UserService {
@@ -98,7 +99,9 @@ export class UserService {
   }
 
   async findUserById(id: string): Promise<User | null> {
-    return await this.prisma.user.findUnique({ where: { id } });
+    return await this.prisma.user.findUnique({
+      where: { id },
+    });
   }
 
   public async findUsersByIds(authorIds: readonly string[]): Promise<User[]> {
@@ -504,6 +507,14 @@ export class UserService {
       where: { id: data.userId },
       data: { isValid: data.status },
     });
+  }
+
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    try {
+      return await this.prisma.userProfile.findFirst({ where: { userId } });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   async editUserProfile(

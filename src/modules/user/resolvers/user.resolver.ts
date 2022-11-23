@@ -37,6 +37,7 @@ import { UserProfileInput } from '../dto/userProfile.input';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CompanyService } from 'src/modules/company/services/company.service';
+import { UserProfile } from '../userProfile.model';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -163,9 +164,15 @@ export class UserResolver {
     return await this.userService.editUserProfile(userProfile, file, id);
   }
 
-  @ResolveField(() => Company)
+  @ResolveField('company', () => Company)
   @UseGuards(GqlAuthGuard)
   async company(@Parent() user: User): Promise<Company> {
     return await this.companyService.getCompanyByUserId(user.id);
+  }
+
+  @ResolveField('userProfile', () => UserProfile)
+  async userProfile(@Parent() user: User): Promise<UserProfile | null> {
+    const { id } = user;
+    return await this.userService.getUserProfile(id);
   }
 }

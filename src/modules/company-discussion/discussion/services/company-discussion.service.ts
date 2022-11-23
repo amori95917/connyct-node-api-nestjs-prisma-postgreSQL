@@ -49,42 +49,35 @@ export class CompanyDiscussionService {
     return await this.companyDiscussionRepository.getDiscussionByUserId(userId);
   }
 
+  async getDiscussionById(id: string) {
+    return await this.companyDiscussionRepository.getDiscussionById(id);
+  }
   async createDiscussion(
     input: CompanyDiscussionInput,
     userId: string,
   ): Promise<CompanyDiscussionPayload> {
     try {
-      console.log('input', input);
       const company = await this.companyService.getCompanyById(input.companyId);
-      console.log('company', company);
-      if (!company) {
-        // if its not from a company account then it might be from followed user
-        const followedCompany =
-          await this.followCompanyService.checkIfUserFollowCompany(
-            input.companyId,
-            userId,
-          );
-        if (!followedCompany)
-          return customError(
-            COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-            COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-            STATUS_CODE.BAD_CONFLICT,
-          );
-        else {
-          return this.companyDiscussionRepository.createDiscussion(
-            input,
-            userId,
-          );
-        }
-      } else {
-        // if its from a company user then allow to create a discussion
+      if (!company)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+      if (company.ownerId === userId)
         return this.companyDiscussionRepository.createDiscussion(input, userId);
-      }
-      // return customError(
-      //   COMPANY_MESSAGE.NOT_FOUND,
-      //   COMPANY_CODE.NOT_FOUND,
-      //   STATUS_CODE.NOT_FOUND,
-      // );
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          input.companyId,
+          userId,
+        );
+      if (!followedCompany)
+        return customError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          STATUS_CODE.BAD_CONFLICT,
+        );
+      return this.companyDiscussionRepository.createDiscussion(input, userId);
     } catch (err) {
       throw new Error(err);
     }
@@ -96,6 +89,12 @@ export class CompanyDiscussionService {
     userId: string,
   ): Promise<CompanyDiscussionPayload> {
     try {
+      const checkOwner = await this.companyDiscussionRepository.checkOwner(
+        id,
+        userId,
+      );
+      if (checkOwner)
+        return await this.companyDiscussionRepository.update(input, id);
       const discussion =
         await this.companyDiscussionRepository.getDiscussionByIdAndUserId(
           id,
@@ -171,6 +170,13 @@ export class CompanyDiscussionService {
     userId: string,
   ): Promise<DiscussionVotePayload> {
     try {
+      const checkOwner = await this.companyDiscussionRepository.checkOwner(
+        input.discussionId,
+        userId,
+      );
+      if (checkOwner)
+        return this.companyDiscussionRepository.createVote(input, userId);
+
       const discussion =
         await this.companyDiscussionRepository.getDiscussionById(
           input.discussionId,
@@ -202,6 +208,12 @@ export class CompanyDiscussionService {
     userId: string,
   ): Promise<DiscussionVotePayload> {
     try {
+      const checkOwner = await this.companyDiscussionRepository.checkOwner(
+        input.discussionId,
+        userId,
+      );
+      if (checkOwner)
+        return this.companyDiscussionRepository.downVote(input, userId);
       const discussion =
         await this.companyDiscussionRepository.getDiscussionById(
           input.discussionId,
