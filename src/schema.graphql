@@ -398,6 +398,11 @@ type NewReplyPayload implements MutationPayload {
   comment: Comment
 }
 
+type CommentDeletePayload {
+  errors: [UserError!]
+  isDeleted: Boolean
+}
+
 type CommentPaginationPayload {
   errors: [UserError!]
   comments: CommentPagination
@@ -566,6 +571,7 @@ type DiscussionAnswerReply {
   user: User!
   repliedToAnswerId: String
   parentAnswer: DiscussionAnswer
+  upVote: Float
 }
 
 type DiscussionAnswerReplyPaginated {
@@ -609,6 +615,8 @@ type DiscussionAnswer {
     last: Float
     order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
   ): DiscussionAnswerReplyPaginated
+  mentions: [User!]
+  upVote: Float
 }
 
 input OrderListDiscussionAnswer {
@@ -734,6 +742,7 @@ type DiscussionAnswerVote {
 type DiscussionAnswerVotePayload {
   errors: [CustomError!]
   discussionAnswerVote: DiscussionAnswerVote
+  removeVote: Boolean
 }
 
 type DiscussionAnswerPayload {
@@ -1035,6 +1044,8 @@ type Mutation {
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
   commentToPost(postId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
+  commentUpdate(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
+  commentDelete(commentId: String!): CommentDeletePayload!
   upvoteComment(commentId: String!): RatePayload!
   downvoteComment(commentId: String!): RatePayload!
   removeRatingFromComment(commentId: String!): RatePayload!
@@ -1277,10 +1288,12 @@ input DiscussionVoteInput {
 input DiscussionAnswerInput {
   answer: String!
   discussionId: String!
+  mentionIds: [String!]
 }
 
 input DiscussionAnswerUpdateInput {
   answer: String!
+  mentionIds: [String!]
 }
 
 input DiscussionAnswerVoteInput {

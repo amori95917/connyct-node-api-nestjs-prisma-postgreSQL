@@ -116,6 +116,12 @@ export class DiscussionAnswerResolver {
     return this.discussionAnswerService.createAnswerDownvote(input, user.id);
   }
 
+  @ResolveField('upVote', () => Number)
+  async upVote(@Parent() answer: DiscussionAnswer) {
+    const { id } = answer;
+    return await this.discussionAnswerRepository.countVote(id);
+  }
+
   @ResolveField('answerReply', () => DiscussionAnswerReplyPaginated)
   async answerReply(
     @Parent() discussionAnswer: DiscussionAnswer,

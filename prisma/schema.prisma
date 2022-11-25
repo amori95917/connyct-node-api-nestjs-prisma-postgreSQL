@@ -39,21 +39,22 @@ model User {
   RoleRight       RoleRight[]
   employee        CompanyEmployee? @relation("EmployeeUser")
 
-  Company               Company[]
-  InvitedEmployee       InvitedEmployee[]
-  FollowUnfollowCompany FollowUnfollowCompany[]
-  FollowedToUser        FollowUserToUser[]      @relation("Followed_To_User")
-  FollowedByUser        FollowUserToUser[]      @relation("Followed_By_User")
-  Like                  PostReaction[]
-  Comment               Comment[]
-  CommentMentions       CommentMentions[]
-  CommentReactions      CommentReactions[]
-  UserProfile           UserProfile?
-  OTP                   OTP[]
-  DiscussionVote        DiscussionVote[]
-  DiscussionAnswer      DiscussionAnswer[]
-  CompanyDiscussions    CompanyDiscussions[]
-  DiscussionAnswerVote  DiscussionAnswerVote[]
+  Company                  Company[]
+  InvitedEmployee          InvitedEmployee[]
+  FollowUnfollowCompany    FollowUnfollowCompany[]
+  FollowedToUser           FollowUserToUser[]         @relation("Followed_To_User")
+  FollowedByUser           FollowUserToUser[]         @relation("Followed_By_User")
+  Like                     PostReaction[]
+  Comment                  Comment[]
+  CommentMentions          CommentMentions[]
+  CommentReactions         CommentReactions[]
+  UserProfile              UserProfile?
+  OTP                      OTP[]
+  DiscussionVote           DiscussionVote[]
+  DiscussionAnswer         DiscussionAnswer[]
+  CompanyDiscussions       CompanyDiscussions[]
+  DiscussionAnswerVote     DiscussionAnswerVote[]
+  DiscussionAnswerMentions DiscussionAnswerMentions[]
 
   @@unique([id, email])
 }
@@ -461,18 +462,19 @@ model DiscussionVote {
 }
 
 model DiscussionAnswer {
-  id                   String                 @id @default(uuid())
-  answer               String
-  discussionId         String
-  discussion           CompanyDiscussions     @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-  userId               String
-  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  repliedToAnswerId    String?
-  parentAnswer         DiscussionAnswer?      @relation("ReplyToAnswer", fields: [repliedToAnswerId], references: [id])
-  DiscussionAnswer     DiscussionAnswer[]     @relation("ReplyToAnswer")
-  createdAt            DateTime?              @default(now())
-  updatedAt            DateTime?              @updatedAt @db.Timestamp()
-  DiscussionAnswerVote DiscussionAnswerVote[]
+  id                       String                     @id @default(uuid())
+  answer                   String
+  discussionId             String
+  discussion               CompanyDiscussions         @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  userId                   String
+  user                     User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repliedToAnswerId        String?
+  parentAnswer             DiscussionAnswer?          @relation("ReplyToAnswer", fields: [repliedToAnswerId], references: [id])
+  DiscussionAnswer         DiscussionAnswer[]         @relation("ReplyToAnswer")
+  createdAt                DateTime?                  @default(now())
+  updatedAt                DateTime?                  @updatedAt @db.Timestamp()
+  DiscussionAnswerVote     DiscussionAnswerVote[]
+  DiscussionAnswerMentions DiscussionAnswerMentions[]
 }
 
 model DiscussionAnswerVote {
@@ -486,4 +488,14 @@ model DiscussionAnswerVote {
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt          DateTime?          @default(now())
   updatedAt          DateTime?          @updatedAt @db.Timestamp()
+}
+
+model DiscussionAnswerMentions {
+  id        String           @id @default(uuid())
+  mentionId String
+  user      User             @relation(fields: [mentionId], references: [id], onDelete: Cascade)
+  answerId  String
+  answer    DiscussionAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  createdAt DateTime?        @default(now())
+  updatedAt DateTime?        @updatedAt @db.Timestamp()
 }

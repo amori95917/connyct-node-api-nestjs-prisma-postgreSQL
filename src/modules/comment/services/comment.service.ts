@@ -8,12 +8,15 @@ import { CommentsRepository } from '../repository/comment.repository';
 
 import type { Comment } from '../comment.models';
 import type { CreateCommentInput } from '../dto/create-comment.input';
-import type { NewReplyPayload } from '../entities/new-reply.payload';
+import type {
+  CommentDeletePayload,
+  NewReplyPayload,
+} from '../entities/new-reply.payload';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { PostsRepository } from 'src/modules/post/repository/post.repository';
-import { POST_CODE } from 'src/common/errors/error.code';
+import { COMMENT_CODE, POST_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
-import { POST_MESSAGE } from 'src/common/errors/error.message';
+import { POST_MESSAGE, COMMENT_MESSAGE } from 'src/common/errors/error.message';
 import { User } from 'src/modules/user/entities/user.entity';
 import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
 import { customError } from 'src/common/errors';
@@ -74,6 +77,50 @@ export class CommentsService {
       userId,
       mention,
     );
+  }
+
+  async updateComment(
+    commentId: string,
+    input: CreateCommentInput,
+    mention: CreateMentionsInput,
+    userId: string,
+  ): Promise<NewReplyPayload> {
+    const comment = await this.commentsRepository.findCOmmentByIdAndUserId(
+      commentId,
+      userId,
+    );
+    if (!comment)
+      return customError(
+        COMMENT_MESSAGE.NOT_FOUND,
+        COMMENT_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    return await this.commentsRepository.updateComment(
+      commentId,
+      input,
+      mention,
+    );
+  }
+
+  async deleteComment(
+    commentId: string,
+    userId: string,
+  ): Promise<CommentDeletePayload> {
+    try {
+      const comment = await this.commentsRepository.findCOmmentByIdAndUserId(
+        commentId,
+        userId,
+      );
+      if (!comment)
+        return customError(
+          COMMENT_MESSAGE.NOT_FOUND,
+          COMMENT_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+      return await this.commentsRepository.deleteComment(commentId);
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   async getMentionsUser(id: string): Promise<User[]> {

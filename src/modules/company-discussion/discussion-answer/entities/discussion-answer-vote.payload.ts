@@ -9,4 +9,7 @@ export class DiscussionAnswerVotePayload {
 
   @Field(() => DiscussionAnswerVote, { nullable: true })
   discussionAnswerVote?: DiscussionAnswerVote;
+
+  @Field({ nullable: true })
+  removeVote?: boolean;
 }

@@ -27,7 +27,10 @@ import CommentsLoader from '../comment.loader';
 import { Comment, CommentPagination } from '../comment.models';
 import { CommentsService } from '../services/comment.service';
 import { CreateCommentInput } from '../dto/create-comment.input';
-import { NewReplyPayload } from '../entities/new-reply.payload';
+import {
+  CommentDeletePayload,
+  NewReplyPayload,
+} from '../entities/new-reply.payload';
 import { UserService } from 'src/modules/user/services/user.service';
 import { Replies, RepliesPagination } from '../../replies/replies.models';
 import { CommentPaginationPayload } from '../entities/pagination.payload';
@@ -58,6 +61,31 @@ export class CommentsResolver {
   async getMentionsUser(@Parent() comment: Comment): Promise<User[]> {
     const { id } = comment;
     return await this.commentsService.getMentionsUser(id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => NewReplyPayload)
+  async commentUpdate(
+    @Args('commentId') commentId: string,
+    @Args('input') input: CreateCommentInput,
+    @Args('mention', { nullable: true }) mention: CreateMentionsInput,
+    @CurrentUser() user: User,
+  ): Promise<NewReplyPayload> {
+    return await this.commentsService.updateComment(
+      commentId,
+      input,
+      mention,
+      user.id,
+    );
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => CommentDeletePayload)
+  async commentDelete(
+    @Args('commentId') commentId: string,
+    @CurrentUser() user: User,
+  ): Promise<CommentDeletePayload> {
+    return await this.commentsService.deleteComment(commentId, user.id);
   }
 
   @Mutation(() => RatePayload)

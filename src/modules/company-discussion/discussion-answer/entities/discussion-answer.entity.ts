@@ -24,6 +24,12 @@ export class DiscussionAnswer extends BaseEntity {
 
   @Field(() => DiscussionAnswerReplyPaginated, { nullable: true })
   answerReply?: DiscussionAnswerReplyPaginated;
+
+  @Field(() => [User], { nullable: true })
+  mentions?: User[];
+
+  @Field({ nullable: true })
+  upVote?: number;
 }
 @ObjectType()
 export class DiscussionAnswerPaginated extends relayTypes<DiscussionAnswer>(

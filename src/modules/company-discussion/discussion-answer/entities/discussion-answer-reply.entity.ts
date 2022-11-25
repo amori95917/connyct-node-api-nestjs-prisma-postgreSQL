@@ -27,6 +27,9 @@ export class DiscussionAnswerReply extends BaseEntity {
 
   @Field(() => DiscussionAnswer, { nullable: true })
   parentAnswer?: DiscussionAnswer;
+
+  @Field({ nullable: true })
+  upVote?: number;
 }
 @ObjectType()
 export class DiscussionAnswerReplyPaginated extends relayTypes<DiscussionAnswerReply>(

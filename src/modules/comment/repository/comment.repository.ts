@@ -1,4 +1,5 @@
 import {
+  CreateCommentInput,
   CreateMentionsInput,
   OrderCommentsList,
 } from './../dto/create-comment.input';
@@ -8,7 +9,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import type { Comment } from '@prisma/client';
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
-import { NewReplyPayload } from '../entities/new-reply.payload';
+import {
+  CommentDeletePayload,
+  NewReplyPayload,
+} from '../entities/new-reply.payload';
 import { COMMENT_MESSAGE } from 'src/common/errors/error.message';
 import { COMMENT_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
@@ -32,12 +36,33 @@ export class CommentsRepository {
     });
   }
 
+  async findCOmmentByIdAndUserId(id: string, creatorId: string) {
+    return await this.prisma.comment.findFirst({ where: { id, creatorId } });
+  }
+
   public async mentions(mentions, commentId: string) {
     const commentMention = mentions.mentionIds.map((userId) => {
       return Object.assign({}, { mentionId: userId }, { commentId: commentId });
     });
     const user = await this.userService.findUsersByIds(mentions.mentionIds);
     if (user.length) {
+      await this.prisma.commentMentions.createMany({
+        data: commentMention,
+      });
+    }
+    return user;
+  }
+
+  public async updateMentions(mentions: string[], commentId: string) {
+    const commentMention = mentions.map((userId: string) => {
+      return Object.assign({}, { mentionId: userId }, { commentId });
+    });
+    const user = await this.userService.findUsersByIds(mentions);
+    if (user.length) {
+      await this.prisma.commentMentions.deleteMany({
+        where: { commentId },
+      });
+
       await this.prisma.commentMentions.createMany({
         data: commentMention,
       });
@@ -142,6 +167,48 @@ export class CommentsRepository {
           mentions: createReply.user,
         }),
       };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async updateComment(
+    commentId: string,
+    input: CreateCommentInput,
+    mention: CreateMentionsInput,
+  ): Promise<NewReplyPayload> {
+    try {
+      const updateReply = await this.prisma.$transaction(async () => {
+        const update = await this.prisma.comment.update({
+          where: { id: commentId },
+          data: {
+            text: input.text,
+          },
+        });
+
+        if (!mention.mentionIds) return { update, user: null };
+        const user = await this.updateMentions(mention.mentionIds, commentId);
+        return { update, user };
+      });
+
+      return {
+        comment: Object.assign(updateReply.update, {
+          mentions: updateReply.user,
+        }),
+      };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  async deleteComment(id: string): Promise<CommentDeletePayload> {
+    try {
+      await this.prisma.$transaction(async () => {
+        await this.prisma.comment.delete({ where: { id } });
+        await this.prisma.commentMentions.deleteMany({
+          where: { commentId: id },
+        });
+      });
+      return { isDeleted: true };
     } catch (err) {
       throw new Error(err);
     }

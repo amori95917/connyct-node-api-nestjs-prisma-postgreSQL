@@ -38,6 +38,7 @@ Table User {
   DiscussionAnswer DiscussionAnswer [not null]
   CompanyDiscussions CompanyDiscussions [not null]
   DiscussionAnswerVote DiscussionAnswerVote [not null]
+  DiscussionAnswerMentions DiscussionAnswerMentions [not null]
 
   indexes {
     (id, email) [unique]
@@ -400,6 +401,7 @@ Table DiscussionAnswer {
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   DiscussionAnswerVote DiscussionAnswerVote [not null]
+  DiscussionAnswerMentions DiscussionAnswerMentions [not null]
 }
 
 Table DiscussionAnswerVote {
@@ -411,6 +413,16 @@ Table DiscussionAnswerVote {
   discussionAnswer DiscussionAnswer [not null]
   userId String [not null]
   user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table DiscussionAnswerMentions {
+  id String [pk]
+  mentionId String [not null]
+  user User [not null]
+  answerId String [not null]
+  answer DiscussionAnswer [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
@@ -545,3 +557,7 @@ Ref: DiscussionAnswerVote.discussionId > CompanyDiscussions.id [delete: Cascade]
 Ref: DiscussionAnswerVote.discussionAnswerId > DiscussionAnswer.id [delete: Cascade]
 
 Ref: DiscussionAnswerVote.userId > User.id [delete: Cascade]
+
+Ref: DiscussionAnswerMentions.mentionId > User.id [delete: Cascade]
+
+Ref: DiscussionAnswerMentions.answerId > DiscussionAnswer.id [delete: Cascade]

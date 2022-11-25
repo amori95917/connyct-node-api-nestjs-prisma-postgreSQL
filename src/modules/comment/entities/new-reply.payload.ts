@@ -14,3 +14,11 @@ export class NewReplyPayload implements MutationPayload {
   @Field(() => Comment, { nullable: true })
   public comment?: Comment;
 }
+@ObjectType()
+export class CommentDeletePayload implements MutationPayload {
+  @Field(() => [UserError], { nullable: true })
+  public errors?: UserError[] | undefined;
+
+  @Field(() => Boolean, { nullable: true })
+  public isDeleted?: boolean;
+}

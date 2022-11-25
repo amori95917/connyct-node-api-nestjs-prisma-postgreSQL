@@ -1,6 +1,12 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import * as sanitizeHtml from 'sanitize-html';
 
 @InputType()
@@ -15,6 +21,11 @@ export class DiscussionAnswerInput {
   @IsNotEmpty()
   @IsUUID()
   discussionId: string;
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  mentionIds: string[];
 }
 
 @InputType()
@@ -24,6 +35,11 @@ export class DiscussionAnswerUpdateInput {
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeHtml(value))
   answer: string;
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  mentionIds: string[];
 }
 
 @InputType()
