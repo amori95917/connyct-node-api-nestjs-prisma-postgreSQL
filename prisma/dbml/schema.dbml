@@ -104,6 +104,7 @@ Table Company {
   id String [pk]
   name String
   legalName String [unique, not null]
+  registrationNumberType registrationNumberType
   registrationNumber String [unique]
   establishedDate DateTime
   companyStage CompanyStage
@@ -132,6 +133,17 @@ Table Company {
   accountStatus AccountStatus [not null, default: 'PENDING']
   reason String
   CompanyDiscussions CompanyDiscussions [not null]
+  CompanyDocument CompanyDocument [not null]
+}
+
+Table CompanyDocument {
+  id String [pk]
+  companyId String [not null]
+  company Company [not null]
+  type String [not null]
+  document String [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Table Branch {
@@ -427,6 +439,11 @@ Table DiscussionAnswerMentions {
   updatedAt DateTime
 }
 
+Enum registrationNumberType {
+  PAN
+  VAT
+}
+
 Enum CompanyStage {
   STARTUP
   SCALEUP
@@ -475,6 +492,8 @@ Ref: RoleRight.rightId > Right.id
 Ref: RoleRight.userId > User.id
 
 Ref: Company.ownerId > User.id [delete: Cascade]
+
+Ref: CompanyDocument.companyId > Company.id [delete: Cascade]
 
 Ref: Branch.companyId > Company.id
 

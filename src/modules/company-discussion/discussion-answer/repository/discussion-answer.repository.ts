@@ -235,7 +235,11 @@ export class DiscussionAnswerRepository {
     try {
       const vote = await this.prisma.$transaction(async () => {
         const checkVote = await this.prisma.discussionAnswerVote.findFirst({
-          where: { vote: input.vote, userId },
+          where: {
+            vote: input.vote,
+            userId,
+            discussionAnswerId: input.discussionAnswerId,
+          },
         });
         if (!checkVote) {
           const createVote = await this.prisma.discussionAnswerVote.create({

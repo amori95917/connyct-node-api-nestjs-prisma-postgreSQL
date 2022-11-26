@@ -44,6 +44,7 @@ export class FileUploadService {
       }),
     );
   }
+
   async deleteImage(folderName, public_id) {
     return await this.cloudinary.deleteImage(folderName, public_id);
   }

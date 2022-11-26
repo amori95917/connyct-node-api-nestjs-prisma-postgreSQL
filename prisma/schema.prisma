@@ -113,25 +113,31 @@ model RoleRight {
   @@unique([roleId, rightId], name: "roldId_rightId")
 }
 
+enum registrationNumberType {
+  PAN
+  VAT
+}
+
 model Company {
-  id                 String        @id @default(uuid())
-  name               String?
-  legalName          String        @unique
-  registrationNumber String?       @unique
-  establishedDate    DateTime?
-  companyStage       CompanyStage?
-  description        String?
-  mission            String?
-  vision             String?
-  ownership          Ownership?
-  addresses          Json?
-  branches           Branch[]
+  id                     String                  @id @default(uuid())
+  name                   String?
+  legalName              String                  @unique
+  registrationNumberType registrationNumberType?
+  registrationNumber     String?                 @unique
+  establishedDate        DateTime?
+  companyStage           CompanyStage?
+  description            String?
+  mission                String?
+  vision                 String?
+  ownership              Ownership?
+  addresses              Json?
+  branches               Branch[]
   // may be apt to use range instead
-  numberOfemployees  Int           @default(1)
-  contactEmail       String?       @unique
-  transactions       Float?
-  isActive           Boolean       @default(false)
-  isVerified         Boolean       @default(false)
+  numberOfemployees      Int                     @default(1)
+  contactEmail           String?                 @unique
+  transactions           Float?
+  isActive               Boolean                 @default(false)
+  isVerified             Boolean                 @default(false)
 
   // follow, follower, posts, address, contacts, main products, company user with various role, rating, certifications
   // response rate, response time, number of sales and so on
@@ -151,6 +157,17 @@ model Company {
   accountStatus         AccountStatus           @default(PENDING)
   reason                String?
   CompanyDiscussions    CompanyDiscussions[]
+  CompanyDocument       CompanyDocument[]
+}
+
+model CompanyDocument {
+  id        String    @id @default(uuid())
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type      String
+  document  String
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt

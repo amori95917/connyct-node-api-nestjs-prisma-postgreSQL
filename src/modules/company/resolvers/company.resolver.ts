@@ -77,13 +77,20 @@ export class CompanyResolver {
   // }
   @Roles(Role.Owner, Role.Manager)
   @Mutation(() => CompanyPayload)
-  async editCompany(
+  async companyGeneralInfoEdit(
     @Args('id') companyId: string,
     @Args('data') companyEditData: CompanyEditInput,
-    @Args({ name: 'file', nullable: true, type: () => GraphQLUpload })
-    file: FileUpload,
   ): Promise<CompanyPayload> {
-    return this.companyService.editCompany(companyId, companyEditData, file);
+    return this.companyService.editCompany(companyId, companyEditData);
+  }
+
+  @Roles(Role.Owner, Role.Manager)
+  @Mutation(() => CompanyPayload)
+  async companyAvatar(
+    @Args('companyId') companyId: string,
+    @Args('avatar', { type: () => GraphQLUpload }) avatar: FileUpload,
+  ): Promise<CompanyPayload> {
+    return await this.companyService.uploadAvatar(companyId, avatar);
   }
 
   @Roles(Role.Owner, Role.Manager)
@@ -128,5 +135,14 @@ export class CompanyResolver {
     @Args('companyId') companyId: string,
   ): Promise<CompanyPayload> {
     return await this.companyService.companyAccountStatus(data, companyId);
+  }
+
+  @Roles(Role.Admin)
+  @Mutation(() => CompanyPayload)
+  async companyDocumentCreate(
+    @Args('companyId') companyId: string,
+    @Args('document', { type: () => [GraphQLUpload] }) document: FileUpload[],
+  ): Promise<CompanyPayload> {
+    return await this.companyService.companyDocument(companyId, document);
   }
 }

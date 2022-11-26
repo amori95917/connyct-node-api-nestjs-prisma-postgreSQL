@@ -31,8 +31,11 @@ export class Company extends BaseEntity {
   @Field({ nullable: true })
   name?: string;
 
-  @Field()
+  @Field({ nullable: true })
   legalName: string;
+
+  @Field({ nullable: true })
+  registrationNumberType: string;
 
   @Field({ nullable: true })
   registrationNumber: string;

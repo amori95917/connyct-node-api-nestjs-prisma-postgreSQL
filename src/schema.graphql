@@ -34,7 +34,8 @@ type Company {
   createdAt: DateTime!
   updatedAt: DateTime!
   name: String
-  legalName: String!
+  legalName: String
+  registrationNumberType: String
   registrationNumber: String
   establishedDate: DateTime
   companyStage: String
@@ -372,9 +373,19 @@ type UserProfilePayload {
   userProfile: UserProfile
 }
 
+type CompanyDocument {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  companyId: String
+  type: String
+  document: String
+}
+
 type CompanyPayload {
   errors: [CustomError!]
   company: Company
+  companyDocument: [CompanyDocument!]
 }
 
 type UserError {
@@ -560,6 +571,12 @@ type CommentReactionPaginationPayload {
   reactions: CommentReactionsPagination
 }
 
+type CreatedBy {
+  id: String
+  fullName: String
+  image: String
+}
+
 type DiscussionAnswerReply {
   id: ID!
   createdAt: DateTime!
@@ -572,6 +589,7 @@ type DiscussionAnswerReply {
   repliedToAnswerId: String
   parentAnswer: DiscussionAnswer
   upVote: Float
+  createdBy: CreatedBy
 }
 
 type DiscussionAnswerReplyPaginated {
@@ -617,6 +635,7 @@ type DiscussionAnswer {
   ): DiscussionAnswerReplyPaginated
   mentions: [User!]
   upVote: Float
+  createdBy: CreatedBy
 }
 
 input OrderListDiscussionAnswer {
@@ -645,12 +664,6 @@ type DiscussionAnswerPageInfo {
   endCursor: String
   hasPreviousPage: Boolean!
   hasNextPage: Boolean!
-}
-
-type CreatedBy {
-  id: String
-  fullName: String
-  image: String
 }
 
 type DiscussionVote {
@@ -1032,11 +1045,13 @@ type Mutation {
   resendOtp: OTPPayload!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
-  editCompany(id: String!, data: CompanyEditInput!, file: Upload): CompanyPayload!
+  companyGeneralInfoEdit(id: String!, data: CompanyEditInput!): CompanyPayload!
+  companyAvatar(companyId: String!, avatar: Upload!): CompanyPayload!
   createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
   editCompanyBranch(id: String!, data: CompanyBranchEditInput!): Branch!
   deleteCompanyBranch(id: String!, companyId: String!): Branch!
   companyAccountStatus(data: CompanyAccountStatus!, companyId: String!): CompanyPayload!
+  companyDocumentCreate(companyId: String!, document: [Upload!]!): CompanyPayload!
   post(data: CreatePostInput!, companyId: String!, file: [Upload!]): CreatePostPayload!
   postUpdate(id: String!, imageURL: String, input: UpdatePostInput, file: Upload): UpdatePostPayload!
   postDelete(postId: String!): DeletePostPayload!
@@ -1154,21 +1169,14 @@ input CreateCompanyGeneralInput {
 }
 
 input CompanyEditInput {
-  legalName: String
   name: String
+  legalName: String
+  description: String
+  registrationNumberType: String
   registrationNumber: String!
   establishedDate: DateTime!
-  companyStage: String
-  description: String
-  mission: String
-  vision: String
-  ownership: String
-  contactEmail: String!
-  numberOfemployees: Float
-  transactions: Float
-  website: String
-  contactNumber: String
   slogan: String
+  companyStage: String
 }
 
 input CompanyBranchInput {

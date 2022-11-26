@@ -1,6 +1,7 @@
 import {
   IsDate,
   IsEmail,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsObject,
@@ -10,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Field, InputType } from '@nestjs/graphql';
-import { CompanyStage, Ownership } from '@prisma/client';
+import { CompanyStage } from '@prisma/client';
 import { Float } from 'type-graphql';
 
 @InputType()
@@ -47,8 +48,17 @@ export class CompanyAddress {
   street: string;
 }
 
+enum RegistrationNumberType {
+  PAN = 'PAN',
+  VAT = 'VAT',
+}
 @InputType()
 export class CompanyEditInput {
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  name: string;
+
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
@@ -57,10 +67,16 @@ export class CompanyEditInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  name: string;
+  description: string;
+
+  @Field(() => String, { nullable: true })
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(RegistrationNumberType)
+  registrationNumberType: RegistrationNumberType;
 
   @Field(() => String)
-  @IsString()
+  @IsNotEmpty()
   @Length(3, 35, {
     message: 'Registration number must be between 3 to 35 characters',
   })
@@ -75,59 +91,10 @@ export class CompanyEditInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  companyStage: CompanyStage;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  description: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  mission: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  vision: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  ownership: Ownership;
-
-  // @Field({ nullable: true })
-  // @IsOptional()
-  // @IsObject()
-  // addresses: CompanyAddress;
-
-  @Field(() => String)
-  @IsEmail()
-  @IsNotEmpty()
-  @IsString()
-  contactEmail: string;
-
-  @Field(() => Number, { nullable: true })
-  @IsOptional()
-  @IsInt()
-  numberOfemployees: number;
-
-  @Field(() => Float, { nullable: true })
-  @IsOptional()
-  transactions: number;
-  // check this field type?
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  website: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  contactNumber: string;
-
-  @Field(() => String, { nullable: true })
   slogan: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  companyStage: CompanyStage;
 }

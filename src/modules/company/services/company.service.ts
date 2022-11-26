@@ -1,3 +1,4 @@
+import { FILE_MESSAGE } from './../../../common/errors/error.message';
 import { CompanyEditInput } from './../dto/company-edit-input';
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
@@ -21,7 +22,7 @@ import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.se
 import { CompanyPayload } from '../entities/company.payload';
 import { customError } from 'src/common/errors';
 import { COMPANY_MESSAGE } from 'src/common/errors/error.message';
-import { COMPANY_CODE } from 'src/common/errors/error.code';
+import { COMPANY_CODE, FILE_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CompanyAccountStatus } from '../dto/company-account-status.input';
 import { STATUS_CODES } from 'http';
@@ -172,7 +173,6 @@ export class CompanyService {
   async editCompany(
     companyId: string,
     companyEditData: CompanyEditInput,
-    file: FileUpload,
   ): Promise<CompanyPayload> {
     try {
       const companyData = await this.prisma.company.findFirst({
@@ -186,29 +186,12 @@ export class CompanyService {
         );
       /**only if file exist */
       /**TODO */
-      /**1. Image dimension check */
-      let fileUrl;
-      if (file) {
-        if (companyData.avatar) {
-          await this.fileUploadService.deleteImage(
-            'company-avatar',
-            this.cloudinary.getPublicId(companyData.avatar),
-          );
-        }
-        fileUrl = await this.fileUploadService.uploadImage(
-          'company-avatar',
-          file,
-        );
-        /**check if error exist */
-        if (fileUrl.errors) return { errors: fileUrl.errors };
-      }
 
       const updatedData = await this.prisma.company.update({
         where: { id: companyId },
         data: {
           ...companyData,
           ...companyEditData,
-          avatar: fileUrl,
         },
       });
       return { company: updatedData };
@@ -378,6 +361,87 @@ export class CompanyService {
         data.reason,
       );
       return { company: companyStatus };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async uploadAvatar(id: string, avatar: FileUpload): Promise<CompanyPayload> {
+    try {
+      const companyData = await this.getCompanyById(id);
+      if (!companyData)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+
+      let fileUrl;
+      if (avatar) {
+        if (companyData.avatar) {
+          await this.fileUploadService.deleteImage(
+            'company-avatar',
+            this.cloudinary.getPublicId(companyData.avatar),
+          );
+        }
+        fileUrl = await this.fileUploadService.uploadImage(
+          'company-avatar',
+          avatar,
+        );
+        /**check if error exist */
+        if (fileUrl.errors) return { errors: fileUrl.errors };
+      }
+
+      const updatedAvatar = await this.prisma.company.update({
+        where: { id },
+        data: {
+          avatar: fileUrl,
+        },
+      });
+      return { company: updatedAvatar };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async companyDocument(
+    companyId: string,
+    document: FileUpload[],
+  ): Promise<CompanyPayload> {
+    try {
+      const companyData = await this.getCompanyById(companyId);
+      if (!companyData)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+
+      if (!document)
+        return customError(
+          FILE_MESSAGE.REQUIRED,
+          FILE_CODE.REQUIRED,
+          STATUS_CODE.BAD_CONFLICT,
+        );
+      const documentUrl = await this.fileUploadService.uploadImage(
+        'company-document',
+        document,
+      );
+      /**check if error exist */
+      if (documentUrl[0].errors) return { errors: documentUrl[0].errors };
+      const companyDocument = await Promise.all(
+        documentUrl.map(async (document) => {
+          return await this.prisma.companyDocument.createMany({
+            data: {
+              companyId,
+              type: companyData.registrationNumberType,
+              document,
+            },
+          });
+        }),
+      );
+
+      return { companyDocument };
     } catch (err) {
       throw new Error(err);
     }

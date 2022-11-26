@@ -34,6 +34,7 @@ import {
 import { DiscussionAnswerRepository } from '../repository/discussion-answer.repository';
 import { DiscussionAnswerService } from '../services/discussion-answer.service';
 import { CompanyDiscussion } from '../../discussion/entities/company-discussion.entity';
+import { CreatedBy } from '../../discussion/entities/createdBy.entity';
 
 @Resolver(() => DiscussionAnswer)
 export class DiscussionAnswerResolver {
@@ -152,5 +153,11 @@ export class DiscussionAnswerResolver {
   async getUser(@Parent() answer: DiscussionAnswer) {
     const { userId } = answer;
     return await this.userService.findUserById(userId);
+  }
+
+  @ResolveField('createdBy', () => CreatedBy)
+  async createdBy(@Parent() discussionAnswer: DiscussionAnswer) {
+    const { userId } = discussionAnswer;
+    return await this.companyDiscussionRepository.createdBy(userId);
   }
 }

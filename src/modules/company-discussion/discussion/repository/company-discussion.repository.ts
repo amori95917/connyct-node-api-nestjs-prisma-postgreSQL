@@ -159,7 +159,7 @@ export class CompanyDiscussionRepository {
   ): Promise<DiscussionVotePayload> {
     try {
       const checkVote = await this.prisma.discussionVote.findFirst({
-        where: { vote: input.vote, userId },
+        where: { vote: input.vote, userId, discussionId: input.discussionId },
       });
       if (!checkVote) {
         const createVote = await this.prisma.discussionVote.create({
@@ -212,7 +212,7 @@ export class CompanyDiscussionRepository {
         return {
           id: company.id,
           fullName: company.legalName,
-          image: company.avatar,
+          image: company?.avatar,
         };
       const user = await this.prisma.user.findFirst({
         where: { id: userId },
@@ -220,8 +220,8 @@ export class CompanyDiscussionRepository {
       });
       return {
         id: userId,
-        fullName: user.fullName,
-        image: user.UserProfile.profileImage,
+        fullName: user?.fullName,
+        image: user?.UserProfile?.profileImage,
       };
     } catch (err) {
       throw new Error(err);

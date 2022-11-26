@@ -3,6 +3,7 @@ import { BaseEntity } from 'src/modules/prisma/entities/base.entity';
 import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
 import { User } from 'src/modules/user/entities/user.entity';
 import { CompanyDiscussion } from '../../discussion/entities/company-discussion.entity';
+import { CreatedBy } from '../../discussion/entities/createdBy.entity';
 import { DiscussionAnswer } from './discussion-answer.entity';
 
 @ObjectType()
@@ -30,6 +31,9 @@ export class DiscussionAnswerReply extends BaseEntity {
 
   @Field({ nullable: true })
   upVote?: number;
+
+  @Field(() => CreatedBy, { nullable: true })
+  createdBy?: CreatedBy;
 }
 @ObjectType()
 export class DiscussionAnswerReplyPaginated extends relayTypes<DiscussionAnswerReply>(

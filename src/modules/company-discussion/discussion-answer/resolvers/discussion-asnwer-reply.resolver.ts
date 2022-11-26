@@ -11,6 +11,7 @@ import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserService } from 'src/modules/user/services/user.service';
 import { CompanyDiscussion } from '../../discussion/entities/company-discussion.entity';
+import { CreatedBy } from '../../discussion/entities/createdBy.entity';
 import { CompanyDiscussionRepository } from '../../discussion/repository/company-discussion.repository';
 import { ReplyToAnswerInput } from '../dto/discussion-answer.input';
 import { DiscussionAnswerReply } from '../entities/discussion-answer-reply.entity';
@@ -49,10 +50,23 @@ export class DiscussionAnswerReplyResolver {
       discussionId,
     );
   }
+
+  @ResolveField('upVote', () => Number)
+  async upVote(@Parent() answerReply: DiscussionAnswerReply) {
+    const { id } = answerReply;
+    return await this.discussionAnswerRepository.countVote(id);
+  }
+
   @ResolveField('user', () => User)
   async getUser(@Parent() answer: DiscussionAnswerReply) {
     const { userId } = answer;
     const user = await this.userService.findUserById(userId);
     return user;
+  }
+
+  @ResolveField('createdBy', () => CreatedBy)
+  async createdBy(@Parent() answerReply: DiscussionAnswerReply) {
+    const { userId } = answerReply;
+    return await this.companyDiscussionRepository.createdBy(userId);
   }
 }
