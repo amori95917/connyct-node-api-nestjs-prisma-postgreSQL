@@ -113,16 +113,25 @@ model RoleRight {
   @@unique([roleId, rightId], name: "roldId_rightId")
 }
 
-enum registrationNumberType {
+enum RegistrationNumberType {
   PAN
   VAT
+}
+
+enum CompanyDocumentType {
+  PAN
+  VAT
+  COMPANY_REGISTRATION
+  TAX_CLEARANCE
+  BANK_CHEQUE
+  TRADEMARK
 }
 
 model Company {
   id                     String                  @id @default(uuid())
   name                   String?
   legalName              String                  @unique
-  registrationNumberType registrationNumberType?
+  registrationNumberType RegistrationNumberType?
   registrationNumber     String?                 @unique
   establishedDate        DateTime?
   companyStage           CompanyStage?
@@ -130,7 +139,6 @@ model Company {
   mission                String?
   vision                 String?
   ownership              Ownership?
-  addresses              Json?
   branches               Branch[]
   // may be apt to use range instead
   numberOfemployees      Int                     @default(1)
@@ -161,28 +169,26 @@ model Company {
 }
 
 model CompanyDocument {
-  id        String    @id @default(uuid())
+  id        String              @id @default(uuid())
   companyId String
-  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  type      String
+  company   Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type      CompanyDocumentType
   document  String
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt @db.Timestamp()
+  createdAt DateTime?           @default(now())
+  updatedAt DateTime?           @updatedAt @db.Timestamp()
 }
 
 // id, name, address, contactNumber, contactEmail, createdAt, updatedAt
 model Branch {
   id            String     @id @default(uuid())
-  name          String?
   type          BranchType
-  contactNumber String
-  contactEmail  String
+  contactNumber String     @unique
+  contactEmail  String     @unique
   country       String
   city          String
   zipCode       String?
   state         String?
-  street1       String?
-  street2       String?
+  street        String?
   createdAt     DateTime?  @default(now())
   updatedAt     DateTime?  @updatedAt @db.Timestamp()
   Company       Company    @relation(fields: [companyId], references: [id])
@@ -382,12 +388,13 @@ enum RatingStatus {
 }
 
 enum BranchType {
-  CORPORATE
+  HEADQUARTER
   BRANCH_OFFICE
 }
 
 enum AccountStatus {
   APPROVED
+  REVIEW
   PENDING
   REJECTED
 }

@@ -1,4 +1,11 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { Company as CompanyPrisma } from '@prisma/client';
 
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
@@ -9,6 +16,7 @@ import { CompanyService } from '../services/company.service';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { FilterListCompanies } from '../dto/filter-company.input';
 import {
+  CompanyDocumentInput,
   CreateCompanyGeneralInput,
   CreateCompanyInput,
 } from '../dto/company-input';
@@ -22,6 +30,12 @@ import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.a
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CompanyPayload } from '../entities/company.payload';
 import { CompanyAccountStatus } from '../dto/company-account-status.input';
+import { CompanyDocument } from '../entities/company-document.entity';
+import {
+  CompanyBranchDeletePayload,
+  CompanyBranchPayload,
+  GetCompanyBranchPayload,
+} from '../entities/company-branch.payload';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -78,7 +92,7 @@ export class CompanyResolver {
   @Roles(Role.Owner, Role.Manager)
   @Mutation(() => CompanyPayload)
   async companyGeneralInfoEdit(
-    @Args('id') companyId: string,
+    @Args('companyId') companyId: string,
     @Args('data') companyEditData: CompanyEditInput,
   ): Promise<CompanyPayload> {
     return this.companyService.editCompany(companyId, companyEditData);
@@ -94,37 +108,37 @@ export class CompanyResolver {
   }
 
   @Roles(Role.Owner, Role.Manager)
-  @Mutation(() => Branch)
+  @Mutation(() => CompanyBranchPayload)
   async createCompanyBranch(
     @Args('id') companyId: string,
     @Args('data') branchInput: CompanyBranchInput,
-  ): Promise<Branch> {
+  ): Promise<CompanyBranchPayload> {
     return this.companyService.createCompanyBranch(companyId, branchInput);
   }
 
   @Roles(Role.Owner, Role.Manager)
-  @Query(() => [Branch])
+  @Query(() => GetCompanyBranchPayload)
   async getBranchesByCompanyId(
     @Args('id', { type: () => String }) companyId: string,
-  ): Promise<Branch[] | []> {
+  ): Promise<GetCompanyBranchPayload> {
     return this.companyService.getBranchesByCompanyId(companyId);
   }
 
   @Roles(Role.Owner, Role.Manager)
-  @Mutation(() => Branch)
+  @Mutation(() => CompanyBranchPayload)
   async editCompanyBranch(
     @Args('id') branchId: string,
     @Args('data') branchEditInput: CompanyBranchEditInput,
-  ): Promise<Branch> {
+  ): Promise<CompanyBranchPayload> {
     return this.companyService.editCompanyBranch(branchId, branchEditInput);
   }
 
   @Roles(Role.Owner, Role.Manager)
-  @Mutation(() => Branch)
+  @Mutation(() => CompanyBranchDeletePayload)
   async deleteCompanyBranch(
     @Args('id') branchId: string,
     @Args('companyId') companyId: string,
-  ): Promise<Branch> {
+  ): Promise<CompanyBranchDeletePayload> {
     return this.companyService.deleteCompanyBranch(companyId, branchId);
   }
 
@@ -140,9 +154,17 @@ export class CompanyResolver {
   @Roles(Role.Admin)
   @Mutation(() => CompanyPayload)
   async companyDocumentCreate(
-    @Args('companyId') companyId: string,
+    @Args('input') input: CompanyDocumentInput,
     @Args('document', { type: () => [GraphQLUpload] }) document: FileUpload[],
   ): Promise<CompanyPayload> {
-    return await this.companyService.companyDocument(companyId, document);
+    return await this.companyService.companyDocument(input, document);
+  }
+
+  @ResolveField('companyDocument', () => [CompanyDocument])
+  async companyDocument(
+    @Parent() company: Company,
+  ): Promise<CompanyDocument[]> {
+    const { id } = company;
+    return await this.companyService.getCompanyDocument(id);
   }
 }

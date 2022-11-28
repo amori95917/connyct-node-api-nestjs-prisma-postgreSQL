@@ -7,6 +7,7 @@ import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { BaseEntity } from '../../prisma/entities/base.entity';
 import { Branch } from './branch.entity';
 import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
+import { CompanyDocument } from './company-document.entity';
 
 // @ObjectType()
 // export class CompanyAddress {
@@ -58,9 +59,6 @@ export class Company extends BaseEntity {
   @Field({ nullable: true })
   vision: string;
 
-  @Field(() => JSON, { nullable: true })
-  addresses: any;
-
   @Field({ nullable: true })
   numberOfemployees: number;
 
@@ -103,6 +101,9 @@ export class Company extends BaseEntity {
 
   @Field({ nullable: true })
   reason: string;
+
+  @Field(() => [CompanyDocument], { nullable: true })
+  companyDocument?: CompanyDocument[];
 }
 
 @ObjectType()

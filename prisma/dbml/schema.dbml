@@ -104,7 +104,7 @@ Table Company {
   id String [pk]
   name String
   legalName String [unique, not null]
-  registrationNumberType registrationNumberType
+  registrationNumberType RegistrationNumberType
   registrationNumber String [unique]
   establishedDate DateTime
   companyStage CompanyStage
@@ -112,7 +112,6 @@ Table Company {
   mission String
   vision String
   ownership Ownership
-  addresses Json
   branches Branch [not null]
   numberOfemployees Int [not null, default: 1]
   contactEmail String [unique]
@@ -140,7 +139,7 @@ Table CompanyDocument {
   id String [pk]
   companyId String [not null]
   company Company [not null]
-  type String [not null]
+  type CompanyDocumentType [not null]
   document String [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
@@ -148,16 +147,14 @@ Table CompanyDocument {
 
 Table Branch {
   id String [pk]
-  name String
   type BranchType [not null]
-  contactNumber String [not null]
-  contactEmail String [not null]
+  contactNumber String [unique, not null]
+  contactEmail String [unique, not null]
   country String [not null]
   city String [not null]
   zipCode String
   state String
-  street1 String
-  street2 String
+  street String
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   Company Company [not null]
@@ -439,9 +436,18 @@ Table DiscussionAnswerMentions {
   updatedAt DateTime
 }
 
-Enum registrationNumberType {
+Enum RegistrationNumberType {
   PAN
   VAT
+}
+
+Enum CompanyDocumentType {
+  PAN
+  VAT
+  COMPANY_REGISTRATION
+  TAX_CLEARANCE
+  BANK_CHEQUE
+  TRADEMARK
 }
 
 Enum CompanyStage {
@@ -464,12 +470,13 @@ Enum RatingStatus {
 }
 
 Enum BranchType {
-  CORPORATE
+  HEADQUARTER
   BRANCH_OFFICE
 }
 
 Enum AccountStatus {
   APPROVED
+  REVIEW
   PENDING
   REJECTED
 }

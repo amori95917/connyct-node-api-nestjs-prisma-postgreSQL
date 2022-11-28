@@ -4,7 +4,7 @@ import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
 import { REQUEST } from '@nestjs/core';
 
-import { BranchType } from '@prisma/client';
+import { AccountStatus, BranchType } from '@prisma/client';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
 import { FilterListCompanies } from '../dto/filter-company.input';
@@ -26,6 +26,13 @@ import { COMPANY_CODE, FILE_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CompanyAccountStatus } from '../dto/company-account-status.input';
 import { STATUS_CODES } from 'http';
+import { CompanyDocument } from '../entities/company-document.entity';
+import { CompanyDocumentInput } from '../dto/company-input';
+import {
+  CompanyBranchDeletePayload,
+  CompanyBranchPayload,
+  GetCompanyBranchPayload,
+} from '../entities/company-branch.payload';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -186,12 +193,18 @@ export class CompanyService {
         );
       /**only if file exist */
       /**TODO */
-
+      if (companyEditData.establishedDate >= new Date())
+        return customError(
+          COMPANY_MESSAGE.INVALID_ESTABLISHED_DATE,
+          COMPANY_CODE.INVALID_ESTABLISHED_DATE,
+          STATUS_CODE.BAD_REQUEST_EXCEPTION,
+        );
       const updatedData = await this.prisma.company.update({
         where: { id: companyId },
         data: {
           ...companyData,
           ...companyEditData,
+          accountStatus: AccountStatus.REVIEW,
         },
       });
       return { company: updatedData };
@@ -219,7 +232,7 @@ export class CompanyService {
     return await this.prisma.branch.findFirst({
       where: {
         companyId,
-        type: BranchType.CORPORATE,
+        type: BranchType.HEADQUARTER,
       },
     });
   }
@@ -233,35 +246,46 @@ export class CompanyService {
   async createCompanyBranch(
     companyId: string,
     branchInput: CompanyBranchInput,
-  ): Promise<Branch> {
+  ): Promise<CompanyBranchPayload> {
     if (await this.isCompanyExist(companyId)) {
       const isHeadOfficeAlreadyExist =
-        branchInput.type === BranchType.CORPORATE
+        branchInput.type === BranchType.HEADQUARTER
           ? await this.isHeadOfficeAlreadyExist(companyId)
           : false;
       if (isHeadOfficeAlreadyExist)
-        throw new Error('A company cannot have multiple corporate branch');
-      console.log('branchInput', branchInput, typeof branchInput);
+        return customError(
+          COMPANY_MESSAGE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
+          COMPANY_CODE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
+          STATUS_CODE.BAD_CONFLICT,
+        );
       const branch = await this.prisma.branch.create({
         data: { ...branchInput, companyId },
       });
-      console.log('branch', branch);
-      // return branch;
-      return branch;
+      return { branch };
     } else {
-      throw new Error('Company with that id does not exist');
+      return customError(
+        COMPANY_MESSAGE.NOT_FOUND,
+        COMPANY_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
     }
   }
 
-  async getBranchesByCompanyId(companyId: string): Promise<Branch[] | []> {
+  async getBranchesByCompanyId(
+    companyId: string,
+  ): Promise<GetCompanyBranchPayload> {
     try {
       if (await this.isCompanyExist(companyId)) {
         const branches = await this.prisma.branch.findMany({
           where: { companyId },
         });
-        return branches;
+        return { branches };
       } else {
-        throw new Error('Company with that id does not exist');
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
       }
     } catch (e) {
       throw new Error(e);
@@ -271,20 +295,30 @@ export class CompanyService {
   async editCompanyBranch(
     branchId: string,
     branchEditInput: CompanyBranchEditInput,
-  ): Promise<Branch> {
+  ): Promise<CompanyBranchPayload> {
     try {
       const branch = await this.isBranchExist(branchId);
+      if (!branch)
+        return customError(
+          COMPANY_MESSAGE.BRANCH_NOT_FOUND,
+          COMPANY_CODE.BRANCH_NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
       const isHeadOfficeAlreadyExist =
-        branchEditInput.type === BranchType.CORPORATE
+        branchEditInput.type === BranchType.HEADQUARTER
           ? await this.isHeadOfficeAlreadyExist(branch.companyId)
           : false;
       if (isHeadOfficeAlreadyExist)
-        throw new Error('A company cannot have multiple corporate branch');
+        return customError(
+          COMPANY_MESSAGE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
+          COMPANY_CODE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
+          STATUS_CODE.BAD_CONFLICT,
+        );
       const editedBranch = await this.prisma.branch.update({
         where: { id: branchId },
         data: { ...branchEditInput },
       });
-      return editedBranch;
+      return { branch: editedBranch };
     } catch (e) {
       throw new Error(e);
     }
@@ -293,7 +327,7 @@ export class CompanyService {
   async deleteCompanyBranch(
     companyId: string,
     branchId: string,
-  ): Promise<Branch> {
+  ): Promise<CompanyBranchDeletePayload> {
     try {
       if (await this.isCompanyExist(companyId)) {
         const branch = await this.isBranchExist(branchId);
@@ -303,12 +337,20 @@ export class CompanyService {
               id: branchId,
             },
           });
-          return branch;
+          return { isDeleted: true };
         } else {
-          throw new Error('Branch with that id does not exist');
+          return customError(
+            COMPANY_MESSAGE.BRANCH_NOT_FOUND,
+            COMPANY_CODE.BRANCH_NOT_FOUND,
+            STATUS_CODE.NOT_FOUND,
+          );
         }
       } else {
-        throw new Error('Company with that id does not exist');
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
       }
     } catch (e) {
       throw new Error(e);
@@ -405,18 +447,17 @@ export class CompanyService {
   }
 
   async companyDocument(
-    companyId: string,
+    input: CompanyDocumentInput,
     document: FileUpload[],
   ): Promise<CompanyPayload> {
     try {
-      const companyData = await this.getCompanyById(companyId);
+      const companyData = await this.getCompanyById(input.companyId);
       if (!companyData)
         return customError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
-
       if (!document)
         return customError(
           FILE_MESSAGE.REQUIRED,
@@ -431,17 +472,26 @@ export class CompanyService {
       if (documentUrl[0].errors) return { errors: documentUrl[0].errors };
       const companyDocument = await Promise.all(
         documentUrl.map(async (document) => {
-          return await this.prisma.companyDocument.createMany({
+          return await this.prisma.companyDocument.create({
             data: {
-              companyId,
-              type: companyData.registrationNumberType,
+              ...input,
               document,
             },
           });
         }),
       );
 
-      return { companyDocument };
+      return { companyDocument, company: companyData };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async getCompanyDocument(companyId: string): Promise<CompanyDocument[]> {
+    try {
+      return await this.prisma.companyDocument.findMany({
+        where: { companyId },
+      });
     } catch (err) {
       throw new Error(err);
     }

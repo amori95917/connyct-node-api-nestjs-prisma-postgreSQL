@@ -13,11 +13,8 @@ import { BranchType } from '@prisma/client';
 @ArgsType()
 export class CompanyBranchInput {
   @Field(() => BranchType)
+  @IsNotEmpty()
   type: BranchType;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  name: string;
 
   @Field()
   @IsNotEmpty()
@@ -26,15 +23,17 @@ export class CompanyBranchInput {
 
   @Field()
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsPhoneNumber('NP')
   contactNumber: string;
 
   @Field(() => String, { nullable: true })
+  @IsNotEmpty()
   @IsString()
   country: string;
 
   @Field(() => String, { nullable: true })
   @IsString()
+  @IsNotEmpty()
   city: string;
 
   @Field(() => String, { nullable: true })
@@ -50,10 +49,5 @@ export class CompanyBranchInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  street1: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  street2: string;
+  street: string;
 }

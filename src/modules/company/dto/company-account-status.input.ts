@@ -3,6 +3,7 @@ import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 enum AccountStatus {
   APPROVED = 'APPROVED',
+  REVIEW = 'REVIEW',
   PENDING = 'PENDING',
   REJECTED = 'REJECTED',
 }

@@ -14,8 +14,7 @@ type Branch {
   city: String!
   zipCode: String
   state: String
-  street1: String
-  street2: String
+  street: String
 }
 
 """
@@ -25,8 +24,18 @@ scalar DateTime
 
 """The branch type can be CORPORATE and BRANCH_OFFICE"""
 enum BranchType {
-  CORPORATE
+  HEADQUARTER
   BRANCH_OFFICE
+}
+
+type CompanyDocument {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  companyId: String
+  type: String
+  document: String
+  company: Company
 }
 
 type Company {
@@ -43,7 +52,6 @@ type Company {
   ownership: String
   mission: String
   vision: String
-  addresses: JSON
   numberOfemployees: Float
   contactEmail: String
   transactions: Float
@@ -58,12 +66,8 @@ type Company {
   avatar: String
   accountStatus: String
   reason: String
+  companyDocument: [CompanyDocument!]
 }
-
-"""
-The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-"""
-scalar JSON
 
 type CompanyPaginated {
   edges: [CompanyEdge!]
@@ -373,19 +377,25 @@ type UserProfilePayload {
   userProfile: UserProfile
 }
 
-type CompanyDocument {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  companyId: String
-  type: String
-  document: String
-}
-
 type CompanyPayload {
   errors: [CustomError!]
   company: Company
   companyDocument: [CompanyDocument!]
+}
+
+type CompanyBranchPayload {
+  errors: [CustomError!]
+  branch: Branch
+}
+
+type GetCompanyBranchPayload {
+  errors: [CustomError!]
+  branches: [Branch!]
+}
+
+type CompanyBranchDeletePayload {
+  errors: [CustomError!]
+  isDeleted: Boolean
 }
 
 type UserError {
@@ -836,7 +846,7 @@ type Query {
     filter: FilterListCompanies
   ): CompanyPaginated!
   getCompanyById(id: String!): Company!
-  getBranchesByCompanyId(id: String!): [Branch!]!
+  getBranchesByCompanyId(id: String!): GetCompanyBranchPayload!
   getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!
   postsByCompanyId(
     id: String!
@@ -1045,13 +1055,13 @@ type Mutation {
   resendOtp: OTPPayload!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
-  companyGeneralInfoEdit(id: String!, data: CompanyEditInput!): CompanyPayload!
+  companyGeneralInfoEdit(companyId: String!, data: CompanyEditInput!): CompanyPayload!
   companyAvatar(companyId: String!, avatar: Upload!): CompanyPayload!
-  createCompanyBranch(id: String!, data: CompanyBranchInput!): Branch!
-  editCompanyBranch(id: String!, data: CompanyBranchEditInput!): Branch!
-  deleteCompanyBranch(id: String!, companyId: String!): Branch!
+  createCompanyBranch(id: String!, data: CompanyBranchInput!): CompanyBranchPayload!
+  editCompanyBranch(id: String!, data: CompanyBranchEditInput!): CompanyBranchPayload!
+  deleteCompanyBranch(id: String!, companyId: String!): CompanyBranchDeletePayload!
   companyAccountStatus(data: CompanyAccountStatus!, companyId: String!): CompanyPayload!
-  companyDocumentCreate(companyId: String!, document: [Upload!]!): CompanyPayload!
+  companyDocumentCreate(input: CompanyDocumentInput!, document: [Upload!]!): CompanyPayload!
   post(data: CreatePostInput!, companyId: String!, file: [Upload!]): CreatePostPayload!
   postUpdate(id: String!, imageURL: String, input: UpdatePostInput, file: Upload): UpdatePostPayload!
   postDelete(postId: String!): DeletePostPayload!
@@ -1181,33 +1191,34 @@ input CompanyEditInput {
 
 input CompanyBranchInput {
   type: BranchType!
-  name: String
   contactEmail: String!
   contactNumber: String!
   country: String
   city: String
   zipCode: String
   state: String
-  street1: String
-  street2: String
+  street: String
 }
 
 input CompanyBranchEditInput {
   type: BranchType
-  name: String
   contactEmail: String
   contactNumber: String
   country: String
   city: String
   zipCode: String
   state: String
-  street1: String
-  street2: String
+  street: String
 }
 
 input CompanyAccountStatus {
   accountStatus: String!
   reason: String
+}
+
+input CompanyDocumentInput {
+  companyId: String!
+  type: String!
 }
 
 input CreatePostInput {

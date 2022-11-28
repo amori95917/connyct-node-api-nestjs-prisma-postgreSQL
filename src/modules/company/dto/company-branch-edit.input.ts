@@ -12,16 +12,12 @@ export class CompanyBranchEditInput {
 
   @Field(() => String, { nullable: true })
   @IsOptional()
-  name: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
   @IsEmail()
   contactEmail: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @IsPhoneNumber()
+  @IsPhoneNumber('NP')
   contactNumber: string;
 
   @Field(() => String, { nullable: true })
@@ -47,10 +43,5 @@ export class CompanyBranchEditInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  street1: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  street2: string;
+  street: string;
 }

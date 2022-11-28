@@ -3,6 +3,10 @@ export const COMPANY_MESSAGE = {
   ALREADY_EXIST: 'Company Already Exists',
   INVALID_LEGALNAME_FORMAT: 'Legal name must be longer than 3 characters',
   ACCOUNT_STATUS_REASON: 'Reason is required',
+  INVALID_ESTABLISHED_DATE: 'Invalid established date',
+  CANNOT_HAVE_MULTIPLE_HEADQUARTER:
+    'A company cannot have multiple headquarter branch',
+  BRANCH_NOT_FOUND: 'Branch not found',
 };
 export const POST_MESSAGE = {
   NOT_FOUND: 'Post Not Found',
