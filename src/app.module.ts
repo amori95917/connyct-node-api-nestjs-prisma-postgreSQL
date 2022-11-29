@@ -29,6 +29,7 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { FilesModule } from './modules/files/files.module';
 import { OtpVerificationModule } from './modules/otp-verification/otp-verification.module';
 import { CompanyDiscussionModule } from './modules/company-discussion/company-discussion.module';
+import { CompanyCommunityModule } from './modules/company-community/company-community.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { CompanyDiscussionModule } from './modules/company-discussion/company-di
     FilesModule,
     OtpVerificationModule,
     CompanyDiscussionModule,
+    CompanyCommunityModule,
   ],
 })
 export class AppModule {

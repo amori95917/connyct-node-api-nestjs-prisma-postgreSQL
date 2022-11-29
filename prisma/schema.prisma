@@ -55,6 +55,8 @@ model User {
   CompanyDiscussions       CompanyDiscussions[]
   DiscussionAnswerVote     DiscussionAnswerVote[]
   DiscussionAnswerMentions DiscussionAnswerMentions[]
+  CompanyCommunity         CompanyCommunity[]
+  CompanyCommunityRole     CompanyCommunityRole[]
 
   @@unique([id, email])
 }
@@ -164,8 +166,10 @@ model Company {
   avatar                String?
   accountStatus         AccountStatus           @default(PENDING)
   reason                String?
+  slug                  String                  @unique
   CompanyDiscussions    CompanyDiscussions[]
   CompanyDocument       CompanyDocument[]
+  CompanyCommunity      CompanyCommunity[]
 }
 
 model CompanyDocument {
@@ -522,4 +526,41 @@ model DiscussionAnswerMentions {
   answer    DiscussionAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
   createdAt DateTime?        @default(now())
   updatedAt DateTime?        @updatedAt @db.Timestamp()
+}
+
+enum CommunityType {
+  PRIVATE
+  PUBLIC
+}
+
+enum CommunityRole {
+  ADMIN
+  MODERATOR
+}
+
+model CompanyCommunity {
+  id                   String                 @id @default(uuid())
+  name                 String
+  description          String
+  type                 CommunityType
+  profile              String
+  slug                 String
+  companyId            String
+  company              Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creatorId            String
+  user                 User                   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt            DateTime?              @default(now())
+  updatedAt            DateTime?              @updatedAt @db.Timestamp()
+  CompanyCommunityRole CompanyCommunityRole[]
+}
+
+model CompanyCommunityRole {
+  id               String           @id @default(uuid())
+  role             CommunityRole
+  communityId      String
+  companyCommunity CompanyCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime?        @default(now())
+  updatedAt        DateTime?        @updatedAt @db.Timestamp()
 }

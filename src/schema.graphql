@@ -789,6 +789,42 @@ type DiscussionAnswerDeletePayload {
   isDeleted: Boolean
 }
 
+type CommunityRole {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  role: String
+  communityId: String
+  userId: String
+  user: User
+  community: Community
+  company: Company
+}
+
+type Community {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String
+  description: String
+  type: String
+  companyId: String
+  creatorId: String
+  company: Company
+  user: User
+  communityRole: [CommunityRole!]
+}
+
+type CommunityPayload {
+  errors: [CustomError!]
+  community: Community
+}
+
+type GetCommunityPayload {
+  errors: [CustomError!]
+  community: [Community!]
+}
+
 type Query {
   listUsers(
     """Paginate before opaque cursor"""
@@ -939,6 +975,7 @@ type Query {
     last: Float
     order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
   ): DiscussionAnswerPaginated!
+  community(companyId: String!): GetCommunityPayload!
 }
 
 input OrderListUsers {
@@ -1107,6 +1144,8 @@ type Mutation {
   discussionAnswerVote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerDownvote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerReply(input: ReplyToAnswerInput!): DiscussionAnswerReplyPayload!
+  companyCommunity(input: CommunityInput!, profile: Upload!): CommunityPayload!
+  companyCommunityEdit(communityId: String!, input: CommunityEditInput!): CommunityPayload!
 }
 
 input UpdateStatusUserInput {
@@ -1336,4 +1375,17 @@ input ReplyToAnswerInput {
   repliedToAnswerId: String!
   answer: String!
   discussionId: String!
+}
+
+input CommunityInput {
+  name: String!
+  description: String!
+  type: String!
+  companyId: String!
+}
+
+input CommunityEditInput {
+  name: String!
+  description: String!
+  type: String!
 }

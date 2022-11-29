@@ -72,7 +72,10 @@ const role = async (role: string) =>
   await prisma.role.findUnique({
     where: { name: role },
   });
-
+const userName = (name: string) => {
+  const result = Date.now().toString(36);
+  return (name + result).toLowerCase();
+};
 async function main() {
   console.log(`Start seeding ...`);
   const createAllRoles = await prisma.role.createMany({
@@ -92,6 +95,10 @@ async function main() {
   console.log(`Created admin with id: ${userInstance.id}`);
   console.log(`Admin Seeding finished.`);
 
+  const companyData = company.map((com) =>
+    Object.assign(com, { slug: userName(com.legalName.split(' ')[0]) }),
+  );
+
   const companyUserData = await prisma.user.create({
     data: {
       ...companyUser,
@@ -99,7 +106,7 @@ async function main() {
       userRoles: { create: { roleId: (await role(Role.Owner)).id } },
       Company: {
         createMany: {
-          data: company,
+          data: companyData,
           skipDuplicates: true,
         },
       },

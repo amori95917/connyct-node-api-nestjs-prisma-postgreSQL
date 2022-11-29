@@ -39,6 +39,8 @@ Table User {
   CompanyDiscussions CompanyDiscussions [not null]
   DiscussionAnswerVote DiscussionAnswerVote [not null]
   DiscussionAnswerMentions DiscussionAnswerMentions [not null]
+  CompanyCommunity CompanyCommunity [not null]
+  CompanyCommunityRole CompanyCommunityRole [not null]
 
   indexes {
     (id, email) [unique]
@@ -131,8 +133,10 @@ Table Company {
   avatar String
   accountStatus AccountStatus [not null, default: 'PENDING']
   reason String
+  slug String [unique, not null]
   CompanyDiscussions CompanyDiscussions [not null]
   CompanyDocument CompanyDocument [not null]
+  CompanyCommunity CompanyCommunity [not null]
 }
 
 Table CompanyDocument {
@@ -436,6 +440,33 @@ Table DiscussionAnswerMentions {
   updatedAt DateTime
 }
 
+Table CompanyCommunity {
+  id String [pk]
+  name String [not null]
+  description String [not null]
+  type CommunityType [not null]
+  profile String [not null]
+  slug String [not null]
+  companyId String [not null]
+  company Company [not null]
+  creatorId String [not null]
+  user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  CompanyCommunityRole CompanyCommunityRole [not null]
+}
+
+Table CompanyCommunityRole {
+  id String [pk]
+  role CommunityRole [not null]
+  communityId String [not null]
+  companyCommunity CompanyCommunity [not null]
+  userId String [not null]
+  user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
 Enum RegistrationNumberType {
   PAN
   VAT
@@ -484,6 +515,16 @@ Enum AccountStatus {
 Enum Vote {
   UPVOTE
   DOWNVOTE
+}
+
+Enum CommunityType {
+  PRIVATE
+  PUBLIC
+}
+
+Enum CommunityRole {
+  ADMIN
+  MODERATOR
 }
 
 Ref: UserRole.userId > User.id
@@ -587,3 +628,11 @@ Ref: DiscussionAnswerVote.userId > User.id [delete: Cascade]
 Ref: DiscussionAnswerMentions.mentionId > User.id [delete: Cascade]
 
 Ref: DiscussionAnswerMentions.answerId > DiscussionAnswer.id [delete: Cascade]
+
+Ref: CompanyCommunity.companyId > Company.id [delete: Cascade]
+
+Ref: CompanyCommunity.creatorId > User.id [delete: Cascade]
+
+Ref: CompanyCommunityRole.communityId > CompanyCommunity.id [delete: Cascade]
+
+Ref: CompanyCommunityRole.userId > User.id [delete: Cascade]

@@ -9,6 +9,11 @@ export const COMPANY_MESSAGE = {
   BRANCH_NOT_FOUND: 'Branch not found',
   COMPANY_DOCUMENT_NOT_FOUND: 'Company document not found',
 };
+
+export const COMMUNITY_MESSAGE = {
+  NOT_FOUND: 'NOT_FOUND',
+};
+
 export const POST_MESSAGE = {
   NOT_FOUND: 'Post Not Found',
   ALREADY_EXIST: 'Post Already Exists',
