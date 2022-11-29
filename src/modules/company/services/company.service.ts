@@ -19,7 +19,10 @@ import { findManyCursorConnection } from 'src/modules/prisma/resolvers/paginatio
 import { FileUpload } from 'graphql-upload';
 import { FileUploadService } from 'src/modules/files/services/file.service';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
-import { CompanyPayload } from '../entities/company.payload';
+import {
+  CompanyDocumentEditPayload,
+  CompanyPayload,
+} from '../entities/company.payload';
 import { customError } from 'src/common/errors';
 import { COMPANY_MESSAGE } from 'src/common/errors/error.message';
 import { COMPANY_CODE, FILE_CODE } from 'src/common/errors/error.code';
@@ -27,12 +30,15 @@ import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CompanyAccountStatus } from '../dto/company-account-status.input';
 import { STATUS_CODES } from 'http';
 import { CompanyDocument } from '../entities/company-document.entity';
-import { CompanyDocumentInput } from '../dto/company-input';
 import {
   CompanyBranchDeletePayload,
   CompanyBranchPayload,
   GetCompanyBranchPayload,
 } from '../entities/company-branch.payload';
+import {
+  CompanyDocumentEditInput,
+  CompanyDocumentInput,
+} from '../dto/company-document.input';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
@@ -446,6 +452,25 @@ export class CompanyService {
     }
   }
 
+  async getCompanyDocument(companyId: string): Promise<CompanyDocument[]> {
+    try {
+      return await this.prisma.companyDocument.findMany({
+        where: { companyId },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  async getCompanyDocumentById(id: string): Promise<CompanyDocument> {
+    try {
+      return await this.prisma.companyDocument.findFirst({
+        where: { id },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
   async companyDocument(
     input: CompanyDocumentInput,
     document: FileUpload[],
@@ -487,11 +512,55 @@ export class CompanyService {
     }
   }
 
-  async getCompanyDocument(companyId: string): Promise<CompanyDocument[]> {
+  async editCompanyDocument(
+    companyId: string,
+    documentId: string,
+    editDocument: CompanyDocumentEditInput,
+    document: FileUpload,
+  ): Promise<CompanyDocumentEditPayload> {
     try {
-      return await this.prisma.companyDocument.findMany({
-        where: { companyId },
+      const company = await this.getCompanyById(companyId);
+      if (!company)
+        return customError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+
+      const companyDocument = await this.getCompanyDocumentById(documentId);
+      if (!companyDocument)
+        return customError(
+          COMPANY_MESSAGE.COMPANY_DOCUMENT_NOT_FOUND,
+          COMPANY_CODE.COMPANY_DOCUMENT_NOT_FOUND,
+          STATUS_CODE.NOT_FOUND,
+        );
+      const updateDocument = await this.prisma.$transaction(async () => {
+        let updatedDocumentURL: any;
+        if (document) {
+          await this.fileUploadService.deleteImage(
+            'company-document',
+            await this.cloudinary.getPublicId(companyDocument.document),
+          );
+          updatedDocumentURL = await this.fileUploadService.uploadImage(
+            'company-document',
+            document,
+          );
+          if (updatedDocumentURL.errors)
+            return { errors: updatedDocumentURL.errors };
+        }
+        const update = await this.prisma.companyDocument.update({
+          where: { id: documentId },
+          data: {
+            ...editDocument,
+            document: updatedDocumentURL,
+          },
+        });
+        return { update };
       });
+      return {
+        companyDocument: updateDocument.update,
+        errors: updateDocument.errors,
+      };
     } catch (err) {
       throw new Error(err);
     }

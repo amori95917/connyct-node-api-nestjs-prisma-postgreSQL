@@ -16,7 +16,6 @@ import { CompanyService } from '../services/company.service';
 import { OrderListCompanies } from '../dto/order-companies.input';
 import { FilterListCompanies } from '../dto/filter-company.input';
 import {
-  CompanyDocumentInput,
   CreateCompanyGeneralInput,
   CreateCompanyInput,
 } from '../dto/company-input';
@@ -28,7 +27,10 @@ import { CompanyBranchInput } from '../dto/company-branch.input';
 import { CompanyBranchEditInput } from '../dto/company-branch-edit.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
-import { CompanyPayload } from '../entities/company.payload';
+import {
+  CompanyDocumentEditPayload,
+  CompanyPayload,
+} from '../entities/company.payload';
 import { CompanyAccountStatus } from '../dto/company-account-status.input';
 import { CompanyDocument } from '../entities/company-document.entity';
 import {
@@ -36,6 +38,10 @@ import {
   CompanyBranchPayload,
   GetCompanyBranchPayload,
 } from '../entities/company-branch.payload';
+import {
+  CompanyDocumentEditInput,
+  CompanyDocumentInput,
+} from '../dto/company-document.input';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -151,13 +157,29 @@ export class CompanyResolver {
     return await this.companyService.companyAccountStatus(data, companyId);
   }
 
-  @Roles(Role.Admin)
+  @Roles(Role.Owner)
   @Mutation(() => CompanyPayload)
   async companyDocumentCreate(
     @Args('input') input: CompanyDocumentInput,
     @Args('document', { type: () => [GraphQLUpload] }) document: FileUpload[],
   ): Promise<CompanyPayload> {
     return await this.companyService.companyDocument(input, document);
+  }
+
+  @Roles(Role.Owner)
+  @Mutation(() => CompanyDocumentEditPayload)
+  async companyDocumentEdit(
+    @Args('companyId') companyId: string,
+    @Args('documentId') documentId: string,
+    @Args('editDocument') editDocument: CompanyDocumentEditInput,
+    @Args('document', { type: () => GraphQLUpload }) document: FileUpload,
+  ): Promise<CompanyDocumentEditPayload> {
+    return await this.companyService.editCompanyDocument(
+      companyId,
+      documentId,
+      editDocument,
+      document,
+    );
   }
 
   @ResolveField('companyDocument', () => [CompanyDocument])

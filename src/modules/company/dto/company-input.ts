@@ -123,27 +123,6 @@ export class CreateCompanyAddressInput {
   address2: string;
 }
 
-enum DocumentType {
-  PAN = 'PAN',
-  VAT = 'VAT',
-  COMPANY_REGISTRATION = 'COMPANY_REGISTRATION',
-  TAX_CLEARANCE = 'TAX_CLEARANCE',
-  BANK_CHEQUE = 'BANK_CHEQUE',
-  TRADEMARK = 'TRADEMARK',
-}
-@InputType()
-export class CompanyDocumentInput {
-  @Field()
-  @IsNotEmpty()
-  @IsUUID()
-  companyId: string;
-
-  @Field()
-  @IsNotEmpty()
-  @IsEnum(DocumentType)
-  type: DocumentType;
-}
-
 export type CompanyDataInput = {
   id?: string;
   name: string;

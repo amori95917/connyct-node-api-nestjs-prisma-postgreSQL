@@ -7,6 +7,7 @@ export const COMPANY_MESSAGE = {
   CANNOT_HAVE_MULTIPLE_HEADQUARTER:
     'A company cannot have multiple headquarter branch',
   BRANCH_NOT_FOUND: 'Branch not found',
+  COMPANY_DOCUMENT_NOT_FOUND: 'Company document not found',
 };
 export const POST_MESSAGE = {
   NOT_FOUND: 'Post Not Found',

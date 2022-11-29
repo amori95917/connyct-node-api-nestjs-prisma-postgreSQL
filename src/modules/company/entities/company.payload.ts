@@ -14,3 +14,14 @@ export class CompanyPayload {
   @Field(() => [CompanyDocument], { nullable: true })
   companyDocument?: CompanyDocument[];
 }
+@ObjectType()
+export class CompanyDocumentEditPayload {
+  @Field(() => [CustomError], { nullable: true })
+  errors?: CustomError[];
+
+  @Field(() => Company, { nullable: true })
+  company?: Company;
+
+  @Field(() => CompanyDocument, { nullable: true })
+  companyDocument?: CompanyDocument;
+}

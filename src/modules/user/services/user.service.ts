@@ -443,6 +443,7 @@ export class UserService {
         await this.prisma.company.create({
           data: {
             legalName: legalName,
+            slug: userName(payload.legalName.split(' ')[0]),
             owner: {
               connectOrCreate: {
                 where: { email: payload.email },
