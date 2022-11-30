@@ -243,6 +243,13 @@ export class CompanyService {
     });
   }
 
+  async getBranchByEmail(contactEmail: string) {
+    return await this.prisma.branch.findUnique({ where: { contactEmail } });
+  }
+  async getBranchByNumber(contactNumber: string) {
+    return await this.prisma.branch.findUnique({ where: { contactNumber } });
+  }
+
   async isBranchExist(id: string) {
     return await this.prisma.branch.findFirst({
       where: { id },
@@ -263,6 +270,18 @@ export class CompanyService {
           COMPANY_MESSAGE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
           COMPANY_CODE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
           STATUS_CODE.BAD_CONFLICT,
+        );
+      if (await this.getBranchByEmail(branchInput.contactEmail))
+        return customError(
+          COMPANY_MESSAGE.BRANCH_EMAIL_ALREADY_EXIST,
+          COMPANY_CODE.BRANCH_EMAIL_ALREADY_EXIST,
+          STATUS_CODE.NOT_SUPPORTED,
+        );
+      if (await this.getBranchByNumber(branchInput.contactNumber))
+        return customError(
+          COMPANY_MESSAGE.BRANCH_NUMBER_ALREADY_EXIST,
+          COMPANY_CODE.BRANCH_NUMBER_ALREADY_EXIST,
+          STATUS_CODE.NOT_SUPPORTED,
         );
       const branch = await this.prisma.branch.create({
         data: { ...branchInput, companyId },
@@ -322,7 +341,7 @@ export class CompanyService {
         );
       const editedBranch = await this.prisma.branch.update({
         where: { id: branchId },
-        data: { ...branchEditInput },
+        data: { ...branch, ...branchEditInput },
       });
       return { branch: editedBranch };
     } catch (e) {

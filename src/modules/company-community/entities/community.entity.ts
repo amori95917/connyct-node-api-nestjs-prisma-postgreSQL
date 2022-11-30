@@ -16,10 +16,16 @@ export class Community extends BaseEntity {
   type: string;
 
   @Field({ nullable: true })
+  profile: string;
+
+  @Field({ nullable: true })
   companyId: string;
 
   @Field({ nullable: true })
   creatorId: string;
+
+  @Field({ nullable: true })
+  slug: string;
 
   @Field(() => Company, { nullable: true })
   company?: Company;

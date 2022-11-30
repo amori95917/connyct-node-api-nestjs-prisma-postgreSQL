@@ -8,6 +8,7 @@ import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { User } from 'src/modules/user/entities/user.entity';
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
 import {
+  CommunityDeletePayload,
   CommunityPayload,
   GetCommunityPayload,
 } from '../entities/community-payload';
@@ -44,7 +45,24 @@ export class CommunityResolver {
   async companyCommunityEdit(
     @Args('communityId') communityId: string,
     @Args('input') input: CommunityEditInput,
+    @Args('profile', { type: () => GraphQLUpload }) profile: FileUpload,
+    @CurrentUser() user: User,
   ): Promise<CommunityPayload> {
-    return await this.communityService.editCommunity(input, communityId);
+    return await this.communityService.editCommunity(
+      input,
+      communityId,
+      profile,
+      user.id,
+    );
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Roles(Role.Owner)
+  @Mutation(() => CommunityDeletePayload)
+  async companyCommunityDelete(
+    @Args('communityId') communityId: string,
+    @CurrentUser() user: User,
+  ): Promise<CommunityDeletePayload> {
+    return await this.communityService.deleteCommunity(communityId, user.id);
   }
 }

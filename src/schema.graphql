@@ -808,8 +808,10 @@ type Community {
   name: String
   description: String
   type: String
+  profile: String
   companyId: String
   creatorId: String
+  slug: String
   company: Company
   user: User
   communityRole: [CommunityRole!]
@@ -823,6 +825,11 @@ type CommunityPayload {
 type GetCommunityPayload {
   errors: [CustomError!]
   community: [Community!]
+}
+
+type CommunityDeletePayload {
+  errors: [CustomError!]
+  isDeleted: Boolean
 }
 
 type Query {
@@ -1145,7 +1152,8 @@ type Mutation {
   discussionAnswerDownvote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerReply(input: ReplyToAnswerInput!): DiscussionAnswerReplyPayload!
   companyCommunity(input: CommunityInput!, profile: Upload!): CommunityPayload!
-  companyCommunityEdit(communityId: String!, input: CommunityEditInput!): CommunityPayload!
+  companyCommunityEdit(communityId: String!, input: CommunityEditInput!, profile: Upload!): CommunityPayload!
+  companyCommunityDelete(communityId: String!): CommunityDeletePayload!
 }
 
 input UpdateStatusUserInput {

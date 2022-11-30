@@ -446,7 +446,7 @@ Table CompanyCommunity {
   description String [not null]
   type CommunityType [not null]
   profile String [not null]
-  slug String [not null]
+  slug String [unique, not null]
   companyId String [not null]
   company Company [not null]
   creatorId String [not null]

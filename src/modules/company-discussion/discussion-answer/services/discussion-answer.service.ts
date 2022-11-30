@@ -213,7 +213,6 @@ export class DiscussionAnswerService {
         await this.discussionAnswerRepository.getDiscussionAnswerById(
           input.discussionAnswerId,
         );
-      console.log(discussionAnswer, 'incoming diss');
       if (!discussionAnswer)
         return customError(
           COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,

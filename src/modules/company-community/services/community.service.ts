@@ -10,6 +10,7 @@ import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CompanyService } from 'src/modules/company/services/company.service';
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
 import {
+  CommunityDeletePayload,
   CommunityPayload,
   GetCommunityPayload,
 } from '../entities/community-payload';
@@ -57,9 +58,12 @@ export class CommunityService {
   async editCommunity(
     input: CommunityEditInput,
     communityId: string,
+    profile: FileUpload,
+    userId: string,
   ): Promise<CommunityPayload> {
-    const community = await this.communityRepository.getCommunityById(
+    const community = await this.communityRepository.getCommunityByIdAndUserId(
       communityId,
+      userId,
     );
     if (!community)
       return customError(
@@ -67,6 +71,31 @@ export class CommunityService {
         COMMUNITY_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
-    return await this.communityRepository.editCommunity(input, communityId);
+    return await this.communityRepository.editCommunity(
+      input,
+      communityId,
+      community,
+      profile,
+    );
+  }
+
+  async deleteCommunity(
+    communityId: string,
+    creatorId: string,
+  ): Promise<CommunityDeletePayload> {
+    const community = await this.communityRepository.getCommunityByIdAndUserId(
+      communityId,
+      creatorId,
+    );
+    if (!community)
+      return customError(
+        COMMUNITY_MESSAGE.NOT_FOUND,
+        COMMUNITY_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    return await this.communityRepository.deleteCommunity(
+      communityId,
+      community.profile,
+    );
   }
 }

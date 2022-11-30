@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CommunityRole } from '@prisma/client';
 import { FileUpload } from 'graphql-upload';
+import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
 import { FileUploadService } from 'src/modules/files/services/file.service';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
 import {
+  CommunityDeletePayload,
   CommunityPayload,
   GetCommunityPayload,
 } from '../entities/community-payload';
@@ -15,6 +17,7 @@ export class CommunityRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileUploadService: FileUploadService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async getCommunityByCompanyId(
@@ -32,6 +35,15 @@ export class CommunityRepository {
 
   async getCommunityById(id: string): Promise<Community> {
     return await this.prisma.companyCommunity.findFirst({ where: { id } });
+  }
+
+  async getCommunityByIdAndUserId(
+    id: string,
+    creatorId: string,
+  ): Promise<Community> {
+    return await this.prisma.companyCommunity.findFirst({
+      where: { id, creatorId },
+    });
   }
 
   generateSlug(name: string) {
@@ -82,23 +94,57 @@ export class CommunityRepository {
   async editCommunity(
     input: CommunityEditInput,
     id: string,
+    communityData: any,
+    profile: FileUpload,
   ): Promise<CommunityPayload> {
     try {
-      const update = await this.prisma.companyCommunity.update({
-        where: { id },
-        data: {
-          ...input,
-        },
+      const community = await this.prisma.$transaction(async () => {
+        let updatedProfileUrl: any;
+        if (profile) {
+          await this.fileUploadService.deleteImage(
+            'community/community-profile',
+            await this.cloudinary.getPublicId(communityData.profile),
+          );
+          updatedProfileUrl = await this.fileUploadService.uploadImage(
+            'community/community-profile',
+            profile,
+          );
+          if (updatedProfileUrl.errors)
+            return { errors: updatedProfileUrl.errors };
+        }
+        const updateCommunity = await this.prisma.companyCommunity.update({
+          where: { id },
+          data: {
+            ...communityData,
+            ...input,
+            slug: this.generateSlug(input.name),
+            profile: updatedProfileUrl,
+          },
+        });
+        return { updateCommunity };
       });
-      return { community: update };
+      return { community: community.updateCommunity, errors: community.errors };
     } catch (err) {
       throw new Error(err);
     }
   }
 
-  async delete(id: string) {
+  async deleteCommunity(
+    id: string,
+    profile: string,
+  ): Promise<CommunityDeletePayload> {
     try {
-      await this.prisma.companyCommunity.delete({ where: { id } });
+      const deleteCommunity = await this.prisma.$transaction(async () => {
+        await this.fileUploadService.deleteImage(
+          'community/community-profile',
+          await this.cloudinary.getPublicId(profile),
+        );
+        await this.prisma.companyCommunity.delete({
+          where: { id },
+        });
+        return true;
+      });
+      return { isDeleted: deleteCommunity };
     } catch (err) {
       throw new Error(err);
     }

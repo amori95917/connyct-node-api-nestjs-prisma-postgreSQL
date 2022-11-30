@@ -18,3 +18,11 @@ export class GetCommunityPayload {
   @Field(() => [Community], { nullable: true })
   community?: Community[];
 }
+@ObjectType()
+export class CommunityDeletePayload {
+  @Field(() => [CustomError], { nullable: true })
+  errors?: CustomError[];
+
+  @Field(() => Boolean, { nullable: true })
+  isDeleted?: boolean;
+}

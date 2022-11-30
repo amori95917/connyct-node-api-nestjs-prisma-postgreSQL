@@ -544,7 +544,7 @@ model CompanyCommunity {
   description          String
   type                 CommunityType
   profile              String
-  slug                 String
+  slug                 String                 @unique
   companyId            String
   company              Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   creatorId            String

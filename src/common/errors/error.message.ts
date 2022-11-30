@@ -7,11 +7,13 @@ export const COMPANY_MESSAGE = {
   CANNOT_HAVE_MULTIPLE_HEADQUARTER:
     'A company cannot have multiple headquarter branch',
   BRANCH_NOT_FOUND: 'Branch not found',
+  BRANCH_EMAIL_ALREADY_EXIST: 'Email Already Exists',
+  BRANCH_NUMBER_ALREADY_EXIST: 'Contact number Already Exists',
   COMPANY_DOCUMENT_NOT_FOUND: 'Company document not found',
 };
 
 export const COMMUNITY_MESSAGE = {
-  NOT_FOUND: 'NOT_FOUND',
+  NOT_FOUND: 'COMMUNITY_NOT_FOUND',
 };
 
 export const POST_MESSAGE = {
