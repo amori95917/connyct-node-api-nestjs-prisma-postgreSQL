@@ -815,6 +815,34 @@ type Community {
   company: Company
   user: User
   communityRole: [CommunityRole!]
+  community: Community!
+}
+
+type CommunityMember {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  communityId: String
+  invitedById: String
+  memberId: String
+  community: Community
+  users: [User!]
+  company: Company
+}
+
+type CommunityMemberPayload {
+  errors: [CustomError!]
+  communityMember: [CommunityMember!]
+}
+
+type JoinCommunityPayload {
+  errors: [CustomError!]
+  joinCommunity: CommunityMember
+}
+
+type AcceptInvitePayload {
+  errors: [CustomError!]
+  isAccepted: Boolean
 }
 
 type CommunityPayload {
@@ -982,7 +1010,8 @@ type Query {
     last: Float
     order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
   ): DiscussionAnswerPaginated!
-  community(companyId: String!): GetCommunityPayload!
+  getCommunity(companyId: String!): GetCommunityPayload!
+  getCommunityMember(communityId: String!): CommunityMemberPayload!
 }
 
 input OrderListUsers {
@@ -1154,6 +1183,10 @@ type Mutation {
   companyCommunity(input: CommunityInput!, profile: Upload!): CommunityPayload!
   companyCommunityEdit(communityId: String!, input: CommunityEditInput!, profile: Upload!): CommunityPayload!
   companyCommunityDelete(communityId: String!): CommunityDeletePayload!
+  inviteUserByCommunityAdmin(input: CommunityMemberInviteInput!): CommunityMemberPayload!
+  acceptCommunityInvite(companyId: String!, communityMemberId: String!): AcceptInvitePayload!
+  inviteUserByCommunityUser(input: CommunityMemberInviteInput!): CommunityMemberPayload!
+  joinPublicCommunity(input: CommunityMemberInput!): JoinCommunityPayload!
 }
 
 input UpdateStatusUserInput {
@@ -1396,4 +1429,15 @@ input CommunityEditInput {
   name: String!
   description: String!
   type: String!
+}
+
+input CommunityMemberInviteInput {
+  communityId: String!
+  companyId: String!
+  memberId: [String!]
+}
+
+input CommunityMemberInput {
+  communityId: String!
+  companyId: String!
 }

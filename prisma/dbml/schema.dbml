@@ -41,6 +41,8 @@ Table User {
   DiscussionAnswerMentions DiscussionAnswerMentions [not null]
   CompanyCommunity CompanyCommunity [not null]
   CompanyCommunityRole CompanyCommunityRole [not null]
+  InvitedBYUser CommunityMember [not null]
+  CommunityMember CommunityMember [not null]
 
   indexes {
     (id, email) [unique]
@@ -137,6 +139,7 @@ Table Company {
   CompanyDiscussions CompanyDiscussions [not null]
   CompanyDocument CompanyDocument [not null]
   CompanyCommunity CompanyCommunity [not null]
+  CommunityMember CommunityMember [not null]
 }
 
 Table CompanyDocument {
@@ -454,6 +457,7 @@ Table CompanyCommunity {
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   CompanyCommunityRole CompanyCommunityRole [not null]
+  CommunityMember CommunityMember [not null]
 }
 
 Table CompanyCommunityRole {
@@ -463,6 +467,21 @@ Table CompanyCommunityRole {
   companyCommunity CompanyCommunity [not null]
   userId String [not null]
   user User [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table CommunityMember {
+  id String [pk]
+  invitedById String
+  invitedByUser User
+  communityId String [not null]
+  community CompanyCommunity [not null]
+  memberId String [not null]
+  member User [not null]
+  companyId String [not null]
+  company Company [not null]
+  isAccepted Boolean [not null, default: false]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
@@ -636,3 +655,11 @@ Ref: CompanyCommunity.creatorId > User.id [delete: Cascade]
 Ref: CompanyCommunityRole.communityId > CompanyCommunity.id [delete: Cascade]
 
 Ref: CompanyCommunityRole.userId > User.id [delete: Cascade]
+
+Ref: CommunityMember.invitedById > User.id [delete: Cascade]
+
+Ref: CommunityMember.communityId > CompanyCommunity.id [delete: Cascade]
+
+Ref: CommunityMember.memberId > User.id [delete: Cascade]
+
+Ref: CommunityMember.companyId > Company.id [delete: Cascade]

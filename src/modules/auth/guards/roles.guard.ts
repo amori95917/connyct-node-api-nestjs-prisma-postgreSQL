@@ -31,7 +31,6 @@ export class RolesGuard implements CanActivate {
 
       if (ctx.getContext().req.headers['authorization']) {
         const user = ctx.getContext().req?.user;
-        // console.log(!!(await this.checkPermission(user)), 'incoming check');
         return await this.checkPermission(user);
       }
     }
@@ -45,7 +44,7 @@ export class RolesGuard implements CanActivate {
       include: { userRoles: { include: { role: true } } },
     });
 
-    return _user.userRoles.map((role) => {
+    return _user.userRoles.some((role) => {
       if (this.permissonRoles?.includes(role.role.name as any)) {
         return true;
       }

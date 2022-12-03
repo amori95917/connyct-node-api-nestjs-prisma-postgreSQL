@@ -456,7 +456,7 @@ export class CompanyService {
           avatar,
         );
         /**check if error exist */
-        if (fileUrl.errors) return { errors: fileUrl.errors };
+        if (fileUrl.errors) return { errors: fileUrl.errors.errors };
       }
 
       const updatedAvatar = await this.prisma.company.update({

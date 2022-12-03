@@ -14,6 +14,9 @@ export const COMPANY_MESSAGE = {
 
 export const COMMUNITY_MESSAGE = {
   NOT_FOUND: 'COMMUNITY_NOT_FOUND',
+  COMMUNITY_NOT_JOINED: 'You must join community',
+  COMMUNITY_ALREADY_JOINED: 'Community already joined',
+  MUST_BE_PUBLIC_COMMUNITY: 'Community must be public',
 };
 
 export const POST_MESSAGE = {

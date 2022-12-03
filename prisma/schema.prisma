@@ -57,6 +57,8 @@ model User {
   DiscussionAnswerMentions DiscussionAnswerMentions[]
   CompanyCommunity         CompanyCommunity[]
   CompanyCommunityRole     CompanyCommunityRole[]
+  InvitedBYUser            CommunityMember[]          @relation("InvitedByUser")
+  CommunityMember          CommunityMember[]          @relation("InvitedMember")
 
   @@unique([id, email])
 }
@@ -170,6 +172,7 @@ model Company {
   CompanyDiscussions    CompanyDiscussions[]
   CompanyDocument       CompanyDocument[]
   CompanyCommunity      CompanyCommunity[]
+  CommunityMember       CommunityMember[]
 }
 
 model CompanyDocument {
@@ -552,6 +555,7 @@ model CompanyCommunity {
   createdAt            DateTime?              @default(now())
   updatedAt            DateTime?              @updatedAt @db.Timestamp()
   CompanyCommunityRole CompanyCommunityRole[]
+  CommunityMember      CommunityMember[]
 }
 
 model CompanyCommunityRole {
@@ -563,4 +567,19 @@ model CompanyCommunityRole {
   user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt        DateTime?        @default(now())
   updatedAt        DateTime?        @updatedAt @db.Timestamp()
+}
+
+model CommunityMember {
+  id            String           @id @default(uuid())
+  invitedById   String?
+  invitedByUser User?            @relation("InvitedByUser", fields: [invitedById], references: [id], onDelete: Cascade)
+  communityId   String
+  community     CompanyCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  memberId      String
+  member        User             @relation("InvitedMember", fields: [memberId], references: [id], onDelete: Cascade)
+  companyId     String
+  company       Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  isAccepted    Boolean          @default(false)
+  createdAt     DateTime?        @default(now())
+  updatedAt     DateTime?        @updatedAt @db.Timestamp()
 }
