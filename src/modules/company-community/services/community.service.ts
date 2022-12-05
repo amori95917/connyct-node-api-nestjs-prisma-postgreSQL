@@ -23,6 +23,7 @@ import { CommunityEditInput, CommunityInput } from '../dto/community.input';
 import {
   AcceptInvitePayload,
   CommunityMemberPayload,
+  GetCommunityMemberPayload,
   JoinCommunityPayload,
 } from '../entities/community-member.payload';
 import {
@@ -31,6 +32,9 @@ import {
   GetCommunityPayload,
 } from '../entities/community-payload';
 import { CommunityRepository } from '../repository/community.repository';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { OrderListCommunity } from '../dto/order-community.input';
+import { OrderListCommunityMember } from '../dto/order-community-members.input';
 
 @Injectable()
 export class CommunityService {
@@ -42,6 +46,8 @@ export class CommunityService {
 
   async getCommunityByCompanyId(
     companyId: string,
+    paginate: ConnectionArgs,
+    order: OrderListCommunity,
   ): Promise<GetCommunityPayload> {
     const company = await this.companyService.getCompanyById(companyId);
     if (!company)
@@ -50,7 +56,17 @@ export class CommunityService {
         COMPANY_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
-    return await this.communityRepository.getCommunityByCompanyId(companyId);
+    return await this.communityRepository.getCommunityByCompanyId(
+      companyId,
+      paginate,
+      order,
+    );
+  }
+  async getCommunityById(communityId: string): Promise<CommunityPayload> {
+    const community = await this.communityRepository.getCommunityById(
+      communityId,
+    );
+    return { community };
   }
 
   async createCommunity(
@@ -118,7 +134,9 @@ export class CommunityService {
 
   async getCommunityMember(
     communityId: string,
-  ): Promise<CommunityMemberPayload> {
+    paginate: ConnectionArgs,
+    order: OrderListCommunityMember,
+  ): Promise<GetCommunityMemberPayload> {
     const community = await this.communityRepository.getCommunityById(
       communityId,
     );
@@ -128,7 +146,11 @@ export class CommunityService {
         COMMUNITY_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
-    return await this.communityRepository.getCommunityMember(communityId);
+    return await this.communityRepository.getCommunityMember(
+      communityId,
+      paginate,
+      order,
+    );
   }
 
   async inviteUserByAdmin(

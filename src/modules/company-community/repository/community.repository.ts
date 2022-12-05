@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CommunityRole, CommunityType } from '@prisma/client';
 import { FileUpload } from 'graphql-upload';
-import { CustomError } from 'src/common/graphql/types/custom-error';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
 import { FileUploadService } from 'src/modules/files/services/file.service';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 import {
   CommunityMemberInput,
   CommunityMemberInviteInput,
 } from '../dto/community-member.input';
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
+import { OrderListCommunityMember } from '../dto/order-community-members.input';
+import { OrderListCommunity } from '../dto/order-community.input';
 import { CommunityMember } from '../entities/community-member.entity';
 import {
   AcceptInvitePayload,
@@ -19,7 +22,6 @@ import {
 import {
   CommunityDeletePayload,
   CommunityPayload,
-  GetCommunityPayload,
 } from '../entities/community-payload';
 import { Community } from '../entities/community.entity';
 
@@ -33,11 +35,23 @@ export class CommunityRepository {
 
   async getCommunityByCompanyId(
     companyId: string,
-  ): Promise<GetCommunityPayload> {
+    paginate: ConnectionArgs,
+    order: OrderListCommunity,
+  ) {
     try {
-      const community = await this.prisma.companyCommunity.findMany({
-        where: { companyId },
-      });
+      const community = await findManyCursorConnection(
+        (args) =>
+          this.prisma.companyCommunity.findMany({
+            ...args,
+            where: { companyId },
+            orderBy: { [order.orderBy]: order.direction },
+          }),
+        () =>
+          this.prisma.companyCommunity.count({
+            where: { companyId },
+          }),
+        { ...paginate },
+      );
       return { community };
     } catch (err) {
       throw new Error(err);
@@ -48,6 +62,15 @@ export class CommunityRepository {
     return await this.prisma.companyCommunity.findFirst({ where: { id } });
   }
 
+  async getCommunityFollowersCount(communityId: string) {
+    try {
+      return await this.prisma.communityMember.count({
+        where: { communityId },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
   async getCommunityByIdAndUserId(
     id: string,
     creatorId: string,
@@ -184,11 +207,23 @@ export class CommunityRepository {
 
   async getCommunityMember(
     communityId: string,
-  ): Promise<CommunityMemberPayload> {
+    paginate: ConnectionArgs,
+    order: OrderListCommunityMember,
+  ) {
     try {
-      const communityMember = await this.prisma.communityMember.findMany({
-        where: { communityId, isAccepted: true },
-      });
+      const communityMember = await findManyCursorConnection(
+        (args) =>
+          this.prisma.communityMember.findMany({
+            ...args,
+            where: { communityId, isAccepted: true },
+            orderBy: { [order.orderBy]: order.direction },
+          }),
+        () =>
+          this.prisma.communityMember.count({
+            where: { communityId },
+          }),
+        { ...paginate },
+      );
       return { communityMember };
     } catch (err) {
       throw new Error(err);

@@ -14,24 +14,19 @@ import { Role } from 'src/modules/auth/enum/role.enum';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { CompanyService } from 'src/modules/company/services/company.service';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserService } from 'src/modules/user/services/user.service';
-import {
-  CommunityMemberInput,
-  CommunityMemberInviteInput,
-} from '../dto/community-member.input';
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
-import {
-  AcceptInvitePayload,
-  CommunityMemberPayload,
-  JoinCommunityPayload,
-} from '../entities/community-member.payload';
+import { OrderListCommunityMember } from '../dto/order-community-members.input';
+import { OrderListCommunity } from '../dto/order-community.input';
+import { CommunityMemberPaginated } from '../entities/community-member.entity';
 import {
   CommunityDeletePayload,
   CommunityPayload,
   GetCommunityPayload,
 } from '../entities/community-payload';
-import { Community } from '../entities/community.entity';
+import { Community, CommunityPaginated } from '../entities/community.entity';
 import { CommunityRepository } from '../repository/community.repository';
 import { CommunityService } from '../services/community.service';
 
@@ -45,11 +40,29 @@ export class CommunityResolver {
   ) {}
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => GetCommunityPayload)
+  @Query(() => CommunityPaginated)
   async getCommunity(
     @Args('companyId') companyId: string,
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'name', direction: 'desc' },
+    })
+    order: OrderListCommunity,
   ): Promise<GetCommunityPayload> {
-    return await this.communityService.getCommunityByCompanyId(companyId);
+    return await this.communityService.getCommunityByCompanyId(
+      companyId,
+      paginate,
+      order,
+    );
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => CommunityPayload)
+  async getCommunityById(
+    @Args('communityId') communityId: string,
+  ): Promise<CommunityPayload> {
+    return await this.communityService.getCommunityById(communityId);
   }
 
   @UseGuards(GqlAuthGuard)
@@ -97,70 +110,31 @@ export class CommunityResolver {
     const { companyId } = community;
     return await this.companyService.getCompanyById(companyId);
   }
-  @ResolveField('user', () => User)
-  async user(@Parent() community: Community): Promise<User> {
+  @ResolveField('createdBy', () => User)
+  async createdBy(@Parent() community: Community): Promise<User> {
     const { creatorId } = community;
     return await this.userService.findUserById(creatorId);
   }
-
-  @UseGuards(GqlAuthGuard)
-  @Query(() => CommunityMemberPayload)
-  async getCommunityMember(
-    @Args('communityId') communityId: string,
-  ): Promise<CommunityMemberPayload> {
-    return await this.communityService.getCommunityMember(communityId);
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Roles(Role.Owner)
-  @Mutation(() => CommunityMemberPayload)
-  async inviteUserByCommunityAdmin(
-    @Args('input') input: CommunityMemberInviteInput,
-    @CurrentUser() user: User,
-  ): Promise<CommunityMemberPayload> {
-    return await this.communityService.inviteUserByAdmin(input, user.id);
-  }
-  @UseGuards(GqlAuthGuard)
-  @Roles(Role.User)
-  @Mutation(() => AcceptInvitePayload)
-  async acceptCommunityInvite(
-    @Args('companyId') companyId: string,
-    @Args('communityMemberId') communityMemberId: string,
-    @CurrentUser() user: User,
-  ): Promise<AcceptInvitePayload> {
-    return await this.communityService.acceptCommunityInvite(
-      companyId,
-      communityMemberId,
-      user.id,
-    );
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Roles(Role.User)
-  @Mutation(() => CommunityMemberPayload)
-  async inviteUserByCommunityUser(
-    @Args('input') input: CommunityMemberInviteInput,
-    @CurrentUser() user: User,
-  ): Promise<CommunityMemberPayload> {
-    return await this.communityService.inviteUserByCommunityUser(
-      input,
-      user.id,
-    );
-  }
-
-  @UseGuards(GqlAuthGuard)
-  @Roles(Role.User)
-  @Mutation(() => JoinCommunityPayload)
-  async joinPublicCommunity(
-    @Args('input') input: CommunityMemberInput,
-    @CurrentUser() user: User,
-  ): Promise<JoinCommunityPayload> {
-    return await this.communityService.joinPublicCommunity(input, user.id);
-  }
-
-  @ResolveField('community', () => Community)
-  async community(@Parent() community: Community): Promise<Community> {
+  @ResolveField('members', () => CommunityMemberPaginated)
+  async members(
+    @Parent() community: Community,
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'createdAt', direction: 'desc' },
+    })
+    order: OrderListCommunityMember,
+  ): Promise<CommunityMemberPaginated> {
     const { id } = community;
-    return await this.communityRepository.getCommunityById(id);
+    return await this.communityRepository.getCommunityMember(
+      id,
+      paginate,
+      order,
+    );
+  }
+  @ResolveField('followersCount', () => Number)
+  async followersCount(@Parent() community: Community): Promise<number> {
+    const { id } = community;
+    return await this.communityRepository.getCommunityFollowersCount(id);
   }
 }

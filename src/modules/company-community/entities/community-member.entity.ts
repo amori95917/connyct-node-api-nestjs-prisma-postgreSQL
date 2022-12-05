@@ -1,7 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Company } from 'src/modules/company/entities/company.entity';
 import { BaseEntity } from 'src/modules/prisma/entities/base.entity';
-import { User } from 'src/modules/user/entities/user.entity';
+import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
 import { Community } from './community.entity';
 
 @ObjectType()
@@ -17,10 +16,9 @@ export class CommunityMember extends BaseEntity {
 
   @Field(() => Community, { nullable: true })
   community?: Community;
-
-  @Field(() => [User], { nullable: true })
-  users?: User[];
-
-  @Field(() => Company, { nullable: true })
-  company?: Company;
 }
+
+@ObjectType()
+export class CommunityMemberPaginated extends relayTypes<CommunityMember>(
+  CommunityMember,
+) {}

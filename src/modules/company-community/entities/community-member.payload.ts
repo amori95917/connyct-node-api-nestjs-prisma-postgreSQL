@@ -1,6 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CustomError } from 'src/common/graphql/types/custom-error';
-import { CommunityMember } from './community-member.entity';
+import {
+  CommunityMember,
+  CommunityMemberPaginated,
+} from './community-member.entity';
 
 @ObjectType()
 export class CommunityMemberPayload {
@@ -9,6 +12,14 @@ export class CommunityMemberPayload {
 
   @Field(() => [CommunityMember], { nullable: true })
   communityMember?: CommunityMember[];
+}
+@ObjectType()
+export class GetCommunityMemberPayload {
+  @Field(() => [CustomError], { nullable: true })
+  errors?: CustomError[];
+
+  @Field(() => CommunityMemberPaginated, { nullable: true })
+  communityMember?: CommunityMemberPaginated;
 }
 @ObjectType()
 export class JoinCommunityPayload {

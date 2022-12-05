@@ -7,6 +7,7 @@ import { FollowCompanyService } from '../follow-unfollow-company/services/follow
 import { PrismaModule } from '../prisma/prisma.module';
 import { UserModule } from '../user/user.module';
 import { CommunityRepository } from './repository/community.repository';
+import { CommunityMemberResolver } from './resolvers/community-members.resolver';
 import { CommunityResolver } from './resolvers/community.resolver';
 import { CommunityService } from './services/community.service';
 
@@ -21,6 +22,7 @@ import { CommunityService } from './services/community.service';
   ],
   providers: [
     CommunityResolver,
+    CommunityMemberResolver,
     CommunityService,
     CommunityRepository,
     FollowCompanyService,

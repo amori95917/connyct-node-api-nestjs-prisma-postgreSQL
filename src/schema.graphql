@@ -72,7 +72,7 @@ type Company {
 type CompanyPaginated {
   edges: [CompanyEdge!]
   pageInfo: CompanyPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type CompanyEdge {
@@ -102,7 +102,7 @@ type RepliesToReplies {
 type RepliesToRepliesPagination {
   edges: [RepliesToRepliesEdge!]
   pageInfo: RepliesToRepliesPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type RepliesToRepliesEdge {
@@ -166,7 +166,7 @@ enum CommentOrderBy {
 type RepliesPagination {
   edges: [RepliesEdge!]
   pageInfo: RepliesPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type RepliesEdge {
@@ -220,7 +220,7 @@ enum RatingStatus {
 type CommentPagination {
   edges: [CommentEdge!]
   pageInfo: CommentPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type CommentEdge {
@@ -269,7 +269,7 @@ type Post {
 type PostPagination {
   edges: [PostEdge!]
   pageInfo: PostPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type PostEdge {
@@ -315,7 +315,7 @@ type User {
 type UserPaginated {
   edges: [UserEdge!]
   pageInfo: UserPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type UserEdge {
@@ -611,7 +611,7 @@ type DiscussionAnswerReply {
 type DiscussionAnswerReplyPaginated {
   edges: [DiscussionAnswerReplyEdge!]
   pageInfo: DiscussionAnswerReplyPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type DiscussionAnswerReplyEdge {
@@ -667,7 +667,7 @@ enum DiscussionAnswerOrderBy {
 type DiscussionAnswerPaginated {
   edges: [DiscussionAnswerEdge!]
   pageInfo: DiscussionAnswerPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type DiscussionAnswerEdge {
@@ -725,7 +725,7 @@ type CompanyDiscussion {
 type DiscussionPaginated {
   edges: [CompanyDiscussionEdge!]
   pageInfo: CompanyDiscussionPageInfo
-  totalCount: Float!
+  totalCount: Float
 }
 
 type CompanyDiscussionEdge {
@@ -813,9 +813,51 @@ type Community {
   creatorId: String
   slug: String
   company: Company
-  user: User
+  createdBy: User
+  members(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListCommunityMember = {direction: desc, orderBy: createdAt}
+  ): CommunityMemberPaginated
+  followersCount: Float
   communityRole: [CommunityRole!]
-  community: Community!
+}
+
+input OrderListCommunityMember {
+  direction: OrderDirection!
+  orderBy: CommunityMemberOrderBy!
+}
+
+"""Order by:createdAt"""
+enum CommunityMemberOrderBy {
+  createdAt
+}
+
+type CommunityPaginated {
+  edges: [CommunityEdge!]
+  pageInfo: CommunityPageInfo
+  totalCount: Float
+}
+
+type CommunityEdge {
+  cursor: String
+  node: Community
+}
+
+type CommunityPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
 }
 
 type CommunityMember {
@@ -826,13 +868,34 @@ type CommunityMember {
   invitedById: String
   memberId: String
   community: Community
-  users: [User!]
-  company: Company
+}
+
+type CommunityMemberPaginated {
+  edges: [CommunityMemberEdge!]
+  pageInfo: CommunityMemberPageInfo
+  totalCount: Float
+}
+
+type CommunityMemberEdge {
+  cursor: String
+  node: CommunityMember
+}
+
+type CommunityMemberPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
 }
 
 type CommunityMemberPayload {
   errors: [CustomError!]
   communityMember: [CommunityMember!]
+}
+
+type GetCommunityMemberPayload {
+  errors: [CustomError!]
+  communityMember: CommunityMemberPaginated
 }
 
 type JoinCommunityPayload {
@@ -848,11 +911,6 @@ type AcceptInvitePayload {
 type CommunityPayload {
   errors: [CustomError!]
   community: Community
-}
-
-type GetCommunityPayload {
-  errors: [CustomError!]
-  community: [Community!]
 }
 
 type CommunityDeletePayload {
@@ -1010,8 +1068,39 @@ type Query {
     last: Float
     order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
   ): DiscussionAnswerPaginated!
-  getCommunity(companyId: String!): GetCommunityPayload!
-  getCommunityMember(communityId: String!): CommunityMemberPayload!
+  getCommunity(
+    companyId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListCommunity = {direction: desc, orderBy: name}
+  ): CommunityPaginated!
+  getCommunityById(communityId: String!): CommunityPayload!
+  getCommunityMember(
+    communityId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListCommunityMember = {direction: desc, orderBy: createdAt}
+  ): GetCommunityMemberPayload!
 }
 
 input OrderListUsers {
@@ -1114,6 +1203,17 @@ input OrderListDiscussion {
 """Order by:createdAt"""
 enum DiscussionOrderBy {
   createdAt
+}
+
+input OrderListCommunity {
+  direction: OrderDirection!
+  orderBy: CommunityOrderBy!
+}
+
+"""Order by:createdAt, name"""
+enum CommunityOrderBy {
+  createdAt
+  name
 }
 
 type Mutation {

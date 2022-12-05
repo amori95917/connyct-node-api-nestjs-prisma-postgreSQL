@@ -45,8 +45,8 @@ export default function relayTypes<T>(type: Type<T>): any {
     @Field(() => PageInfo, { nullable: true })
     public pageInfo!: Relay.PageInfo;
 
-    @Field()
-    public totalCount!: number;
+    @Field({ nullable: true })
+    public totalCount: number;
   }
 
   // @ObjectType(`${name}Page`, { isAbstract: true })
