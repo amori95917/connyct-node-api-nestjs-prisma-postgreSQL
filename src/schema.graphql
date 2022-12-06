@@ -913,6 +913,11 @@ type CommunityPayload {
   community: Community
 }
 
+type GetCommunityPayload {
+  errors: [CustomError!]
+  community: CommunityPaginated
+}
+
 type CommunityDeletePayload {
   errors: [CustomError!]
   isDeleted: Boolean
@@ -1083,7 +1088,7 @@ type Query {
     """Paginate last"""
     last: Float
     order: OrderListCommunity = {direction: desc, orderBy: name}
-  ): CommunityPaginated!
+  ): GetCommunityPayload!
   getCommunityById(communityId: String!): CommunityPayload!
   getCommunityMember(
     communityId: String!

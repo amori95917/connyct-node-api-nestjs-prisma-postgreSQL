@@ -40,7 +40,7 @@ export class CommunityResolver {
   ) {}
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => CommunityPaginated)
+  @Query(() => GetCommunityPayload)
   async getCommunity(
     @Args('companyId') companyId: string,
     @Args() paginate: ConnectionArgs,
