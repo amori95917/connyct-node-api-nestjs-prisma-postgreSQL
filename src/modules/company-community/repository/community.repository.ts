@@ -100,11 +100,14 @@ export class CommunityRepository {
     userId: string,
   ): Promise<CommunityPayload> {
     try {
-      const profileUrl = await this.fileUploadService.uploadImage(
-        'community/community-profile',
-        profile,
-      );
-      if (profileUrl.errors) return { errors: profileUrl.errors };
+      let profileUrl;
+      if (profile) {
+        profileUrl = await this.fileUploadService.uploadImage(
+          'community/community-profile',
+          profile,
+        );
+        if (profileUrl.errors) return { errors: profileUrl.errors };
+      }
       const create = await this.prisma.$transaction(async () => {
         const community = await this.prisma.companyCommunity.create({
           data: {

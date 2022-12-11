@@ -43,6 +43,8 @@ Table User {
   CompanyCommunityRole CompanyCommunityRole [not null]
   InvitedBYUser CommunityMember [not null]
   CommunityMember CommunityMember [not null]
+  CommunityComment CommunityComment [not null]
+  CommunityPost CommunityPost [not null]
 
   indexes {
     (id, email) [unique]
@@ -192,8 +194,10 @@ Table TagWithPost {
   id String [pk]
   tagsId String [not null]
   tags Tag
-  postId String [not null]
+  postId String
   post Post
+  communityPostId String
+  communityPost CommunityPost
 }
 
 Table Post {
@@ -223,8 +227,8 @@ Table PostImage {
   metaTitle String
   imageURL String [unique]
   description String
-  postId String
-  post Post
+  postId String [not null]
+  post Post [not null]
   isDeleted Boolean [not null, default: false]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
@@ -459,6 +463,7 @@ Table CompanyCommunity {
   CompanyCommunityRole CompanyCommunityRole [not null]
   CommunityMember CommunityMember [not null]
   CommunityPolicy CommunityPolicy [not null]
+  CommunityPost CommunityPost [not null]
 }
 
 Table CompanyCommunityRole {
@@ -496,6 +501,48 @@ Table CommunityPolicy {
   updatedAt DateTime
   community CompanyCommunity [not null]
   communityId String [not null]
+}
+
+Table CommunityPost {
+  id String [pk]
+  text String
+  communityId String [not null]
+  community CompanyCommunity [not null]
+  CommunityComment CommunityComment [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  CommunityPostMedia CommunityPostMedia [not null]
+  authorId String [not null]
+  author User [not null]
+  slug String [not null]
+  isDeleted Boolean [not null, default: false]
+  isApproved Boolean [not null, default: true]
+  TagWithPost TagWithPost [not null]
+}
+
+Table CommunityPostMedia {
+  id String [pk]
+  metaTitle String
+  imageURL String [unique]
+  description String
+  communityPostId String [not null]
+  communityPost CommunityPost [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
+Table CommunityComment {
+  id String [pk]
+  content String [not null]
+  communityPostId String
+  communityPost CommunityPost
+  authorId String [not null]
+  author User [not null]
+  commentId String
+  replies CommunityComment
+  CommunityComment CommunityComment [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Enum RegistrationNumberType {
@@ -583,6 +630,8 @@ Ref: CompanyEmployee.companyId > Company.id [delete: Cascade]
 Ref: TagWithPost.tagsId > Tag.id
 
 Ref: TagWithPost.postId > Post.id
+
+Ref: TagWithPost.communityPostId > CommunityPost.id
 
 Ref: Post.creatorId > User.id
 
@@ -677,3 +726,15 @@ Ref: CommunityMember.memberId > User.id [delete: Cascade]
 Ref: CommunityMember.companyId > Company.id [delete: Cascade]
 
 Ref: CommunityPolicy.communityId > CompanyCommunity.id
+
+Ref: CommunityPost.communityId > CompanyCommunity.id [delete: Cascade]
+
+Ref: CommunityPost.authorId > User.id [delete: Cascade]
+
+Ref: CommunityPostMedia.communityPostId > CommunityPost.id [delete: Cascade]
+
+Ref: CommunityComment.communityPostId > CommunityPost.id [delete: Cascade]
+
+Ref: CommunityComment.authorId > User.id [delete: Cascade]
+
+Ref: CommunityComment.commentId - CommunityComment.id [delete: Cascade]

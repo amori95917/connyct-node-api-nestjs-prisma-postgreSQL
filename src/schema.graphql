@@ -868,6 +868,7 @@ type CommunityMember {
   invitedById: String
   memberId: String
   community: Community
+  member: User
 }
 
 type CommunityMemberPaginated {
@@ -963,6 +964,72 @@ type CommunityPolicyPayload {
 type CompanyPolicyDeletePayload {
   errors: [CustomError!]
   isDeleted: Boolean
+}
+
+type CommunityPost {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  text: String
+  communityId: String
+  slug: String
+  isDeleted: Boolean
+  isApproved: Boolean
+  communityPostMedia: CommunityPostMedia
+  community: Community
+}
+
+type CommunityPostPaginated {
+  edges: [CommunityPostEdge!]
+  pageInfo: CommunityPostPageInfo
+  totalCount: Float
+}
+
+type CommunityPostEdge {
+  cursor: String
+  node: CommunityPost
+}
+
+type CommunityPostPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
+type CommunityPostMedia {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  metaTitle: String
+  description: String
+  imageURL: String
+  communityPostId: String
+  communityPost: CommunityPost
+}
+
+type CommunityPostPayload {
+  errors: [CustomError!]
+  communityPost: CommunityPost
+  communityPostMedia: [CommunityPostMedia!]
+  tags: [Tag!]
+}
+
+type GetCommunityPostPayload {
+  errors: [CustomError!]
+  communityPost: CommunityPostPaginated
+}
+
+type DeleteCommunityPostPayload {
+  errors: [CustomError!]
+  isDeleteSuccessful: Boolean
+}
+
+type UpdateCommunityPostPayload {
+  errors: [CustomError!]
+  communityPost: CommunityPost
+  communityPostMedia: CommunityPostMedia
+  tags: [Tag!]
 }
 
 type Query {
@@ -1164,6 +1231,22 @@ type Query {
     last: Float
   ): CommunityPoliciesPayload!
   getCommunityPolicy(id: String!): CommunityPolicy!
+  communityPost(
+    communityId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: CommunityPostsOrderList = {direction: desc, orderBy: createdAt}
+  ): GetCommunityPostPayload!
 }
 
 input OrderListUsers {
@@ -1279,6 +1362,16 @@ enum CommunityOrderBy {
   name
 }
 
+input CommunityPostsOrderList {
+  direction: OrderDirection!
+  orderBy: CommunityPostsOrderBy!
+}
+
+"""Order by: createdAt"""
+enum CommunityPostsOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -1343,7 +1436,7 @@ type Mutation {
   discussionAnswerVote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerDownvote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerReply(input: ReplyToAnswerInput!): DiscussionAnswerReplyPayload!
-  companyCommunity(input: CommunityInput!, profile: Upload!): CommunityPayload!
+  companyCommunity(input: CommunityInput!, profile: Upload): CommunityPayload!
   companyCommunityEdit(communityId: String!, input: CommunityEditInput!, profile: Upload!): CommunityPayload!
   companyCommunityDelete(communityId: String!): CommunityDeletePayload!
   inviteUserByCommunityAdmin(input: CommunityMemberInviteInput!): CommunityMemberPayload!
@@ -1353,6 +1446,9 @@ type Mutation {
   createCommunityPolicy(id: String!, data: CommunityPolicyInput!): CommunityPolicyPayload!
   updateCommunityPolicy(id: String!, data: CommunityPolicyInput!): CommunityPolicyPayload!
   deleteCommunityPolicy(id: String!): CompanyPolicyDeletePayload!
+  communityPostCreate(input: CommunityPostInput!, files: [Upload!]): CommunityPostPayload!
+  communityPostUpdate(id: String!, imageURL: String, input: UpdateCommunityPostInput, file: Upload): UpdateCommunityPostPayload!
+  communityPostDelete(postId: String!): DeleteCommunityPostPayload!
 }
 
 input UpdateStatusUserInput {
@@ -1611,4 +1707,19 @@ input CommunityMemberInput {
 input CommunityPolicyInput {
   title: String!
   description: String!
+}
+
+input CommunityPostInput {
+  text: String!
+  communityId: String!
+  tags: [String!]
+  metaTitle: String
+  description: String
+}
+
+input UpdateCommunityPostInput {
+  text: String!
+  tags: [String!]
+  metaTitle: String
+  description: String
 }

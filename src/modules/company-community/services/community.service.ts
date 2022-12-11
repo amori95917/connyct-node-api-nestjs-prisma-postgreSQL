@@ -265,6 +265,17 @@ export class CommunityService {
         COMMUNITY_CODE.MUST_BE_PUBLIC_COMMUNITY,
         STATUS_CODE.NOT_SUPPORTED,
       );
+    const alreadyAccepted =
+      await this.communityRepository.checkCommunityMemberExist(
+        input.communityId,
+        userId,
+      );
+    if (alreadyAccepted)
+      return customError(
+        COMMUNITY_MESSAGE.COMMUNITY_ALREADY_JOINED,
+        COMMUNITY_CODE.COMMUNITY_ALREADY_JOINED,
+        STATUS_CODE.BAD_CONFLICT,
+      );
     return await this.communityRepository.joinPublicCommunity(input, userId);
   }
 

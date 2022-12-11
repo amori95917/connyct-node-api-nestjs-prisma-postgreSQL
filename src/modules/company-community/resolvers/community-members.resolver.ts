@@ -106,8 +106,15 @@ export class CommunityMemberResolver {
   }
 
   @ResolveField('community', () => Community)
-  async community(@Parent() community: Community): Promise<Community> {
-    const { id } = community;
-    return await this.communityRepository.getCommunityById(id);
+  async community(
+    @Parent() communityMember: CommunityMember,
+  ): Promise<Community> {
+    const { communityId } = communityMember;
+    return await this.communityRepository.getCommunityById(communityId);
+  }
+  @ResolveField('member', () => User)
+  async member(@Parent() communityMember: CommunityMember): Promise<User> {
+    const { memberId } = communityMember;
+    return await this.userService.findUserById(memberId);
   }
 }

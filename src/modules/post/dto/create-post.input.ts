@@ -17,7 +17,7 @@ import {
 @InputType()
 export class CreatePostInput {
   @Field(() => String, { nullable: false })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @Length(3, 75, { message: 'Text must be between 3 and 75 characters' })
   text: string;

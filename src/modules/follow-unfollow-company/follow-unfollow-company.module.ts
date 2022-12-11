@@ -9,5 +9,6 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 @Module({
   imports: [PrismaModule, FilesModule, CloudinaryModule],
   providers: [FollowCompanyService, FollowCompanyResolver, CompanyService],
+  exports: [FollowCompanyService],
 })
 export class FollowUnfollowCompanyModule {}

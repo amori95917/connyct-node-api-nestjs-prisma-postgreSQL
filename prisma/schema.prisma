@@ -59,6 +59,8 @@ model User {
   CompanyCommunityRole     CompanyCommunityRole[]
   InvitedBYUser            CommunityMember[]          @relation("InvitedByUser")
   CommunityMember          CommunityMember[]          @relation("InvitedMember")
+  CommunityComment         CommunityComment[]
+  CommunityPost            CommunityPost[]
 
   @@unique([id, email])
 }
@@ -234,11 +236,13 @@ model Tag {
 }
 
 model TagWithPost {
-  id     String @id @default(uuid())
-  tagsId String
-  tags   Tag?   @relation(fields: [tagsId], references: [id])
-  postId String
-  post   Post?  @relation(fields: [postId], references: [id])
+  id              String         @id @default(uuid())
+  tagsId          String
+  tags            Tag?           @relation(fields: [tagsId], references: [id])
+  postId          String?
+  post            Post?          @relation(fields: [postId], references: [id])
+  communityPostId String?
+  communityPost   CommunityPost? @relation(fields: [communityPostId], references: [id])
 }
 
 model Post {
@@ -270,8 +274,8 @@ model PostImage {
   metaTitle   String?
   imageURL    String?   @unique
   description String?
-  postId      String?
-  post        Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      String
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   isDeleted   Boolean   @default(false)
   createdAt   DateTime? @default(now())
   updatedAt   DateTime? @updatedAt @db.Timestamp()
@@ -557,6 +561,7 @@ model CompanyCommunity {
   CompanyCommunityRole CompanyCommunityRole[]
   CommunityMember      CommunityMember[]
   CommunityPolicy      CommunityPolicy[]
+  CommunityPost        CommunityPost[]
 }
 
 model CompanyCommunityRole {
@@ -594,4 +599,52 @@ model CommunityPolicy {
   updatedAt   DateTime?        @updatedAt @db.Timestamp()
   community   CompanyCommunity @relation(fields: [communityId], references: [id])
   communityId String
+}
+
+model CommunityPost {
+  id                 String               @id @default(uuid())
+  text               String?
+  communityId        String
+  community          CompanyCommunity     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  CommunityComment   CommunityComment[]
+  createdAt          DateTime?            @default(now())
+  updatedAt          DateTime?            @updatedAt @db.Timestamp()
+  CommunityPostMedia CommunityPostMedia[]
+  authorId           String
+  author             User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  slug               String
+  isDeleted          Boolean              @default(false)
+  isApproved         Boolean              @default(true)
+  TagWithPost        TagWithPost[]
+
+  @@index([communityId, authorId])
+}
+
+model CommunityPostMedia {
+  id              String        @id @default(uuid())
+  metaTitle       String?
+  imageURL        String?       @unique
+  description     String?
+  communityPostId String
+  communityPost   CommunityPost @relation(fields: [communityPostId], references: [id], onDelete: Cascade)
+  createdAt       DateTime?     @default(now())
+  updatedAt       DateTime?     @updatedAt @db.Timestamp()
+
+  @@index([communityPostId])
+}
+
+model CommunityComment {
+  id               String             @id @default(uuid())
+  content          String
+  communityPostId  String?
+  communityPost    CommunityPost?     @relation(fields: [communityPostId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentId        String?
+  replies          CommunityComment?  @relation("CommentReplies", fields: [commentId], references: [id], onDelete: Cascade)
+  CommunityComment CommunityComment[] @relation("CommentReplies")
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @updatedAt @db.Timestamp()
+
+  @@index([communityPostId, commentId])
 }

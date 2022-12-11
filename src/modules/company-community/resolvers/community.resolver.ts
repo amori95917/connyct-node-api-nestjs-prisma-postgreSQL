@@ -70,7 +70,8 @@ export class CommunityResolver {
   @Mutation(() => CommunityPayload)
   async companyCommunity(
     @Args('input') input: CommunityInput,
-    @Args('profile', { type: () => GraphQLUpload }) profile: FileUpload,
+    @Args('profile', { type: () => GraphQLUpload, nullable: true })
+    profile: FileUpload,
     @CurrentUser()
     user: User,
   ): Promise<CommunityPayload> {

@@ -30,6 +30,7 @@ import { FilesModule } from './modules/files/files.module';
 import { OtpVerificationModule } from './modules/otp-verification/otp-verification.module';
 import { CompanyDiscussionModule } from './modules/company-discussion/company-discussion.module';
 import { CompanyCommunityModule } from './modules/company-community/company-community.module';
+import { CommunityPostModule } from './modules/community-post/community-post.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { CompanyCommunityModule } from './modules/company-community/company-comm
     OtpVerificationModule,
     CompanyDiscussionModule,
     CompanyCommunityModule,
+    CommunityPostModule,
   ],
 })
 export class AppModule {

@@ -29,5 +29,6 @@ import { CommunityService } from './services/community.service';
     CommunityRepository,
     FollowCompanyService,
   ],
+  exports: [CommunityRepository],
 })
 export class CompanyCommunityModule {}
