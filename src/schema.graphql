@@ -22,7 +22,9 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-"""The branch type can be CORPORATE and BRANCH_OFFICE"""
+"""
+The branch type can be CORPORATE and BRANCH_OFFICE
+"""
 enum BranchType {
   HEADQUARTER
   BRANCH_OFFICE
@@ -127,18 +129,26 @@ type Replies {
   repliedToCommentId: String
   repliedTo: Comment!
   replies(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+    order: OrderCommentsList = { direction: asc, orderBy: createdAt }
   ): RepliesToRepliesPagination!
   creator: User!
   mentions: [User!]!
@@ -158,7 +168,9 @@ enum OrderDirection {
   desc
 }
 
-"""Order by:createdAt"""
+"""
+Order by:createdAt
+"""
 enum CommentOrderBy {
   createdAt
 }
@@ -192,18 +204,26 @@ type Comment {
   repliedToReplyId: String
   rating: Int
   replies(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+    order: OrderCommentsList = { direction: asc, orderBy: createdAt }
   ): RepliesPagination
   myRatingStatus: RatingStatus!
   creator: User!
@@ -352,18 +372,26 @@ type OTPPayload {
 }
 
 type Token {
-  """JWT access token"""
+  """
+  JWT access token
+  """
   accessToken: String
 
-  """JWT refresh token"""
+  """
+  JWT refresh token
+  """
   refreshToken: String
 }
 
 type Auth {
-  """JWT access token"""
+  """
+  JWT access token
+  """
   accessToken: String
 
-  """JWT refresh token"""
+  """
+  JWT refresh token
+  """
   refreshToken: String
   errors: [CustomError!]
   user: User
@@ -636,18 +664,26 @@ type DiscussionAnswer {
   userId: String
   user: User!
   answerReply(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
+    order: OrderListDiscussionAnswer = { direction: asc, orderBy: createdAt }
   ): DiscussionAnswerReplyPaginated
   mentions: [User!]
   upVote: Float
@@ -659,7 +695,9 @@ input OrderListDiscussionAnswer {
   orderBy: DiscussionAnswerOrderBy!
 }
 
-"""Order by:createdAt"""
+"""
+Order by:createdAt
+"""
 enum DiscussionAnswerOrderBy {
   createdAt
 }
@@ -704,18 +742,26 @@ type CompanyDiscussion {
   userId: String
   user: User!
   discussionAnswer(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
+    order: OrderListDiscussionAnswer = { direction: asc, orderBy: createdAt }
   ): DiscussionAnswerPaginated
   discussionVote: [DiscussionVote!]
   upVote: Float
@@ -815,18 +861,26 @@ type Community {
   company: Company
   createdBy: User
   members(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListCommunityMember = {direction: desc, orderBy: createdAt}
+    order: OrderListCommunityMember = { direction: desc, orderBy: createdAt }
   ): CommunityMemberPaginated
   followersCount: Float
   communityRole: [CommunityRole!]
@@ -837,7 +891,9 @@ input OrderListCommunityMember {
   orderBy: CommunityMemberOrderBy!
 }
 
-"""Order by:createdAt"""
+"""
+Order by:createdAt
+"""
 enum CommunityMemberOrderBy {
   createdAt
 }
@@ -961,7 +1017,7 @@ type CommunityPolicyPayload {
   data: CommunityPolicy
 }
 
-type CompanyPolicyDeletePayload {
+type CommunityPolicyDeletePayload {
   errors: [CustomError!]
   isDeleted: Boolean
 }
@@ -1034,134 +1090,214 @@ type UpdateCommunityPostPayload {
 
 type Query {
   listUsers(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListUsers = {direction: desc, orderBy: username}
+    order: OrderListUsers = { direction: desc, orderBy: username }
     filter: FilterListUsers
   ): UserPaginated!
   me: User!
   getUser(userId: String!): User!
   getCompanysFollowedByUser(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
     order: OrderFollowedCompanyList
   ): CompanyPaginated
   companiesSuggestions(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListCompanies = {direction: desc, orderBy: name}
+    order: OrderListCompanies = { direction: desc, orderBy: name }
     filter: FilterListCompanies
   ): CompanyPaginated!
   companies(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListCompanies = {direction: desc, orderBy: name}
+    order: OrderListCompanies = { direction: desc, orderBy: name }
     filter: FilterListCompanies
   ): CompanyPaginated!
   getCompanyById(id: String!): Company!
   getBranchesByCompanyId(id: String!): GetCompanyBranchPayload!
-  getTags(paginate: PaginationArgs = {skip: 0, take: 50}, order: OrderTagList = {direction: asc, orderBy: createdAt}, query: TagQuery = {name: ""}): TagPagination!
+  getTags(
+    paginate: PaginationArgs = { skip: 0, take: 50 }
+    order: OrderTagList = { direction: asc, orderBy: createdAt }
+    query: TagQuery = { name: "" }
+  ): TagPagination!
   postsByCompanyId(
     id: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
   ): PostPagination!
   companyPostsFollowedByUser(
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderPosts = {direction: desc, orderBy: createdAt}
+    order: OrderPosts = { direction: desc, orderBy: createdAt }
   ): PostPagination
   comments(
     postId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+    order: OrderCommentsList = { direction: asc, orderBy: createdAt }
   ): CommentPaginationPayload!
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
-  getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
-  getUsersByPostReaction(reactionType: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
-  commentReactions(commentId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommentReactionsOrderList = {direction: asc, orderBy: createdAt}): CommentReactionPaginationPayload!
+  getLikesByPost(
+    postId: String!
+    paginate: PaginationArgs = { skip: 0, take: 50 }
+    order: ReactionsOrderList = { direction: desc }
+  ): ReactionsPagination!
+  getUsersByPostReaction(
+    reactionType: String!
+    paginate: PaginationArgs = { skip: 0, take: 50 }
+    order: ReactionsOrderList = { direction: desc }
+  ): ReactionsPagination!
+  commentReactions(
+    commentId: String!
+    paginate: PaginationArgs = { skip: 0, take: 50 }
+    order: CommentReactionsOrderList = { direction: asc, orderBy: createdAt }
+  ): CommentReactionPaginationPayload!
   getCompanyDiscussion(
     companyId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListDiscussion = {direction: desc, orderBy: createdAt}
+    order: OrderListDiscussion = { direction: desc, orderBy: createdAt }
   ): DiscussionPaginated!
   getCompanyDiscussionById(discussionId: String!): CompanyDiscussion!
   getCompanyDiscussionByUser: [CompanyDiscussion!]!
@@ -1169,83 +1305,123 @@ type Query {
   getDiscussionAnswerByDiscussionId(
     discussionId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListDiscussionAnswer = {direction: asc, orderBy: createdAt}
+    order: OrderListDiscussionAnswer = { direction: asc, orderBy: createdAt }
   ): DiscussionAnswerPaginated!
   getCommunity(
     companyId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListCommunity = {direction: desc, orderBy: name}
+    order: OrderListCommunity = { direction: desc, orderBy: name }
   ): GetCommunityPayload!
   getCommunityById(communityId: String!): CommunityPayload!
   getCommunityMember(
     communityId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: OrderListCommunityMember = {direction: desc, orderBy: createdAt}
+    order: OrderListCommunityMember = { direction: desc, orderBy: createdAt }
   ): GetCommunityMemberPayload!
   getCommunityPolicies(
     communityId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
   ): CommunityPoliciesPayload!
   getCommunityPolicy(id: String!): CommunityPolicy!
   communityPost(
     communityId: String!
 
-    """Paginate before opaque cursor"""
+    """
+    Paginate before opaque cursor
+    """
     before: String
 
-    """Paginate after opaque cursor"""
+    """
+    Paginate after opaque cursor
+    """
     after: String
 
-    """Paginate first"""
+    """
+    Paginate first
+    """
     first: Float
 
-    """Paginate last"""
+    """
+    Paginate last
+    """
     last: Float
-    order: CommunityPostsOrderList = {direction: desc, orderBy: createdAt}
+    order: CommunityPostsOrderList = { direction: desc, orderBy: createdAt }
   ): GetCommunityPostPayload!
 }
 
@@ -1254,7 +1430,9 @@ input OrderListUsers {
   orderBy: UsersOrderBy!
 }
 
-"""Order by: username, createdAt, email"""
+"""
+Order by: username, createdAt, email
+"""
 enum UsersOrderBy {
   username
   createdAt
@@ -1271,7 +1449,9 @@ input OrderFollowedCompanyList {
   orderBy: FollowedCompanyOrderBy!
 }
 
-"""Order by: createdAt"""
+"""
+Order by: createdAt
+"""
 enum FollowedCompanyOrderBy {
   createdAt
 }
@@ -1281,7 +1461,9 @@ input OrderListCompanies {
   orderBy: CompaniesOrderBy!
 }
 
-"""Order by: name, legalName, createdAt"""
+"""
+Order by: name, legalName, createdAt
+"""
 enum CompaniesOrderBy {
   name
   legalName
@@ -1302,7 +1484,9 @@ input OrderTagList {
   orderBy: TagOrderBy!
 }
 
-"""Order by:createdAt"""
+"""
+Order by:createdAt
+"""
 enum TagOrderBy {
   createdAt
 }
@@ -1316,7 +1500,9 @@ input OrderPosts {
   orderBy: PostsOrderBy!
 }
 
-"""Order by: createdAt"""
+"""
+Order by: createdAt
+"""
 enum PostsOrderBy {
   createdAt
 }
@@ -1326,7 +1512,9 @@ input ReactionsOrderList {
   orderBy: ReactionsOrderBy!
 }
 
-"""Order By:createdAt"""
+"""
+Order By:createdAt
+"""
 enum ReactionsOrderBy {
   createdAt
 }
@@ -1336,7 +1524,9 @@ input CommentReactionsOrderList {
   orderBy: CommentReactionsOrderBy
 }
 
-"""Order by:createdAt"""
+"""
+Order by:createdAt
+"""
 enum CommentReactionsOrderBy {
   createdAt
 }
@@ -1346,7 +1536,9 @@ input OrderListDiscussion {
   orderBy: DiscussionOrderBy!
 }
 
-"""Order by:createdAt"""
+"""
+Order by:createdAt
+"""
 enum DiscussionOrderBy {
   createdAt
 }
@@ -1356,7 +1548,9 @@ input OrderListCommunity {
   orderBy: CommunityOrderBy!
 }
 
-"""Order by:createdAt, name"""
+"""
+Order by:createdAt, name
+"""
 enum CommunityOrderBy {
   createdAt
   name
@@ -1367,7 +1561,9 @@ input CommunityPostsOrderList {
   orderBy: CommunityPostsOrderBy!
 }
 
-"""Order by: createdAt"""
+"""
+Order by: createdAt
+"""
 enum CommunityPostsOrderBy {
   createdAt
 }
@@ -1376,7 +1572,10 @@ type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
   changePassword(data: ChangePasswordInput!): User!
-  editUserProfile(userProfile: UserProfileInput!, file: Upload): UserProfilePayload!
+  editUserProfile(
+    userProfile: UserProfileInput!
+    file: Upload
+  ): UserProfilePayload!
   signup(data: SignupInput!): Auth!
   login(data: LoginInput!): Auth!
   loginLinkAccess(data: LoginLinkAccessInput!): Boolean!
@@ -1390,22 +1589,62 @@ type Mutation {
   resendOtp: OTPPayload!
   createCompany(data: CreateCompanyInput!): Company!
   createCompanyGeneralInfo(data: CreateCompanyGeneralInput!): Company!
-  companyGeneralInfoEdit(companyId: String!, data: CompanyEditInput!): CompanyPayload!
+  companyGeneralInfoEdit(
+    companyId: String!
+    data: CompanyEditInput!
+  ): CompanyPayload!
   companyAvatar(companyId: String!, avatar: Upload!): CompanyPayload!
-  createCompanyBranch(id: String!, data: CompanyBranchInput!): CompanyBranchPayload!
-  editCompanyBranch(id: String!, data: CompanyBranchEditInput!): CompanyBranchPayload!
-  deleteCompanyBranch(id: String!, companyId: String!): CompanyBranchDeletePayload!
-  companyAccountStatus(data: CompanyAccountStatus!, companyId: String!): CompanyPayload!
-  companyDocumentCreate(input: CompanyDocumentInput!, document: [Upload!]!): CompanyPayload!
-  companyDocumentEdit(companyId: String!, documentId: String!, editDocument: CompanyDocumentEditInput!, document: Upload!): CompanyDocumentEditPayload!
-  post(data: CreatePostInput!, companyId: String!, file: [Upload!]): CreatePostPayload!
-  postUpdate(id: String!, imageURL: String, input: UpdatePostInput, file: Upload): UpdatePostPayload!
+  createCompanyBranch(
+    id: String!
+    data: CompanyBranchInput!
+  ): CompanyBranchPayload!
+  editCompanyBranch(
+    id: String!
+    data: CompanyBranchEditInput!
+  ): CompanyBranchPayload!
+  deleteCompanyBranch(
+    id: String!
+    companyId: String!
+  ): CompanyBranchDeletePayload!
+  companyAccountStatus(
+    data: CompanyAccountStatus!
+    companyId: String!
+  ): CompanyPayload!
+  companyDocumentCreate(
+    input: CompanyDocumentInput!
+    document: [Upload!]!
+  ): CompanyPayload!
+  companyDocumentEdit(
+    companyId: String!
+    documentId: String!
+    editDocument: CompanyDocumentEditInput!
+    document: Upload!
+  ): CompanyDocumentEditPayload!
+  post(
+    data: CreatePostInput!
+    companyId: String!
+    file: [Upload!]
+  ): CreatePostPayload!
+  postUpdate(
+    id: String!
+    imageURL: String
+    input: UpdatePostInput
+    file: Upload
+  ): UpdatePostPayload!
   postDelete(postId: String!): DeletePostPayload!
   upvotePost(postId: Int!): RatePayload!
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
-  commentToPost(postId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
-  commentUpdate(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
+  commentToPost(
+    postId: String!
+    input: CreateCommentInput!
+    mention: CreateMentionsInput
+  ): NewReplyPayload!
+  commentUpdate(
+    commentId: String!
+    input: CreateCommentInput!
+    mention: CreateMentionsInput
+  ): NewReplyPayload!
   commentDelete(commentId: String!): CommentDeletePayload!
   upvoteComment(commentId: String!): RatePayload!
   downvoteComment(commentId: String!): RatePayload!
@@ -1422,33 +1661,80 @@ type Mutation {
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
   createLikes(data: LikesInput!): LikesPayload!
   removeLike(postId: String!): Likes!
-  commentReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): ReplyToCommentPayload!
-  replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): RepliesToRepliesPayload!
+  commentReply(
+    commentId: String!
+    input: CreateCommentInput!
+    mention: CreateMentionsInput
+  ): ReplyToCommentPayload!
+  replyToReply(
+    commentId: String!
+    input: CreateCommentInput!
+    mention: CreateMentionsInput
+  ): RepliesToRepliesPayload!
   commentReaction(input: CommentReactionsInput!): CommentReactionsPayload!
   companyDiscussion(input: CompanyDiscussionInput!): CompanyDiscussionPayload!
-  companyDiscussionUpdate(input: CompanyDiscussionUpdateInput!, discussionId: String!): CompanyDiscussionPayload!
+  companyDiscussionUpdate(
+    input: CompanyDiscussionUpdateInput!
+    discussionId: String!
+  ): CompanyDiscussionPayload!
   companyDiscussionDelete(id: String!): CompanyDiscussionDeletePayload!
   discussionVote(input: DiscussionVoteInput!): DiscussionVotePayload!
   discussionDownvote(input: DiscussionVoteInput!): DiscussionVotePayload!
-  createDiscussionAnswer(answer: DiscussionAnswerInput!): DiscussionAnswerPayload!
-  discussionAnswerUpdate(updateAnswer: DiscussionAnswerUpdateInput!, answerId: String!): DiscussionAnswerPayload!
+  createDiscussionAnswer(
+    answer: DiscussionAnswerInput!
+  ): DiscussionAnswerPayload!
+  discussionAnswerUpdate(
+    updateAnswer: DiscussionAnswerUpdateInput!
+    answerId: String!
+  ): DiscussionAnswerPayload!
   discussionAnswerDelete(id: String!): DiscussionAnswerDeletePayload!
-  discussionAnswerVote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
-  discussionAnswerDownvote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
-  discussionAnswerReply(input: ReplyToAnswerInput!): DiscussionAnswerReplyPayload!
+  discussionAnswerVote(
+    input: DiscussionAnswerVoteInput!
+  ): DiscussionAnswerVotePayload!
+  discussionAnswerDownvote(
+    input: DiscussionAnswerVoteInput!
+  ): DiscussionAnswerVotePayload!
+  discussionAnswerReply(
+    input: ReplyToAnswerInput!
+  ): DiscussionAnswerReplyPayload!
   companyCommunity(input: CommunityInput!, profile: Upload): CommunityPayload!
-  companyCommunityEdit(communityId: String!, input: CommunityEditInput!, profile: Upload!): CommunityPayload!
+  companyCommunityEdit(
+    communityId: String!
+    input: CommunityEditInput!
+    profile: Upload!
+  ): CommunityPayload!
   companyCommunityDelete(communityId: String!): CommunityDeletePayload!
-  inviteUserByCommunityAdmin(input: CommunityMemberInviteInput!): CommunityMemberPayload!
-  acceptCommunityInvite(companyId: String!, communityMemberId: String!): AcceptInvitePayload!
-  inviteUserByCommunityUser(input: CommunityMemberInviteInput!): CommunityMemberPayload!
+  inviteUserByCommunityAdmin(
+    input: CommunityMemberInviteInput!
+  ): CommunityMemberPayload!
+  acceptCommunityInvite(
+    companyId: String!
+    communityMemberId: String!
+  ): AcceptInvitePayload!
+  inviteUserByCommunityUser(
+    input: CommunityMemberInviteInput!
+  ): CommunityMemberPayload!
   joinPublicCommunity(input: CommunityMemberInput!): JoinCommunityPayload!
-  createCommunityPolicy(id: String!, data: CommunityPolicyInput!): CommunityPolicyPayload!
-  updateCommunityPolicy(id: String!, data: CommunityPolicyInput!): CommunityPolicyPayload!
-  deleteCommunityPolicy(id: String!): CompanyPolicyDeletePayload!
-  communityPostCreate(input: CommunityPostInput!, files: [Upload!]): CommunityPostPayload!
-  communityPostUpdate(id: String!, imageURL: String, input: UpdateCommunityPostInput, file: Upload): UpdateCommunityPostPayload!
+  communityPostCreate(
+    input: CommunityPostInput!
+    files: [Upload!]
+  ): CommunityPostPayload!
+  communityPostUpdate(
+    id: String!
+    imageURL: String
+    input: UpdateCommunityPostInput
+    file: Upload
+  ): UpdateCommunityPostPayload!
   communityPostDelete(postId: String!): DeleteCommunityPostPayload!
+  createCommunityPolicy(
+    id: String!
+    input: CommunityPolicyInput!
+  ): CommunityPolicyPayload!
+  updateCommunityPolicy(
+    id: String!
+    input: CommunityPolicyUpdateInput!
+  ): CommunityPolicyPayload!
+  deleteCommunityPolicy(id: String!): CommunityPolicyDeletePayload!
 }
 
 input UpdateStatusUserInput {
@@ -1471,7 +1757,9 @@ input UserProfileInput {
   phoneNo: String!
 }
 
-"""The `Upload` scalar type represents a file upload."""
+"""
+The `Upload` scalar type represents a file upload.
+"""
 scalar Upload
 
 input SignupInput {
@@ -1722,4 +2010,8 @@ input UpdateCommunityPostInput {
   tags: [String!]
   metaTitle: String
   description: String
+}
+input CommunityPolicyUpdateInput {
+  title: String!
+  description: String!
 }

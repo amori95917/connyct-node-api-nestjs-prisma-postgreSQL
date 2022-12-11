@@ -21,7 +21,7 @@ export class CommunityPolicyPayload {
 }
 
 @ObjectType()
-export class CompanyPolicyDeletePayload {
+export class CommunityPolicyDeletePayload {
   @Field(() => [CustomError], { nullable: true })
   errors?: CustomError[];
 

@@ -4,13 +4,16 @@ import { Roles } from 'src/modules/auth/decorators/role.decorator';
 import { Role } from 'src/modules/auth/enum/role.enum';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
-import { CommunityPolicyInput } from '../dto/policy.input';
+import {
+  CommunityPolicyInput,
+  CommunityPolicyUpdateInput,
+} from '../dto/policy.input';
 
 import { CommunityPolicy } from '../entities/policy.entity';
 import {
   CommunityPoliciesPayload,
   CommunityPolicyPayload,
-  CompanyPolicyDeletePayload,
+  CommunityPolicyDeletePayload,
 } from '../entities/policy.payload';
 import { CommunityService } from '../services/community.service';
 
@@ -37,11 +40,11 @@ export class CommunityPolicyResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Owner)
   @Mutation(() => CommunityPolicyPayload)
   async createCommunityPolicy(
     @Args('id') communityId: string,
-    @Args('data') input: CommunityPolicyInput,
+    @Args('input') input: CommunityPolicyInput,
   ) {
     return await this.communityService.createCommunityPolicy(
       communityId,
@@ -53,13 +56,13 @@ export class CommunityPolicyResolver {
   @Mutation(() => CommunityPolicyPayload)
   async updateCommunityPolicy(
     @Args('id') policyId: string,
-    @Args('data') input: CommunityPolicyInput,
+    @Args('input') input: CommunityPolicyUpdateInput,
   ) {
     return await this.communityService.updateCommunityPolicy(policyId, input);
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => CompanyPolicyDeletePayload)
+  @Mutation(() => CommunityPolicyDeletePayload)
   async deleteCommunityPolicy(@Args('id') policyId: string) {
     return await this.communityService.deleteCommunityPolicy(policyId);
   }

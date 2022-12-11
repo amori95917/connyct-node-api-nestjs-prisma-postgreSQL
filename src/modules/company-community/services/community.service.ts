@@ -39,7 +39,7 @@ import { OrderListCommunity } from '../dto/order-community.input';
 import { OrderListCommunityMember } from '../dto/order-community-members.input';
 import {
   CommunityPolicyInput,
-  CompanyPolicyUpdateInput,
+  CommunityPolicyUpdateInput,
 } from '../dto/policy.input';
 
 @Injectable()
@@ -319,7 +319,7 @@ export class CommunityService {
     );
   }
 
-  async updateCommunityPolicy(id: string, input: CompanyPolicyUpdateInput) {
+  async updateCommunityPolicy(id: string, input: CommunityPolicyUpdateInput) {
     const policy = await this.getCommunityPolicy(id);
     if (!policy) {
       return customError(

@@ -21,7 +21,7 @@ export class CommunityPolicyInput {
 }
 
 @InputType()
-export class CompanyPolicyUpdateInput {
+export class CommunityPolicyUpdateInput {
   @Field()
   @IsString()
   @IsNotEmpty()

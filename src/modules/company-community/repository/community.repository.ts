@@ -15,7 +15,7 @@ import { OrderListCommunityMember } from '../dto/order-community-members.input';
 import { OrderListCommunity } from '../dto/order-community.input';
 import {
   CommunityPolicyInput,
-  CompanyPolicyUpdateInput,
+  CommunityPolicyUpdateInput,
 } from '../dto/policy.input';
 import { CommunityMember } from '../entities/community-member.entity';
 import {
@@ -30,7 +30,7 @@ import {
 import { Community } from '../entities/community.entity';
 import {
   CommunityPolicyPayload,
-  CompanyPolicyDeletePayload,
+  CommunityPolicyDeletePayload,
 } from '../entities/policy.payload';
 
 @Injectable()
@@ -340,7 +340,7 @@ export class CommunityRepository {
 
   async updateCommunityPolicy(
     id: string,
-    input: CompanyPolicyUpdateInput,
+    input: CommunityPolicyUpdateInput,
   ): Promise<CommunityPolicyPayload> {
     const { title, description } = input;
     try {
@@ -357,7 +357,9 @@ export class CommunityRepository {
     }
   }
 
-  async deleteCommunityPolicy(id: string): Promise<CompanyPolicyDeletePayload> {
+  async deleteCommunityPolicy(
+    id: string,
+  ): Promise<CommunityPolicyDeletePayload> {
     try {
       await this.prisma.communityPolicy.delete({
         where: { id },
