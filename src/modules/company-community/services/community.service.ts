@@ -5,11 +5,13 @@ import { customError } from 'src/common/errors';
 import {
   COMMENT_CODE,
   COMMUNITY_CODE,
+  COMMUNITY_POLICY_CODE,
   COMPANY_CODE,
   COMPANY_DISCUSSION_CODE,
 } from 'src/common/errors/error.code';
 import {
   COMMUNITY_MESSAGE,
+  COMMUNITY_POLICY_MESSAGE,
   COMPANY_DISCUSSION_MESSAGE,
   COMPANY_MESSAGE,
 } from 'src/common/errors/error.message';
@@ -35,6 +37,10 @@ import { CommunityRepository } from '../repository/community.repository';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderListCommunity } from '../dto/order-community.input';
 import { OrderListCommunityMember } from '../dto/order-community-members.input';
+import {
+  CommunityPolicyInput,
+  CompanyPolicyUpdateInput,
+} from '../dto/policy.input';
 
 @Injectable()
 export class CommunityService {
@@ -260,5 +266,69 @@ export class CommunityService {
         STATUS_CODE.NOT_SUPPORTED,
       );
     return await this.communityRepository.joinPublicCommunity(input, userId);
+  }
+
+  async getCommunityPolicies(communityId: string, paginate: ConnectionArgs) {
+    const community = await this.communityRepository.getCommunityById(
+      communityId,
+    );
+    if (!community)
+      return customError(
+        COMMUNITY_MESSAGE.NOT_FOUND,
+        COMMUNITY_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    return await this.communityRepository.getCommunityPolicies(
+      communityId,
+      paginate,
+    );
+  }
+
+  async getCommunityPolicy(policyId: string) {
+    return await this.communityRepository.getCommunityPolicy(policyId);
+  }
+
+  async createCommunityPolicy(
+    communityId: string,
+    input: CommunityPolicyInput,
+  ) {
+    const community = await this.communityRepository.getCommunityById(
+      communityId,
+    );
+    if (!community) {
+      return customError(
+        COMMUNITY_MESSAGE.NOT_FOUND,
+        COMMUNITY_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    }
+    return await this.communityRepository.createCommunityPolicy(
+      communityId,
+      input,
+    );
+  }
+
+  async updateCommunityPolicy(id: string, input: CompanyPolicyUpdateInput) {
+    const policy = await this.getCommunityPolicy(id);
+    if (!policy) {
+      return customError(
+        COMMUNITY_POLICY_MESSAGE.NOT_FOUND,
+        COMMUNITY_POLICY_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    }
+    return await this.communityRepository.updateCommunityPolicy(id, input);
+  }
+
+  async deleteCommunityPolicy(id: string) {
+    const policy = await this.getCommunityPolicy(id);
+    if (!policy) {
+      return customError(
+        COMMUNITY_POLICY_MESSAGE.NOT_FOUND,
+        COMMUNITY_POLICY_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    }
+    return await this.communityRepository.deleteCommunityPolicy(id);
   }
 }

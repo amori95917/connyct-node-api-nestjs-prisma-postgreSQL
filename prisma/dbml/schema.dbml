@@ -458,6 +458,7 @@ Table CompanyCommunity {
   updatedAt DateTime
   CompanyCommunityRole CompanyCommunityRole [not null]
   CommunityMember CommunityMember [not null]
+  CommunityPolicy CommunityPolicy [not null]
 }
 
 Table CompanyCommunityRole {
@@ -484,6 +485,17 @@ Table CommunityMember {
   isAccepted Boolean [not null, default: false]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
+}
+
+Table CommunityPolicy {
+  id String [pk]
+  title String [not null]
+  description String [not null]
+  isActive Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  community CompanyCommunity [not null]
+  communityId String [not null]
 }
 
 Enum RegistrationNumberType {
@@ -663,3 +675,5 @@ Ref: CommunityMember.communityId > CompanyCommunity.id [delete: Cascade]
 Ref: CommunityMember.memberId > User.id [delete: Cascade]
 
 Ref: CommunityMember.companyId > Company.id [delete: Cascade]
+
+Ref: CommunityPolicy.communityId > CompanyCommunity.id

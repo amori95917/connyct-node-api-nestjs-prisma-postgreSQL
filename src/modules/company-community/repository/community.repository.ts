@@ -13,6 +13,10 @@ import {
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
 import { OrderListCommunityMember } from '../dto/order-community-members.input';
 import { OrderListCommunity } from '../dto/order-community.input';
+import {
+  CommunityPolicyInput,
+  CompanyPolicyUpdateInput,
+} from '../dto/policy.input';
 import { CommunityMember } from '../entities/community-member.entity';
 import {
   AcceptInvitePayload,
@@ -24,6 +28,10 @@ import {
   CommunityPayload,
 } from '../entities/community-payload';
 import { Community } from '../entities/community.entity';
+import {
+  CommunityPolicyPayload,
+  CompanyPolicyDeletePayload,
+} from '../entities/policy.payload';
 
 @Injectable()
 export class CommunityRepository {
@@ -278,6 +286,80 @@ export class CommunityRepository {
         data: { ...input, memberId, isAccepted: true },
       });
       return { joinCommunity };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async getCommunityPolicies(communityId: string, paginate: ConnectionArgs) {
+    try {
+      const policies = await findManyCursorConnection(
+        (args) =>
+          this.prisma.communityPolicy.findMany({
+            ...args,
+            where: { communityId },
+          }),
+        () =>
+          this.prisma.communityPolicy.count({
+            where: { communityId },
+          }),
+        { ...paginate },
+      );
+      return { data: policies };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async getCommunityPolicy(policyId: string) {
+    try {
+      return await this.prisma.communityPolicy.findFirst({
+        where: { id: policyId },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async createCommunityPolicy(
+    communityId: string,
+    input: CommunityPolicyInput,
+  ): Promise<CommunityPolicyPayload> {
+    try {
+      const communityPolicy = await this.prisma.communityPolicy.create({
+        data: { ...input, communityId },
+      });
+      return { data: communityPolicy };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async updateCommunityPolicy(
+    id: string,
+    input: CompanyPolicyUpdateInput,
+  ): Promise<CommunityPolicyPayload> {
+    const { title, description } = input;
+    try {
+      const updatePolicy = await this.prisma.communityPolicy.update({
+        where: { id },
+        data: {
+          ...(title && { title }),
+          ...(description && { description }),
+        },
+      });
+      return { data: updatePolicy };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async deleteCommunityPolicy(id: string): Promise<CompanyPolicyDeletePayload> {
+    try {
+      await this.prisma.communityPolicy.delete({
+        where: { id },
+      });
+      return { isDeleted: true };
     } catch (err) {
       throw new Error(err);
     }

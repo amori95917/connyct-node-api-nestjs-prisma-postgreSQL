@@ -9,6 +9,7 @@ import { UserModule } from '../user/user.module';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityMemberResolver } from './resolvers/community-members.resolver';
 import { CommunityResolver } from './resolvers/community.resolver';
+import { CommunityPolicyResolver } from './resolvers/policy.resolver';
 import { CommunityService } from './services/community.service';
 
 @Module({
@@ -23,6 +24,7 @@ import { CommunityService } from './services/community.service';
   providers: [
     CommunityResolver,
     CommunityMemberResolver,
+    CommunityPolicyResolver,
     CommunityService,
     CommunityRepository,
     FollowCompanyService,

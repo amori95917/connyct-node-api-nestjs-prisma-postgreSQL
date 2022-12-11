@@ -923,6 +923,48 @@ type CommunityDeletePayload {
   isDeleted: Boolean
 }
 
+type CommunityPolicy {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  communityId: String
+  title: String
+  description: String
+}
+
+type CommunityPolicyPaginated {
+  edges: [CommunityPolicyEdge!]
+  pageInfo: CommunityPolicyPageInfo
+  totalCount: Float
+}
+
+type CommunityPolicyEdge {
+  cursor: String
+  node: CommunityPolicy
+}
+
+type CommunityPolicyPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
+type CommunityPoliciesPayload {
+  errors: [CustomError!]
+  data: CommunityPolicyPaginated
+}
+
+type CommunityPolicyPayload {
+  errors: [CustomError!]
+  data: CommunityPolicy
+}
+
+type CompanyPolicyDeletePayload {
+  errors: [CustomError!]
+  isDeleted: Boolean
+}
+
 type Query {
   listUsers(
     """Paginate before opaque cursor"""
@@ -1106,6 +1148,22 @@ type Query {
     last: Float
     order: OrderListCommunityMember = {direction: desc, orderBy: createdAt}
   ): GetCommunityMemberPayload!
+  getCommunityPolicies(
+    communityId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+  ): CommunityPoliciesPayload!
+  getCommunityPolicy(id: String!): CommunityPolicy!
 }
 
 input OrderListUsers {
@@ -1292,6 +1350,9 @@ type Mutation {
   acceptCommunityInvite(companyId: String!, communityMemberId: String!): AcceptInvitePayload!
   inviteUserByCommunityUser(input: CommunityMemberInviteInput!): CommunityMemberPayload!
   joinPublicCommunity(input: CommunityMemberInput!): JoinCommunityPayload!
+  createCommunityPolicy(id: String!, data: CommunityPolicyInput!): CommunityPolicyPayload!
+  updateCommunityPolicy(id: String!, data: CommunityPolicyInput!): CommunityPolicyPayload!
+  deleteCommunityPolicy(id: String!): CompanyPolicyDeletePayload!
 }
 
 input UpdateStatusUserInput {
@@ -1545,4 +1606,9 @@ input CommunityMemberInviteInput {
 input CommunityMemberInput {
   communityId: String!
   companyId: String!
+}
+
+input CommunityPolicyInput {
+  title: String!
+  description: String!
 }

@@ -19,6 +19,10 @@ export const COMMUNITY_MESSAGE = {
   MUST_BE_PUBLIC_COMMUNITY: 'Community must be public',
 };
 
+export const COMMUNITY_POLICY_MESSAGE = {
+  NOT_FOUND: 'COMMUNITY_POLICY_NOT_FOUND',
+};
+
 export const POST_MESSAGE = {
   NOT_FOUND: 'Post Not Found',
   ALREADY_EXIST: 'Post Already Exists',
