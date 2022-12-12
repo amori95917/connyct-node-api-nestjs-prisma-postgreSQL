@@ -508,7 +508,6 @@ Table CommunityPost {
   text String
   communityId String [not null]
   community CompanyCommunity [not null]
-  CommunityComment CommunityComment [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   CommunityPostMedia CommunityPostMedia [not null]
@@ -518,6 +517,7 @@ Table CommunityPost {
   isDeleted Boolean [not null, default: false]
   isApproved Boolean [not null, default: true]
   TagWithPost TagWithPost [not null]
+  CommunityComment CommunityComment [not null]
 }
 
 Table CommunityPostMedia {

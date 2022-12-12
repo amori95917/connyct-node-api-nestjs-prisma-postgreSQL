@@ -606,7 +606,6 @@ model CommunityPost {
   text               String?
   communityId        String
   community          CompanyCommunity     @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  CommunityComment   CommunityComment[]
   createdAt          DateTime?            @default(now())
   updatedAt          DateTime?            @updatedAt @db.Timestamp()
   CommunityPostMedia CommunityPostMedia[]
@@ -616,6 +615,7 @@ model CommunityPost {
   isDeleted          Boolean              @default(false)
   isApproved         Boolean              @default(true)
   TagWithPost        TagWithPost[]
+  CommunityComment   CommunityComment[]
 
   @@index([communityId, authorId])
 }

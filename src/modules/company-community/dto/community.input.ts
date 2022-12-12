@@ -34,17 +34,17 @@ export class CommunityInput {
 
 @InputType()
 export class CommunityEditInput {
-  @Field()
+  @Field({ nullable: true })
   @IsOptional()
   @IsString()
   name: string;
 
-  @Field()
+  @Field({ nullable: true })
   @IsOptional()
   @IsString()
   description: string;
 
-  @Field()
+  @Field({ nullable: true })
   @IsOptional()
   @IsString()
   @IsEnum(CommunityType)

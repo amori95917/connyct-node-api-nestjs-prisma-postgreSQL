@@ -37,6 +37,15 @@ export class CommunityPostRepository {
     private cloudinary: CloudinaryService,
   ) {}
 
+  public async findPostById(id: string): Promise<CommunityPost | null> {
+    try {
+      return this.prisma.communityPost.findFirst({
+        where: { id },
+      });
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
   public async findPostByCreatorId(
     authorId: string,
     postId: string,

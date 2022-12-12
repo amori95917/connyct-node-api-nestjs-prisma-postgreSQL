@@ -145,11 +145,13 @@ export class CommunityRepository {
     try {
       const community = await this.prisma.$transaction(async () => {
         let updatedProfileUrl: any;
-        if (profile) {
+        if (communityData.profile) {
           await this.fileUploadService.deleteImage(
             'community/community-profile',
             await this.cloudinary.getPublicId(communityData.profile),
           );
+        }
+        if (profile) {
           updatedProfileUrl = await this.fileUploadService.uploadImage(
             'community/community-profile',
             profile,

@@ -85,7 +85,8 @@ export class CommunityResolver {
   async companyCommunityEdit(
     @Args('communityId') communityId: string,
     @Args('input') input: CommunityEditInput,
-    @Args('profile', { type: () => GraphQLUpload }) profile: FileUpload,
+    @Args('profile', { type: () => GraphQLUpload, nullable: true })
+    profile: FileUpload,
     @CurrentUser() user: User,
   ): Promise<CommunityPayload> {
     return await this.communityService.editCommunity(
