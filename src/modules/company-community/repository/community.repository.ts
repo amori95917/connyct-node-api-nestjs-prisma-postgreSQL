@@ -106,7 +106,7 @@ export class CommunityRepository {
           'community/community-profile',
           profile,
         );
-        if (profileUrl.errors) return { errors: profileUrl.errors };
+        if (profileUrl[0].errors) return { errors: profileUrl[0].errors };
       }
       const create = await this.prisma.$transaction(async () => {
         const community = await this.prisma.companyCommunity.create({
@@ -156,8 +156,8 @@ export class CommunityRepository {
             'community/community-profile',
             profile,
           );
-          if (updatedProfileUrl.errors)
-            return { errors: updatedProfileUrl.errors.errors };
+          if (updatedProfileUrl[0].errors)
+            return { errors: updatedProfileUrl[0].errors };
         }
         const updateCommunity = await this.prisma.companyCommunity.update({
           where: { id },

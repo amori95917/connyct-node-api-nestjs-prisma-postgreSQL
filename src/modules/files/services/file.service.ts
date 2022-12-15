@@ -14,15 +14,13 @@ export class FileUploadService {
   async uploadHandler(image, folderName) {
     const { createReadStream, filename } = await image;
     /**check file extension */
-    if (!imageRegex.exec(filename)) {
-      return {
-        errors: customError(
-          FILE_TYPE_MESSAGE.NOT_SUPPORTED,
-          FILE_TYPE_CODE.NOT_SUPPORTED,
-          STATUS_CODE.NOT_SUPPORTED,
-        ),
-      };
-    }
+    if (!imageRegex.exec(filename))
+      return customError(
+        FILE_TYPE_MESSAGE.NOT_SUPPORTED,
+        FILE_TYPE_CODE.NOT_SUPPORTED,
+        STATUS_CODE.NOT_SUPPORTED,
+      );
+
     const stream = createReadStream();
     const cloudinaryResponse = await this.cloudinary.uploadImage(
       stream,

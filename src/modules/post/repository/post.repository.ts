@@ -263,7 +263,7 @@ export class PostsRepository {
               file,
             );
             /**check if errors exists for file type */
-            if (responseURL.errors) return { errors: responseURL.errors };
+            if (responseURL[0].errors) return { errors: responseURL[0].errors };
             /**delete existing file from cloudinary */
             await this.fileUploadService.deleteImage(
               'company-feeds',
