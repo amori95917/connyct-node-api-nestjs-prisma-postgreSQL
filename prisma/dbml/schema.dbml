@@ -453,6 +453,7 @@ Table CompanyCommunity {
   description String [not null]
   type CommunityType [not null]
   profile String
+  coverImage String
   slug String [unique, not null]
   companyId String [not null]
   company Company [not null]
@@ -603,6 +604,7 @@ Enum CommunityType {
 Enum CommunityRole {
   ADMIN
   MODERATOR
+  MEMBER
 }
 
 Ref: UserRole.userId > User.id

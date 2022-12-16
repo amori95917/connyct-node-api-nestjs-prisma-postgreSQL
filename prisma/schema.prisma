@@ -543,6 +543,7 @@ enum CommunityType {
 enum CommunityRole {
   ADMIN
   MODERATOR
+  MEMBER
 }
 
 model CompanyCommunity {
@@ -551,6 +552,7 @@ model CompanyCommunity {
   description          String
   type                 CommunityType
   profile              String?
+  coverImage           String?
   slug                 String                 @unique
   companyId            String
   company              Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)

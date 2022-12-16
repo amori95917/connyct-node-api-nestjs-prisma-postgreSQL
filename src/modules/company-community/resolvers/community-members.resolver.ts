@@ -30,6 +30,7 @@ import {
 import { Community } from '../entities/community.entity';
 import { CommunityRepository } from '../repository/community.repository';
 import { CommunityService } from '../services/community.service';
+import { CommunityRole } from '../entities/community-role.entity';
 
 @Resolver(() => CommunityMember)
 export class CommunityMemberResolver {
@@ -116,5 +117,12 @@ export class CommunityMemberResolver {
   async member(@Parent() communityMember: CommunityMember): Promise<User> {
     const { memberId } = communityMember;
     return await this.userService.findUserById(memberId);
+  }
+  @ResolveField('communityRole', () => CommunityRole)
+  async communityRole(
+    @Parent() communityMember: CommunityMember,
+  ): Promise<CommunityRole> {
+    const { memberId } = communityMember;
+    return await this.communityRepository.memberRole(memberId);
   }
 }

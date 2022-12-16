@@ -809,6 +809,7 @@ type Community {
   description: String
   type: String
   profile: String
+  coverImage: String
   companyId: String
   creatorId: String
   slug: String
@@ -869,6 +870,7 @@ type CommunityMember {
   memberId: String
   community: Community
   member: User
+  communityRole: CommunityRole!
 }
 
 type CommunityMemberPaginated {
@@ -1604,8 +1606,8 @@ type Mutation {
   discussionAnswerVote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerDownvote(input: DiscussionAnswerVoteInput!): DiscussionAnswerVotePayload!
   discussionAnswerReply(input: ReplyToAnswerInput!): DiscussionAnswerReplyPayload!
-  companyCommunity(input: CommunityInput!, profile: Upload): CommunityPayload!
-  companyCommunityEdit(communityId: String!, input: CommunityEditInput!, profile: Upload): CommunityPayload!
+  companyCommunity(input: CommunityInput!, profile: Upload, coverImage: Upload): CommunityPayload!
+  companyCommunityEdit(communityId: String!, input: CommunityEditInput!, profile: Upload, coverImage: Upload): CommunityPayload!
   companyCommunityDelete(communityId: String!): CommunityDeletePayload!
   inviteUserByCommunityAdmin(input: CommunityMemberInviteInput!): CommunityMemberPayload!
   acceptCommunityInvite(companyId: String!, communityMemberId: String!): AcceptInvitePayload!

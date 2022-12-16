@@ -268,7 +268,7 @@ export class CommunityPostRepository {
               file,
             );
             /**check if errors exists for file type */
-            if (responseURL[0].errors) return { errors: responseURL[0].errors };
+            if (responseURL.errors) return { errors: responseURL.errors };
             /**delete existing file from cloudinary */
             await this.fileUploadService.deleteImage(
               'community-feeds',

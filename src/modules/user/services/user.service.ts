@@ -549,7 +549,7 @@ export class UserService {
           file,
         );
         /**check if error exist */
-        if (fileUrl[0].errors) return { errors: fileUrl[0].errors };
+        if (fileUrl.errors) return { errors: fileUrl.errors };
       }
       const userProfileData = await this.prisma.userProfile.update({
         where: {

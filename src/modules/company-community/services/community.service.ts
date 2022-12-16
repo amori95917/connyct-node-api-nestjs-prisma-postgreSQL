@@ -78,6 +78,7 @@ export class CommunityService {
   async createCommunity(
     input: CommunityInput,
     profile: FileUpload,
+    coverImage: FileUpload,
     userId: string,
   ): Promise<CommunityPayload> {
     const company = await this.companyService.getCompanyById(input.companyId);
@@ -90,6 +91,7 @@ export class CommunityService {
     return await this.communityRepository.createCommunity(
       input,
       profile,
+      coverImage,
       userId,
     );
   }
@@ -98,6 +100,7 @@ export class CommunityService {
     input: CommunityEditInput,
     communityId: string,
     profile: FileUpload,
+    coverImage: FileUpload,
     userId: string,
   ): Promise<CommunityPayload> {
     const community = await this.communityRepository.getCommunityByIdAndUserId(
@@ -115,6 +118,7 @@ export class CommunityService {
       communityId,
       community,
       profile,
+      coverImage,
     );
   }
 
@@ -135,6 +139,7 @@ export class CommunityService {
     return await this.communityRepository.deleteCommunity(
       communityId,
       community.profile,
+      community.coverImage,
     );
   }
 
@@ -246,16 +251,16 @@ export class CommunityService {
     input: CommunityMemberInput,
     userId: string,
   ): Promise<JoinCommunityPayload> {
-    const follow = await this.followService.checkIfUserFollowCompany(
-      input.companyId,
-      userId,
-    );
-    if (!follow)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-        COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-        STATUS_CODE.BAD_CONFLICT,
-      );
+    // const follow = await this.followService.checkIfUserFollowCompany(
+    //   input.companyId,
+    //   userId,
+    // );
+    // if (!follow)
+    //   return customError(
+    //     COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+    //     COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+    //     STATUS_CODE.BAD_CONFLICT,
+    //   );
     const publicCommunity = await this.communityRepository.findPublicCommunity(
       input.communityId,
     );

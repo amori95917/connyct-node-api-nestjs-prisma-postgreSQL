@@ -72,11 +72,17 @@ export class CommunityResolver {
     @Args('input') input: CommunityInput,
     @Args('profile', { type: () => GraphQLUpload, nullable: true })
     profile: FileUpload,
+    @Args('coverImage', { type: () => GraphQLUpload, nullable: true })
+    coverImage: FileUpload,
     @CurrentUser()
     user: User,
   ): Promise<CommunityPayload> {
-    console.log(user, 'incoming user');
-    return await this.communityService.createCommunity(input, profile, user.id);
+    return await this.communityService.createCommunity(
+      input,
+      profile,
+      coverImage,
+      user.id,
+    );
   }
 
   @UseGuards(GqlAuthGuard)
@@ -87,12 +93,15 @@ export class CommunityResolver {
     @Args('input') input: CommunityEditInput,
     @Args('profile', { type: () => GraphQLUpload, nullable: true })
     profile: FileUpload,
+    @Args('coverImage', { type: () => GraphQLUpload, nullable: true })
+    coverImage: FileUpload,
     @CurrentUser() user: User,
   ): Promise<CommunityPayload> {
     return await this.communityService.editCommunity(
       input,
       communityId,
       profile,
+      coverImage,
       user.id,
     );
   }

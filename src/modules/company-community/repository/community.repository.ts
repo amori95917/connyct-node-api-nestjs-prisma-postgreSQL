@@ -66,6 +66,11 @@ export class CommunityRepository {
     }
   }
 
+  async memberRole(userId: string) {
+    return await this.prisma.companyCommunityRole.findFirst({
+      where: { userId },
+    });
+  }
   async getCommunityById(id: string): Promise<Community> {
     return await this.prisma.companyCommunity.findFirst({ where: { id } });
   }
@@ -97,16 +102,25 @@ export class CommunityRepository {
   async createCommunity(
     input: CommunityInput,
     profile: FileUpload,
+    coverImage: FileUpload,
     userId: string,
   ): Promise<CommunityPayload> {
     try {
-      let profileUrl;
+      let profileUrl: any;
+      let coverImageUrl: any;
       if (profile) {
         profileUrl = await this.fileUploadService.uploadImage(
           'community/community-profile',
           profile,
         );
-        if (profileUrl[0].errors) return { errors: profileUrl[0].errors };
+        if (profileUrl.errors) return { errors: profileUrl.errors };
+      }
+      if (coverImage) {
+        coverImageUrl = await this.fileUploadService.uploadImage(
+          'community/community-coverImage',
+          coverImage,
+        );
+        if (coverImageUrl.errors) return { errors: coverImageUrl.errors };
       }
       const create = await this.prisma.$transaction(async () => {
         const community = await this.prisma.companyCommunity.create({
@@ -114,11 +128,19 @@ export class CommunityRepository {
             ...input,
             creatorId: userId,
             profile: profileUrl,
+            coverImage: coverImageUrl,
             slug: this.generateSlug(input.name),
           },
         });
-
-        const communityRole = await this.prisma.companyCommunityRole.create({
+        await this.prisma.communityMember.create({
+          data: {
+            communityId: community.id,
+            companyId: input.companyId,
+            memberId: userId,
+            isAccepted: true,
+          },
+        });
+        await this.prisma.companyCommunityRole.create({
           data: {
             role: CommunityRole.ADMIN,
             userId,
@@ -127,7 +149,6 @@ export class CommunityRepository {
         });
         return {
           community,
-          communityRole,
         };
       });
       return { community: create.community };
@@ -141,23 +162,39 @@ export class CommunityRepository {
     id: string,
     communityData: any,
     profile: FileUpload,
+    coverImage: FileUpload,
   ): Promise<CommunityPayload> {
     try {
+      let updatedProfileUrl: any;
+      let updatedCoverImageUrl: any;
       const community = await this.prisma.$transaction(async () => {
-        let updatedProfileUrl: any;
-        if (communityData.profile) {
-          await this.fileUploadService.deleteImage(
-            'community/community-profile',
-            await this.cloudinary.getPublicId(communityData.profile),
-          );
-        }
         if (profile) {
+          if (communityData.profile) {
+            await this.fileUploadService.deleteImage(
+              'community/community-profile',
+              await this.cloudinary.getPublicId(communityData.profile),
+            );
+          }
           updatedProfileUrl = await this.fileUploadService.uploadImage(
             'community/community-profile',
             profile,
           );
-          if (updatedProfileUrl[0].errors)
-            return { errors: updatedProfileUrl[0].errors };
+          if (updatedProfileUrl.errors)
+            return { errors: updatedProfileUrl.errors };
+        }
+        if (coverImage) {
+          if (communityData.coverImage) {
+            await this.fileUploadService.deleteImage(
+              'community/community-coverImage',
+              await this.cloudinary.getPublicId(communityData.coverImage),
+            );
+          }
+          updatedCoverImageUrl = await this.fileUploadService.uploadImage(
+            'community/community-coverImage',
+            coverImage,
+          );
+          if (updatedCoverImageUrl.errors)
+            return { errors: updatedCoverImageUrl.errors };
         }
         const updateCommunity = await this.prisma.companyCommunity.update({
           where: { id },
@@ -166,6 +203,7 @@ export class CommunityRepository {
             ...input,
             slug: this.generateSlug(input.name),
             profile: updatedProfileUrl,
+            coverImage: updatedCoverImageUrl,
           },
         });
         return { updateCommunity };
@@ -179,12 +217,17 @@ export class CommunityRepository {
   async deleteCommunity(
     id: string,
     profile: string,
+    coverImage: string,
   ): Promise<CommunityDeletePayload> {
     try {
       const deleteCommunity = await this.prisma.$transaction(async () => {
         await this.fileUploadService.deleteImage(
           'community/community-profile',
           await this.cloudinary.getPublicId(profile),
+        );
+        await this.fileUploadService.deleteImage(
+          'community/community-coverImage',
+          await this.cloudinary.getPublicId(coverImage),
         );
         await this.prisma.companyCommunity.delete({
           where: { id },
@@ -270,11 +313,20 @@ export class CommunityRepository {
     communityMemberId: string,
   ): Promise<AcceptInvitePayload> {
     try {
-      await this.prisma.communityMember.update({
-        where: { id: communityMemberId },
-        data: {
-          isAccepted: true,
-        },
+      await this.prisma.$transaction(async () => {
+        const updated = await this.prisma.communityMember.update({
+          where: { id: communityMemberId },
+          data: {
+            isAccepted: true,
+          },
+        });
+        await this.prisma.companyCommunityRole.create({
+          data: {
+            role: CommunityRole.MEMBER,
+            communityId: updated.communityId,
+            userId: updated.memberId,
+          },
+        });
       });
       return { isAccepted: true };
     } catch (err) {
@@ -287,9 +339,20 @@ export class CommunityRepository {
     memberId: string,
   ): Promise<JoinCommunityPayload> {
     try {
-      const joinCommunity = await this.prisma.communityMember.create({
-        data: { ...input, memberId, isAccepted: true },
+      const joinCommunity = await this.prisma.$transaction(async () => {
+        const join = await this.prisma.communityMember.create({
+          data: { ...input, memberId, isAccepted: true },
+        });
+        await this.prisma.companyCommunityRole.create({
+          data: {
+            role: CommunityRole.MEMBER,
+            userId: memberId,
+            communityId: input.communityId,
+          },
+        });
+        return join;
       });
+      console.log(joinCommunity, 'incoming ');
       return { joinCommunity };
     } catch (err) {
       throw new Error(err);

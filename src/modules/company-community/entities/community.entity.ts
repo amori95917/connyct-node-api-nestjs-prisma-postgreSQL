@@ -21,6 +21,9 @@ export class Community extends BaseEntity {
   profile: string;
 
   @Field({ nullable: true })
+  coverImage: string;
+
+  @Field({ nullable: true })
   companyId: string;
 
   @Field({ nullable: true })

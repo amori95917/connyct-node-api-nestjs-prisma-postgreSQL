@@ -456,7 +456,7 @@ export class CompanyService {
           avatar,
         );
         /**check if error exist */
-        if (fileUrl[0].errors) return { errors: fileUrl[0].errors };
+        if (fileUrl.errors) return { errors: fileUrl.errors };
       }
 
       const updatedAvatar = await this.prisma.company.update({
@@ -564,8 +564,8 @@ export class CompanyService {
             'company-document',
             document,
           );
-          if (updatedDocumentURL[0].errors)
-            return { errors: updatedDocumentURL[0].errors };
+          if (updatedDocumentURL.errors)
+            return { errors: updatedDocumentURL.errors };
         }
         const update = await this.prisma.companyDocument.update({
           where: { id: documentId },
