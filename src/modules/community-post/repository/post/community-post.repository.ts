@@ -301,6 +301,15 @@ export class CommunityPostRepository {
     }
   }
 
+  async checkCommunityOwner(id: string, creatorId: string) {
+    try {
+      return await this.prisma.companyCommunity.findFirst({
+        where: { id, creatorId },
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
   async checkOwner(communityPostId: string, userId: string): Promise<any> {
     try {
       const communityPost = await this.prisma.communityPost.findFirst({

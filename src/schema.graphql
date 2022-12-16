@@ -986,10 +986,12 @@ type CommunityPost {
   text: String
   communityId: String
   slug: String
+  authorId: String
   isDeleted: Boolean
   isApproved: Boolean
   communityPostMedia: CommunityPostMedia
   community: Community
+  creator: User
 }
 
 type CommunityPostPaginated {

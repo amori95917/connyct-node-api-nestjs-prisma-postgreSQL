@@ -4,6 +4,7 @@ import { Company } from 'src/modules/company/entities/company.entity';
 import { BaseEntity } from 'src/modules/prisma/entities/base.entity';
 import relayTypes from 'src/modules/prisma/resolvers/pagination/relay.types';
 import { CommunityPostMedia } from './community-post-image.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @ObjectType()
 export class CommunityPost extends BaseEntity {
@@ -17,6 +18,9 @@ export class CommunityPost extends BaseEntity {
   slug: string;
 
   @Field({ nullable: true })
+  authorId: string;
+
+  @Field({ nullable: true })
   isDeleted: boolean;
 
   @Field({ nullable: true })
@@ -27,6 +31,9 @@ export class CommunityPost extends BaseEntity {
 
   @Field(() => Community, { nullable: true })
   community?: Community;
+
+  @Field(() => User, { nullable: true })
+  creator?: User;
 }
 
 @ObjectType()

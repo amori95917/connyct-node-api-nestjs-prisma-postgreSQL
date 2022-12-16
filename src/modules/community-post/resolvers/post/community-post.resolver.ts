@@ -31,11 +31,13 @@ import { DeleteCommunityPostPayload } from '../../entities/post/delete-post.payl
 import { UpdateCommunityPostPayload } from '../../entities/post/update-post.payload';
 import { CommunityPostRepository } from '../../repository/post/community-post.repository';
 import { CommunityPostService } from '../../services/post/community-post.service';
+import { UserService } from 'src/modules/user/services/user.service';
 
 @Resolver(() => CommunityPost)
 export class CommunityPostResolver {
   constructor(
     private readonly communityPostService: CommunityPostService,
+    private readonly userService: UserService,
     private readonly communityPostRepository: CommunityPostRepository,
   ) {}
 
@@ -105,5 +107,10 @@ export class CommunityPostResolver {
   async community(@Parent() communityPost: CommunityPost): Promise<Community> {
     const { communityId } = communityPost;
     return await this.communityPostRepository.community(communityId);
+  }
+  @ResolveField('creator', () => User)
+  async creator(@Parent() communityPost: CommunityPost): Promise<User> {
+    const { authorId } = communityPost;
+    return await this.userService.findUserById(authorId);
   }
 }

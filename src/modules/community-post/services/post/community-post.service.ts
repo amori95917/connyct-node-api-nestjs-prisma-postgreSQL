@@ -66,6 +66,13 @@ export class CommunityPostService {
       const community = await this.communityRepository.getCommunityById(
         input.communityId,
       );
+      const checkOwner = await this.communityPostRepository.checkCommunityOwner(
+        input.communityId,
+        userId,
+      );
+      console.log(checkOwner, 'incoming check');
+      if (checkOwner)
+        return await this.communityPostRepository.create(input, userId, files);
       if (!community)
         return customError(
           COMMUNITY_MESSAGE.NOT_FOUND,
