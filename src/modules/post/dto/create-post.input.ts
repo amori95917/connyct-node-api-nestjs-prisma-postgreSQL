@@ -19,7 +19,7 @@ export class CreatePostInput {
   @Field(() => String, { nullable: false })
   @IsOptional()
   @IsString()
-  @Length(3, 75, { message: 'Text must be between 3 and 75 characters' })
+  @Length(3, 1000, { message: 'Text must be between 3 and 1000 characters' })
   text: string;
 
   @Field(() => [String], { nullable: true })

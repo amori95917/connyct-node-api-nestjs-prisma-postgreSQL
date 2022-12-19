@@ -2,12 +2,12 @@ import { Field, ObjectType, ID } from '@nestjs/graphql';
 
 @ObjectType({ isAbstract: true })
 export abstract class BaseEntity {
-  @Field(() => ID)
-  id: string;
+  @Field(() => ID, { nullable: true })
+  public id: string;
 
-  @Field()
-  createdAt: Date;
+  @Field({ nullable: true })
+  public createdAt: Date;
 
-  @Field()
-  updatedAt: Date;
+  @Field({ nullable: true })
+  public updatedAt: Date;
 }

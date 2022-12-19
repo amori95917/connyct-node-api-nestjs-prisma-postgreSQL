@@ -44,6 +44,9 @@ export class PostsRepository {
     files: FileUpload[],
   ): Promise<CreatePostPayload> {
     try {
+      let tags: Tag[];
+      let postImage: PostImage[];
+
       const result = await this.prisma.$transaction(async () => {
         // let errors;
         // create post
@@ -55,7 +58,6 @@ export class PostsRepository {
           },
         });
         // create tags
-        let tags: Tag[];
         /**Execute only if tags exist */
         if (feedData.tags) {
           tags = await Promise.all(
@@ -98,7 +100,6 @@ export class PostsRepository {
               ),
             };
         }
-        let postImage: PostImage[];
         /**check if file exists */
         if (files) {
           const fileURL = await this.fileUploadService.uploadImage(
@@ -123,11 +124,10 @@ export class PostsRepository {
         }
         return { post, postImage, tags };
       });
-      /**if errors exist in transaction return errors else return data*/
-      if (result.errors) return { errors: result.errors.errors };
       return {
         post: result.post,
         tags: result.tags,
+        errors: result.errors,
         postImage: result.postImage,
       };
     } catch (e) {
@@ -194,8 +194,12 @@ export class PostsRepository {
     post: Post,
   ): Promise<UpdatePostPayload> {
     try {
+      let newPost: Post;
+      let tags: Tag[];
+      let newPostImage: PostImage;
+      let responseURL: any;
+
       const result = await this.prisma.$transaction(async () => {
-        let newPost: Post;
         if (input.text) {
           newPost = await this.prisma.post.update({
             where: {
@@ -208,7 +212,6 @@ export class PostsRepository {
           });
         }
         /** update tags*/
-        let tags: Tag[];
         if (input.tags) {
           tags = await Promise.all(
             input.tags.map(async (tag) => {
@@ -240,7 +243,6 @@ export class PostsRepository {
           });
         }
         /**post image update */
-        let newPostImage: PostImage;
         if (imageURL) {
           const postImage = await this.prisma.postImage.findUnique({
             where: {
@@ -255,7 +257,6 @@ export class PostsRepository {
                 STATUS_CODE.NOT_FOUND,
               ),
             };
-          let responseURL;
           if (file) {
             /**add new file to cloudinary */
             responseURL = await this.fileUploadService.uploadImage(

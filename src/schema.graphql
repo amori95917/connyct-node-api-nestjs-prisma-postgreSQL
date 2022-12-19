@@ -3,9 +3,9 @@
 # ------------------------------------------------------
 
 type Branch {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   name: String
   type: BranchType!
   contactEmail: String!
@@ -29,9 +29,9 @@ enum BranchType {
 }
 
 type CompanyDocument {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   companyId: String
   type: String
   document: String
@@ -39,9 +39,9 @@ type CompanyDocument {
 }
 
 type Company {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   name: String
   legalName: String
   registrationNumberType: String
@@ -88,9 +88,9 @@ type CompanyPageInfo {
 }
 
 type RepliesToReplies {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   text: String
   creatorId: String
   repliedToCommentId: String
@@ -118,9 +118,9 @@ type RepliesToRepliesPageInfo {
 }
 
 type Replies {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   text: String
   postId: String
   creatorId: String
@@ -182,9 +182,9 @@ type RepliesPageInfo {
 }
 
 type Comment {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   text: String!
   creatorId: String!
   postId: String
@@ -236,9 +236,9 @@ type CommentPageInfo {
 }
 
 type PostImage {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   metaTitle: String
   imageURL: String
   description: String
@@ -285,9 +285,9 @@ type PostPageInfo {
 }
 
 type UserProfile {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   address: String
   phoneNo: String
   profileImage: String
@@ -295,9 +295,9 @@ type UserProfile {
 }
 
 type User {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   fullName: String
   username: String
   email: String!
@@ -337,9 +337,9 @@ type CustomError {
 }
 
 type OTP {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   otp: Float
   expirationDate: DateTime
   userId: String
@@ -493,9 +493,9 @@ type FollowCompany {
 }
 
 type Industry {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   type: String!
   description: String
   isActive: Boolean
@@ -509,16 +509,16 @@ type IndustryPayload {
 }
 
 type Reactions {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   reactionType: String!
 }
 
 type Likes {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   postId: String!
   reactionId: String!
   userId: String!
@@ -554,9 +554,9 @@ type RepliesToRepliesPayload {
 }
 
 type CommentReactions {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   reactionId: String
   commentId: String
   creatorId: String
@@ -594,9 +594,9 @@ type CreatedBy {
 }
 
 type DiscussionAnswerReply {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   answer: String
   discussionId: String
   discussion: CompanyDiscussion
@@ -627,9 +627,9 @@ type DiscussionAnswerReplyPageInfo {
 }
 
 type DiscussionAnswer {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   answer: String
   discussionId: String
   discussion: CompanyDiscussion
@@ -683,9 +683,9 @@ type DiscussionAnswerPageInfo {
 }
 
 type DiscussionVote {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   vote: String
   userId: String
   user: [User!]
@@ -694,9 +694,9 @@ type DiscussionVote {
 }
 
 type CompanyDiscussion {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   title: String
   description: String
   companyId: String
@@ -757,9 +757,9 @@ type DiscussionVotePayload {
 }
 
 type DiscussionAnswerVote {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   vote: String
   discussionId: String
   discussion: CompanyDiscussion
@@ -790,9 +790,9 @@ type DiscussionAnswerDeletePayload {
 }
 
 type CommunityRole {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   role: String
   communityId: String
   userId: String
@@ -802,9 +802,9 @@ type CommunityRole {
 }
 
 type Community {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   name: String
   description: String
   type: String
@@ -862,9 +862,9 @@ type CommunityPageInfo {
 }
 
 type CommunityMember {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   communityId: String
   invitedById: String
   memberId: String
@@ -927,9 +927,9 @@ type CommunityDeletePayload {
 }
 
 type CommunityPolicy {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   communityId: String
   title: String
   description: String
@@ -969,9 +969,9 @@ type CommunityPolicyDeletePayload {
 }
 
 type CommunityPostMedia {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   metaTitle: String
   description: String
   imageURL: String
@@ -980,9 +980,9 @@ type CommunityPostMedia {
 }
 
 type CommunityPost {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   text: String
   communityId: String
   slug: String
@@ -1013,9 +1013,9 @@ type CommunityPostPageInfo {
 }
 
 type ThirdLevelComment {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   content: String
   authorId: String
   commentId: String
@@ -1042,9 +1042,9 @@ type ThirdLevelCommentPageInfo {
 }
 
 type SecondLevelComment {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   content: String
   authorId: String
   commentId: String
@@ -1095,9 +1095,9 @@ type SecondLevelCommentPageInfo {
 }
 
 type FirstLevelComment {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
   content: String
   communityPostId: String
   authorId: String

@@ -430,6 +430,7 @@ export class UserService {
             },
           });
           userRoles(user.id, role.id);
+          await this.prisma.userProfile.create({ data: { userId: user.id } });
           return { user, role: role.name };
           // TODO username should be generated uniquely if not provided
         }
@@ -469,6 +470,7 @@ export class UserService {
           },
         });
         userRoles(user.id, role.id);
+        await this.prisma.userProfile.create({ data: { userId: user.id } });
         return {
           user: user,
           role: role.name,

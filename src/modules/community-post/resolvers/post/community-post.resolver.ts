@@ -99,7 +99,7 @@ export class CommunityPostResolver {
   @ResolveField('communityPostMedia', () => [CommunityPostMedia])
   async communityPostMedia(
     @Parent() communityPost: CommunityPost,
-  ): Promise<CommunityPostMedia[]> {
+  ): Promise<CommunityPostMedia[] | null> {
     const { id } = communityPost;
     return await this.communityPostRepository.communityPostMedia(id);
   }

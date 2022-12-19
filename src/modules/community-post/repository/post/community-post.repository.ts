@@ -84,7 +84,9 @@ export class CommunityPostRepository {
     }
   }
 
-  async communityPostMedia(postId: string): Promise<CommunityPostMedia[]> {
+  async communityPostMedia(
+    postId: string,
+  ): Promise<CommunityPostMedia[] | null> {
     return await this.prisma.communityPostMedia.findMany({
       where: { communityPostId: postId },
     });
