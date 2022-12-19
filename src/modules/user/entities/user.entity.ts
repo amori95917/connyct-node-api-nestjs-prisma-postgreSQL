@@ -48,6 +48,9 @@ export class User extends BaseEntity {
 
   @Field(() => UserProfile, { nullable: true })
   userProfile?: UserProfile;
+
+  @Field(() => Role, { nullable: true })
+  role?: Role;
 }
 
 @ObjectType()

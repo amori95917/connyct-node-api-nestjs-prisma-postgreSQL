@@ -38,6 +38,7 @@ import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator'
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CompanyService } from 'src/modules/company/services/company.service';
 import { UserProfile } from '../userProfile.model';
+import { Role as RoleEntity } from 'src/modules/auth/entities/role.entity';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -174,5 +175,11 @@ export class UserResolver {
   async userProfile(@Parent() user: User): Promise<UserProfile | null> {
     const { id } = user;
     return await this.userService.getUserProfile(id);
+  }
+
+  @ResolveField('role', () => RoleEntity)
+  async role(@Parent() user: User): Promise<RoleEntity | null> {
+    const { id } = user;
+    return await this.userService.getUserRole(id);
   }
 }

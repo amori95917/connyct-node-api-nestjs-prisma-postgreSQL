@@ -104,6 +104,20 @@ export class UserService {
     });
   }
 
+  async getUserRole(userId: string) {
+    try {
+      const role = await this.prisma.userRole.findFirst({
+        where: { userId },
+        include: {
+          role: true,
+        },
+      });
+      return role.role;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
   public async findUsersByIds(authorIds: readonly string[]): Promise<User[]> {
     return this.prisma.user.findMany({
       where: {

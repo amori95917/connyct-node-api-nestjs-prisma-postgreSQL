@@ -87,6 +87,10 @@ type CompanyPageInfo {
   hasNextPage: Boolean!
 }
 
+type Role {
+  name: String!
+}
+
 type RepliesToReplies {
   id: ID
   createdAt: DateTime
@@ -309,6 +313,7 @@ type User {
   posts: [Post!]
   company: [Company!]
   userProfile: UserProfile
+  role: Role
   isAdmin: Boolean!
 }
 
