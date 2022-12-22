@@ -47,6 +47,14 @@ export class CommentRepository {
       throw new Error(err);
     }
   }
+
+  async getCommentCount(communityPostId: string) {
+    return await this.prisma.communityComment.count({
+      where: {
+        communityPostId,
+      },
+    });
+  }
   async findCommentById(id: string) {
     return await this.prisma.communityComment.findFirst({
       where: { id: id },

@@ -46,6 +46,21 @@ export class CommunityPostRepository {
       throw new Error(e);
     }
   }
+  public async postMediaByPostIds(
+    communityPostIds: string[],
+  ): Promise<CommunityPostMedia[] | null> {
+    try {
+      return await this.prisma.communityPostMedia.findMany({
+        where: {
+          communityPostId: {
+            in: communityPostIds,
+          },
+        },
+      });
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
   public async findPostByCreatorId(
     authorId: string,
     postId: string,
@@ -182,11 +197,13 @@ export class CommunityPostRepository {
         }
         return { post, postImage, tags };
       });
+
       return {
         errors: result.errors,
-        communityPost: result.post,
-        communityPostMedia: result.postImage,
-        tags: result.tags,
+        communityPost: Object.assign(result.post, {
+          communityPostMedia: result.postImage,
+          tags: result.tags,
+        }),
       };
     } catch (err) {
       throw new Error(err);
@@ -294,9 +311,10 @@ export class CommunityPostRepository {
 
       return {
         errors: result.errors,
-        communityPost: result.newPost,
-        communityPostMedia: result.newPostImage,
-        tags: result.tags,
+        communityPost: Object.assign(result.newPost, {
+          communityPostMedia: result.newPostImage,
+          tags: result.tags,
+        }),
       };
     } catch (e) {
       throw new Error(e.message);

@@ -45,6 +45,7 @@ Table User {
   CommunityMember CommunityMember [not null]
   CommunityComment CommunityComment [not null]
   CommunityPost CommunityPost [not null]
+  CommunityPostReaction CommunityPostReaction [not null]
 
   indexes {
     (id, email) [unique]
@@ -220,6 +221,7 @@ Table Post {
   company Company [not null]
   Like PostReaction [not null]
   PostImage PostImage [not null]
+  CommunityPostReaction CommunityPostReaction [not null]
 }
 
 Table PostImage {
@@ -519,6 +521,7 @@ Table CommunityPost {
   isApproved Boolean [not null, default: true]
   TagWithPost TagWithPost [not null]
   CommunityComment CommunityComment [not null]
+  CommunityPostReaction CommunityPostReaction [not null]
 }
 
 Table CommunityPostMedia {
@@ -530,6 +533,19 @@ Table CommunityPostMedia {
   communityPost CommunityPost [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
+}
+
+Table CommunityPostReaction {
+  id String [pk]
+  reactions ReactionsType [not null]
+  communityPostId String [not null]
+  communityPost CommunityPost
+  userId String [not null]
+  user User
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  Post Post
+  postId String
 }
 
 Table CommunityComment {
@@ -558,6 +574,16 @@ Enum CompanyDocumentType {
   TAX_CLEARANCE
   BANK_CHEQUE
   TRADEMARK
+}
+
+Enum ReactionsType {
+  LIKE
+  USEFUL
+  PRAISE
+  AAPPRECIATION
+  INSIGHTFUL
+  CURIOUS
+  DISGUSTING
 }
 
 Enum CompanyStage {
@@ -734,6 +760,12 @@ Ref: CommunityPost.communityId > CompanyCommunity.id [delete: Cascade]
 Ref: CommunityPost.authorId > User.id [delete: Cascade]
 
 Ref: CommunityPostMedia.communityPostId > CommunityPost.id [delete: Cascade]
+
+Ref: CommunityPostReaction.communityPostId > CommunityPost.id
+
+Ref: CommunityPostReaction.userId > User.id
+
+Ref: CommunityPostReaction.postId > Post.id
 
 Ref: CommunityComment.communityPostId > CommunityPost.id [delete: Cascade]
 

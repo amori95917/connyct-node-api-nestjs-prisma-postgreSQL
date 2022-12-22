@@ -11,10 +11,4 @@ export class UpdateCommunityPostPayload {
 
   @Field(() => CommunityPost, { nullable: true })
   communityPost?: CommunityPost;
-
-  @Field(() => CommunityPostMedia, { nullable: true })
-  communityPostMedia?: CommunityPostMedia;
-
-  @Field(() => [Tag], { nullable: true })
-  tags?: Tag[];
 }

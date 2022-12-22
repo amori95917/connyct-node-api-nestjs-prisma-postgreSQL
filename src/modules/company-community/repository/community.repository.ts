@@ -41,6 +41,16 @@ export class CommunityRepository {
     private readonly cloudinary: CloudinaryService,
   ) {}
 
+  async findCommunityByIds(ids: string[]) {
+    return await this.prisma.companyCommunity.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
+
   async getCommunityByCompanyId(
     companyId: string,
     paginate: ConnectionArgs,

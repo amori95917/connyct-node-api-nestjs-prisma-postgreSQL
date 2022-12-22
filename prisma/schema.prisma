@@ -61,6 +61,7 @@ model User {
   CommunityMember          CommunityMember[]          @relation("InvitedMember")
   CommunityComment         CommunityComment[]
   CommunityPost            CommunityPost[]
+  CommunityPostReaction    CommunityPostReaction[]
 
   @@unique([id, email])
 }
@@ -131,6 +132,16 @@ enum CompanyDocumentType {
   TAX_CLEARANCE
   BANK_CHEQUE
   TRADEMARK
+}
+
+enum ReactionsType {
+  LIKE
+  USEFUL
+  PRAISE
+  AAPPRECIATION
+  INSIGHTFUL
+  CURIOUS
+  DISGUSTING
 }
 
 model Company {
@@ -246,25 +257,26 @@ model TagWithPost {
 }
 
 model Post {
-  id          String         @id @default(uuid())
-  text        String?
-  rating      Int            @default(0)
-  creatorId   String
-  creator     User           @relation(fields: [creatorId], references: [id])
-  postRating  PostRating[]
-  comments    Comment[]
-  createdAt   DateTime?      @default(now())
-  updatedAt   DateTime?      @updatedAt @db.Timestamp()
-  Product     Product[]
-  TagWithPost TagWithPost[]
-  isSaleAble  Boolean        @default(false)
-  isDeleted   Boolean        @default(false)
-  isVerified  Boolean        @default(false)
-  isPublished Boolean        @default(false)
-  companyId   String
-  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  Like        PostReaction[]
-  PostImage   PostImage[]
+  id                    String                  @id @default(uuid())
+  text                  String?
+  rating                Int                     @default(0)
+  creatorId             String
+  creator               User                    @relation(fields: [creatorId], references: [id])
+  postRating            PostRating[]
+  comments              Comment[]
+  createdAt             DateTime?               @default(now())
+  updatedAt             DateTime?               @updatedAt @db.Timestamp()
+  Product               Product[]
+  TagWithPost           TagWithPost[]
+  isSaleAble            Boolean                 @default(false)
+  isDeleted             Boolean                 @default(false)
+  isVerified            Boolean                 @default(false)
+  isPublished           Boolean                 @default(false)
+  companyId             String
+  company               Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Like                  PostReaction[]
+  PostImage             PostImage[]
+  CommunityPostReaction CommunityPostReaction[]
 
   @@index([companyId])
 }
@@ -604,20 +616,21 @@ model CommunityPolicy {
 }
 
 model CommunityPost {
-  id                 String               @id @default(uuid())
-  text               String?
-  communityId        String
-  community          CompanyCommunity     @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  createdAt          DateTime?            @default(now())
-  updatedAt          DateTime?            @updatedAt @db.Timestamp()
-  CommunityPostMedia CommunityPostMedia[]
-  authorId           String
-  author             User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  slug               String
-  isDeleted          Boolean              @default(false)
-  isApproved         Boolean              @default(true)
-  TagWithPost        TagWithPost[]
-  CommunityComment   CommunityComment[]
+  id                    String                  @id @default(uuid())
+  text                  String?
+  communityId           String
+  community             CompanyCommunity        @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdAt             DateTime?               @default(now())
+  updatedAt             DateTime?               @updatedAt @db.Timestamp()
+  CommunityPostMedia    CommunityPostMedia[]
+  authorId              String
+  author                User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  slug                  String
+  isDeleted             Boolean                 @default(false)
+  isApproved            Boolean                 @default(true)
+  TagWithPost           TagWithPost[]
+  CommunityComment      CommunityComment[]
+  CommunityPostReaction CommunityPostReaction[]
 
   @@index([communityId, authorId])
 }
@@ -633,6 +646,21 @@ model CommunityPostMedia {
   updatedAt       DateTime?     @updatedAt @db.Timestamp()
 
   @@index([communityPostId])
+}
+
+model CommunityPostReaction {
+  id              String         @id @default(uuid())
+  reactions       ReactionsType
+  communityPostId String
+  communityPost   CommunityPost? @relation(fields: [communityPostId], references: [id])
+  userId          String
+  user            User?          @relation(fields: [userId], references: [id])
+  createdAt       DateTime?      @default(now())
+  updatedAt       DateTime?      @updatedAt @db.Timestamp()
+  Post            Post?          @relation(fields: [postId], references: [id])
+  postId          String?
+
+  @@index([communityPostId, userId])
 }
 
 model CommunityComment {

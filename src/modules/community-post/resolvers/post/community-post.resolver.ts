@@ -1,3 +1,4 @@
+import { CommentRepository } from 'src/modules/community-post/repository/comment/comment.repository';
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -32,6 +33,9 @@ import { UpdateCommunityPostPayload } from '../../entities/post/update-post.payl
 import { CommunityPostRepository } from '../../repository/post/community-post.repository';
 import { CommunityPostService } from '../../services/post/community-post.service';
 import { UserService } from 'src/modules/user/services/user.service';
+import { ReactionRepository } from '../../repository/reactions/reactions.repository';
+import { CommunityPostLoader } from '../../community-post.loader';
+import * as DataLoader from 'dataloader';
 
 @Resolver(() => CommunityPost)
 export class CommunityPostResolver {
@@ -39,6 +43,9 @@ export class CommunityPostResolver {
     private readonly communityPostService: CommunityPostService,
     private readonly userService: UserService,
     private readonly communityPostRepository: CommunityPostRepository,
+    private readonly reactionRepository: ReactionRepository,
+    private readonly commentRepository: CommentRepository,
+    private readonly communityPostLoader: CommunityPostLoader,
   ) {}
 
   @UseGuards(GqlAuthGuard)
@@ -101,16 +108,26 @@ export class CommunityPostResolver {
     @Parent() communityPost: CommunityPost,
   ): Promise<CommunityPostMedia[] | null> {
     const { id } = communityPost;
-    return await this.communityPostRepository.communityPostMedia(id);
+    return await this.communityPostLoader.communityPostMediaLoader.load(id);
   }
   @ResolveField('community', () => Community)
   async community(@Parent() communityPost: CommunityPost): Promise<Community> {
     const { communityId } = communityPost;
-    return await this.communityPostRepository.community(communityId);
+    return await this.communityPostLoader.communityLoader.load(communityId);
   }
   @ResolveField('creator', () => User)
   async creator(@Parent() communityPost: CommunityPost): Promise<User> {
     const { authorId } = communityPost;
-    return await this.userService.findUserById(authorId);
+    return await this.communityPostLoader.creatorLoader.load(authorId);
+  }
+  @ResolveField('reactionCount', () => Number)
+  async reactionCount(@Parent() communityPost: CommunityPost): Promise<number> {
+    const { id } = communityPost;
+    return await this.reactionRepository.getReactionCount(id);
+  }
+  @ResolveField('commentCount', () => Number)
+  async commentCount(@Parent() communityPost: CommunityPost): Promise<number> {
+    const { id } = communityPost;
+    return await this.commentRepository.getCommentCount(id);
   }
 }

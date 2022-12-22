@@ -6,6 +6,7 @@ import {
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
+  Info,
   Mutation,
   Parent,
   Query,
@@ -167,7 +168,12 @@ export class UserResolver {
 
   @ResolveField('company', () => Company)
   @UseGuards(GqlAuthGuard)
-  async company(@Parent() user: User): Promise<Company> {
+  async company(
+    @Parent() user: User,
+    @Info() info: any,
+  ): Promise<Company | null> {
+    console.log(info, 'info incoming');
+    console.log('info incoming');
     return await this.companyService.getCompanyByUserId(user.id);
   }
 

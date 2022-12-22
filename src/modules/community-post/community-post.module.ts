@@ -13,6 +13,10 @@ import { ThirdLevelCommentResolver } from './resolvers/comment/third-level-comme
 import { CommunityPostResolver } from './resolvers/post/community-post.resolver';
 import { CommentService } from './services/comment/comment.service';
 import { CommunityPostService } from './services/post/community-post.service';
+import { ReactionResolver } from './resolvers/reactions/reactions.resolver';
+import { ReactionService } from './services/reactions/reactions.service';
+import { ReactionRepository } from './repository/reactions/reactions.repository';
+import { CommunityPostLoader } from './community-post.loader';
 
 @Module({
   imports: [
@@ -32,6 +36,10 @@ import { CommunityPostService } from './services/post/community-post.service';
     ThirdLevelCommentResolver,
     CommentService,
     CommentRepository,
+    ReactionResolver,
+    ReactionService,
+    ReactionRepository,
+    CommunityPostLoader,
   ],
 })
 export class CommunityPostModule {}
