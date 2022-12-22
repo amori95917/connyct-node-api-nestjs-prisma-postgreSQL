@@ -7,8 +7,9 @@
 
 /* tslint:disable */
 /* eslint-disable */
+
 export enum BranchType {
-    CORPORATE = "CORPORATE",
+    HEADQUARTER = "HEADQUARTER",
     BRANCH_OFFICE = "BRANCH_OFFICE"
 }
 
@@ -28,6 +29,14 @@ export enum RatingStatus {
 }
 
 export enum DiscussionAnswerOrderBy {
+    createdAt = "createdAt"
+}
+
+export enum CommunityMemberOrderBy {
+    createdAt = "createdAt"
+}
+
+export enum CommunityPostCommentOrderBy {
     createdAt = "createdAt"
 }
 
@@ -67,6 +76,15 @@ export enum DiscussionOrderBy {
     createdAt = "createdAt"
 }
 
+export enum CommunityOrderBy {
+    createdAt = "createdAt",
+    name = "name"
+}
+
+export enum CommunityPostsOrderBy {
+    createdAt = "createdAt"
+}
+
 export class OrderCommentsList {
     direction: OrderDirection;
     orderBy: CommentOrderBy;
@@ -75,6 +93,16 @@ export class OrderCommentsList {
 export class OrderListDiscussionAnswer {
     direction: OrderDirection;
     orderBy: DiscussionAnswerOrderBy;
+}
+
+export class OrderListCommunityMember {
+    direction: OrderDirection;
+    orderBy: CommunityMemberOrderBy;
+}
+
+export class OrderCommentList {
+    direction: OrderDirection;
+    orderBy: CommunityPostCommentOrderBy;
 }
 
 export class OrderListUsers {
@@ -133,6 +161,16 @@ export class CommentReactionsOrderList {
 export class OrderListDiscussion {
     direction: OrderDirection;
     orderBy: DiscussionOrderBy;
+}
+
+export class OrderListCommunity {
+    direction: OrderDirection;
+    orderBy: CommunityOrderBy;
+}
+
+export class CommunityPostsOrderList {
+    direction: OrderDirection;
+    orderBy: CommunityPostsOrderBy;
 }
 
 export class UpdateStatusUserInput {
@@ -209,52 +247,50 @@ export class CreateCompanyGeneralInput {
 }
 
 export class CompanyEditInput {
-    legalName?: Nullable<string>;
     name?: Nullable<string>;
+    legalName?: Nullable<string>;
+    description?: Nullable<string>;
+    registrationNumberType?: Nullable<string>;
     registrationNumber: string;
     establishedDate: DateTime;
-    companyStage?: Nullable<string>;
-    description?: Nullable<string>;
-    mission?: Nullable<string>;
-    vision?: Nullable<string>;
-    ownership?: Nullable<string>;
-    contactEmail: string;
-    numberOfemployees?: Nullable<number>;
-    transactions?: Nullable<number>;
-    website?: Nullable<string>;
-    contactNumber?: Nullable<string>;
     slogan?: Nullable<string>;
+    companyStage?: Nullable<string>;
 }
 
 export class CompanyBranchInput {
     type: BranchType;
-    name?: Nullable<string>;
     contactEmail: string;
     contactNumber: string;
     country?: Nullable<string>;
     city?: Nullable<string>;
     zipCode?: Nullable<string>;
     state?: Nullable<string>;
-    street1?: Nullable<string>;
-    street2?: Nullable<string>;
+    street?: Nullable<string>;
 }
 
 export class CompanyBranchEditInput {
     type?: Nullable<BranchType>;
-    name?: Nullable<string>;
     contactEmail?: Nullable<string>;
     contactNumber?: Nullable<string>;
     country?: Nullable<string>;
     city?: Nullable<string>;
     zipCode?: Nullable<string>;
     state?: Nullable<string>;
-    street1?: Nullable<string>;
-    street2?: Nullable<string>;
+    street?: Nullable<string>;
 }
 
 export class CompanyAccountStatus {
     accountStatus: string;
     reason?: Nullable<string>;
+}
+
+export class CompanyDocumentInput {
+    companyId: string;
+    type: string;
+}
+
+export class CompanyDocumentEditInput {
+    type: string;
 }
 
 export class CreatePostInput {
@@ -343,16 +379,12 @@ export class DiscussionVoteInput {
 export class DiscussionAnswerInput {
     answer: string;
     discussionId: string;
+    mentionIds?: Nullable<string[]>;
 }
 
 export class DiscussionAnswerUpdateInput {
     answer: string;
-}
-
-export class ReplyToAnswerInput {
-    repliedToAnswerId: string;
-    answer: string;
-    discussionId: string;
+    mentionIds?: Nullable<string[]>;
 }
 
 export class DiscussionAnswerVoteInput {
@@ -361,14 +393,77 @@ export class DiscussionAnswerVoteInput {
     vote: string;
 }
 
+export class ReplyToAnswerInput {
+    repliedToAnswerId: string;
+    answer: string;
+    discussionId: string;
+}
+
+export class CommunityInput {
+    name: string;
+    description: string;
+    type: string;
+    companyId: string;
+}
+
+export class CommunityEditInput {
+    name?: Nullable<string>;
+    description?: Nullable<string>;
+    type?: Nullable<string>;
+}
+
+export class CommunityMemberInviteInput {
+    communityId: string;
+    companyId: string;
+    memberId?: Nullable<string[]>;
+}
+
+export class CommunityMemberInput {
+    communityId: string;
+    companyId: string;
+}
+
+export class CommunityPolicyInput {
+    title: string;
+    description: string;
+}
+
+export class CommunityPolicyUpdateInput {
+    title: string;
+    description: string;
+}
+
+export class CommunityPostInput {
+    text: string;
+    communityId: string;
+    tags?: Nullable<string[]>;
+    metaTitle?: Nullable<string>;
+    description?: Nullable<string>;
+}
+
+export class UpdateCommunityPostInput {
+    text: string;
+    tags?: Nullable<string[]>;
+    metaTitle?: Nullable<string>;
+    description?: Nullable<string>;
+}
+
+export class CommentInput {
+    text: string;
+}
+
+export class MentionsInput {
+    mentionIds?: Nullable<string[]>;
+}
+
 export interface MutationPayload {
     errors?: Nullable<UserError[]>;
 }
 
 export class Branch {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     name?: Nullable<string>;
     type: BranchType;
     contactEmail: string;
@@ -377,16 +472,26 @@ export class Branch {
     city: string;
     zipCode?: Nullable<string>;
     state?: Nullable<string>;
-    street1?: Nullable<string>;
-    street2?: Nullable<string>;
+    street?: Nullable<string>;
+}
+
+export class CompanyDocument {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    companyId?: Nullable<string>;
+    type?: Nullable<string>;
+    document?: Nullable<string>;
+    company?: Nullable<Company>;
 }
 
 export class Company {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     name?: Nullable<string>;
-    legalName: string;
+    legalName?: Nullable<string>;
+    registrationNumberType?: Nullable<string>;
     registrationNumber?: Nullable<string>;
     establishedDate?: Nullable<DateTime>;
     companyStage?: Nullable<string>;
@@ -394,7 +499,6 @@ export class Company {
     ownership?: Nullable<string>;
     mission?: Nullable<string>;
     vision?: Nullable<string>;
-    addresses?: Nullable<JSON>;
     numberOfemployees?: Nullable<number>;
     contactEmail?: Nullable<string>;
     transactions?: Nullable<number>;
@@ -409,12 +513,13 @@ export class Company {
     avatar?: Nullable<string>;
     accountStatus?: Nullable<string>;
     reason?: Nullable<string>;
+    companyDocument?: Nullable<CompanyDocument[]>;
 }
 
 export class CompanyPaginated {
     edges?: Nullable<CompanyEdge[]>;
     pageInfo?: Nullable<CompanyPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class CompanyEdge {
@@ -429,10 +534,14 @@ export class CompanyPageInfo {
     hasNextPage: boolean;
 }
 
+export class Role {
+    name: string;
+}
+
 export class RepliesToReplies {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     text?: Nullable<string>;
     creatorId?: Nullable<string>;
     repliedToCommentId?: Nullable<string>;
@@ -444,7 +553,7 @@ export class RepliesToReplies {
 export class RepliesToRepliesPagination {
     edges?: Nullable<RepliesToRepliesEdge[]>;
     pageInfo?: Nullable<RepliesToRepliesPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class RepliesToRepliesEdge {
@@ -460,9 +569,9 @@ export class RepliesToRepliesPageInfo {
 }
 
 export class Replies {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     text?: Nullable<string>;
     postId?: Nullable<string>;
     creatorId?: Nullable<string>;
@@ -477,7 +586,7 @@ export class Replies {
 export class RepliesPagination {
     edges?: Nullable<RepliesEdge[]>;
     pageInfo?: Nullable<RepliesPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class RepliesEdge {
@@ -493,9 +602,9 @@ export class RepliesPageInfo {
 }
 
 export class Comment {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     text: string;
     creatorId: string;
     postId?: Nullable<string>;
@@ -512,7 +621,7 @@ export class Comment {
 export class CommentPagination {
     edges?: Nullable<CommentEdge[]>;
     pageInfo?: Nullable<CommentPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class CommentEdge {
@@ -528,9 +637,9 @@ export class CommentPageInfo {
 }
 
 export class PostImage {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     metaTitle?: Nullable<string>;
     imageURL?: Nullable<string>;
     description?: Nullable<string>;
@@ -561,7 +670,7 @@ export class Post {
 export class PostPagination {
     edges?: Nullable<PostEdge[]>;
     pageInfo?: Nullable<PostPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class PostEdge {
@@ -576,10 +685,20 @@ export class PostPageInfo {
     hasNextPage: boolean;
 }
 
+export class UserProfile {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    address?: Nullable<string>;
+    phoneNo?: Nullable<string>;
+    profileImage?: Nullable<string>;
+    user?: Nullable<User>;
+}
+
 export class User {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     fullName?: Nullable<string>;
     username?: Nullable<string>;
     email: string;
@@ -590,13 +709,15 @@ export class User {
     isEmailVerified?: Nullable<boolean>;
     posts?: Nullable<Post[]>;
     company?: Nullable<Company[]>;
+    userProfile?: Nullable<UserProfile>;
+    role?: Nullable<Role>;
     isAdmin: boolean;
 }
 
 export class UserPaginated {
     edges?: Nullable<UserEdge[]>;
     pageInfo?: Nullable<UserPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class UserEdge {
@@ -618,9 +739,9 @@ export class CustomError {
 }
 
 export class OTP {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     otp?: Nullable<number>;
     expirationDate?: Nullable<DateTime>;
     userId?: Nullable<string>;
@@ -647,16 +768,6 @@ export class Auth {
     company?: Nullable<Company[]>;
 }
 
-export class UserProfile {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
-    address?: Nullable<string>;
-    phoneNo?: Nullable<string>;
-    profileImage?: Nullable<string>;
-    user?: Nullable<User>;
-}
-
 export class UserProfilePayload {
     errors?: Nullable<CustomError>;
     userProfile?: Nullable<UserProfile>;
@@ -665,6 +776,28 @@ export class UserProfilePayload {
 export class CompanyPayload {
     errors?: Nullable<CustomError[]>;
     company?: Nullable<Company>;
+    companyDocument?: Nullable<CompanyDocument[]>;
+}
+
+export class CompanyDocumentEditPayload {
+    errors?: Nullable<CustomError[]>;
+    company?: Nullable<Company>;
+    companyDocument?: Nullable<CompanyDocument>;
+}
+
+export class CompanyBranchPayload {
+    errors?: Nullable<CustomError[]>;
+    branch?: Nullable<Branch>;
+}
+
+export class GetCompanyBranchPayload {
+    errors?: Nullable<CustomError[]>;
+    branches?: Nullable<Branch[]>;
+}
+
+export class CompanyBranchDeletePayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleted?: Nullable<boolean>;
 }
 
 export class UserError {
@@ -682,6 +815,11 @@ export class RatePayload implements MutationPayload {
 export class NewReplyPayload implements MutationPayload {
     errors?: Nullable<UserError[]>;
     comment?: Nullable<Comment>;
+}
+
+export class CommentDeletePayload {
+    errors?: Nullable<UserError[]>;
+    isDeleted?: Nullable<boolean>;
 }
 
 export class CommentPaginationPayload {
@@ -747,9 +885,9 @@ export class FollowCompany {
 }
 
 export class Industry {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     type: string;
     description?: Nullable<string>;
     isActive?: Nullable<boolean>;
@@ -763,16 +901,16 @@ export class IndustryPayload {
 }
 
 export class Reactions {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     reactionType: string;
 }
 
 export class Likes {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     postId: string;
     reactionId: string;
     userId: string;
@@ -808,9 +946,9 @@ export class RepliesToRepliesPayload {
 }
 
 export class CommentReactions {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     reactionId?: Nullable<string>;
     commentId?: Nullable<string>;
     creatorId?: Nullable<string>;
@@ -841,22 +979,64 @@ export class CommentReactionPaginationPayload {
     reactions?: Nullable<CommentReactionsPagination>;
 }
 
-export class DiscussionAnswer {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+export class CreatedBy {
+    id?: Nullable<string>;
+    fullName?: Nullable<string>;
+    image?: Nullable<string>;
+}
+
+export class DiscussionAnswerReply {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     answer?: Nullable<string>;
     discussionId?: Nullable<string>;
     discussion?: Nullable<CompanyDiscussion>;
     userId?: Nullable<string>;
-    user?: Nullable<User>;
-    reply?: Nullable<DiscussionAnswer[]>;
+    user: User;
+    repliedToAnswerId?: Nullable<string>;
+    parentAnswer?: Nullable<DiscussionAnswer>;
+    upVote?: Nullable<number>;
+    createdBy?: Nullable<CreatedBy>;
+}
+
+export class DiscussionAnswerReplyPaginated {
+    edges?: Nullable<DiscussionAnswerReplyEdge[]>;
+    pageInfo?: Nullable<DiscussionAnswerReplyPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class DiscussionAnswerReplyEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<DiscussionAnswerReply>;
+}
+
+export class DiscussionAnswerReplyPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class DiscussionAnswer {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    answer?: Nullable<string>;
+    discussionId?: Nullable<string>;
+    discussion?: Nullable<CompanyDiscussion>;
+    userId?: Nullable<string>;
+    user: User;
+    answerReply?: Nullable<DiscussionAnswerReplyPaginated>;
+    mentions?: Nullable<User[]>;
+    upVote?: Nullable<number>;
+    createdBy?: Nullable<CreatedBy>;
 }
 
 export class DiscussionAnswerPaginated {
     edges?: Nullable<DiscussionAnswerEdge[]>;
     pageInfo?: Nullable<DiscussionAnswerPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class DiscussionAnswerEdge {
@@ -871,21 +1051,37 @@ export class DiscussionAnswerPageInfo {
     hasNextPage: boolean;
 }
 
+export class DiscussionVote {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    vote?: Nullable<string>;
+    userId?: Nullable<string>;
+    user?: Nullable<User[]>;
+    discussionId?: Nullable<string>;
+    discussion?: Nullable<CompanyDiscussion>;
+}
+
 export class CompanyDiscussion {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     title?: Nullable<string>;
     description?: Nullable<string>;
     companyId?: Nullable<string>;
     company?: Nullable<Company>;
-    discussionAnswer: DiscussionAnswerPaginated;
+    userId?: Nullable<string>;
+    user: User;
+    discussionAnswer?: Nullable<DiscussionAnswerPaginated>;
+    discussionVote?: Nullable<DiscussionVote[]>;
+    upVote?: Nullable<number>;
+    createdBy?: Nullable<CreatedBy>;
 }
 
 export class DiscussionPaginated {
     edges?: Nullable<CompanyDiscussionEdge[]>;
     pageInfo?: Nullable<CompanyDiscussionPageInfo>;
-    totalCount: number;
+    totalCount?: Nullable<number>;
 }
 
 export class CompanyDiscussionEdge {
@@ -910,10 +1106,16 @@ export class CompanyDiscussionDeletePayload {
     isDeleted?: Nullable<boolean>;
 }
 
+export class DiscussionVotePayload {
+    errors?: Nullable<CustomError[]>;
+    discussionVote?: Nullable<DiscussionVote>;
+    removeVote?: Nullable<boolean>;
+}
+
 export class DiscussionAnswerVote {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
     vote?: Nullable<string>;
     discussionId?: Nullable<string>;
     discussion?: Nullable<CompanyDiscussion>;
@@ -925,6 +1127,7 @@ export class DiscussionAnswerVote {
 export class DiscussionAnswerVotePayload {
     errors?: Nullable<CustomError[]>;
     discussionAnswerVote?: Nullable<DiscussionAnswerVote>;
+    removeVote?: Nullable<boolean>;
 }
 
 export class DiscussionAnswerPayload {
@@ -932,25 +1135,354 @@ export class DiscussionAnswerPayload {
     discussionAnswer?: Nullable<DiscussionAnswer>;
 }
 
+export class DiscussionAnswerReplyPayload {
+    errors?: Nullable<CustomError[]>;
+    discussionAnswerReply?: Nullable<DiscussionAnswerReply>;
+}
+
 export class DiscussionAnswerDeletePayload {
     errors?: Nullable<CustomError[]>;
     isDeleted?: Nullable<boolean>;
 }
 
-export class DiscussionVote {
-    id: string;
-    createdAt: DateTime;
-    updatedAt: DateTime;
-    vote?: Nullable<string>;
+export class CommunityRole {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    role?: Nullable<string>;
+    communityId?: Nullable<string>;
     userId?: Nullable<string>;
-    user?: Nullable<User[]>;
-    discussionId?: Nullable<string>;
-    discussion?: Nullable<CompanyDiscussion>;
+    user?: Nullable<User>;
+    community?: Nullable<Community>;
+    company?: Nullable<Company>;
 }
 
-export class DiscussionVotePayload {
+export class Community {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    name?: Nullable<string>;
+    description?: Nullable<string>;
+    type?: Nullable<string>;
+    profile?: Nullable<string>;
+    coverImage?: Nullable<string>;
+    companyId?: Nullable<string>;
+    creatorId?: Nullable<string>;
+    slug?: Nullable<string>;
+    company?: Nullable<Company>;
+    createdBy?: Nullable<User>;
+    members?: Nullable<CommunityMemberPaginated>;
+    followersCount?: Nullable<number>;
+    communityRole?: Nullable<CommunityRole[]>;
+}
+
+export class CommunityPaginated {
+    edges?: Nullable<CommunityEdge[]>;
+    pageInfo?: Nullable<CommunityPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class CommunityEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<Community>;
+}
+
+export class CommunityPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class CommunityMember {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    communityId?: Nullable<string>;
+    invitedById?: Nullable<string>;
+    memberId?: Nullable<string>;
+    community?: Nullable<Community>;
+    member?: Nullable<User>;
+    communityRole: CommunityRole;
+}
+
+export class CommunityMemberPaginated {
+    edges?: Nullable<CommunityMemberEdge[]>;
+    pageInfo?: Nullable<CommunityMemberPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class CommunityMemberEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<CommunityMember>;
+}
+
+export class CommunityMemberPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class CommunityMemberPayload {
     errors?: Nullable<CustomError[]>;
-    discussionVote?: Nullable<DiscussionVote>;
+    communityMember?: Nullable<CommunityMember[]>;
+}
+
+export class GetCommunityMemberPayload {
+    errors?: Nullable<CustomError[]>;
+    communityMember?: Nullable<CommunityMemberPaginated>;
+}
+
+export class JoinCommunityPayload {
+    errors?: Nullable<CustomError[]>;
+    joinCommunity?: Nullable<CommunityMember>;
+}
+
+export class AcceptInvitePayload {
+    errors?: Nullable<CustomError[]>;
+    isAccepted?: Nullable<boolean>;
+}
+
+export class CommunityPayload {
+    errors?: Nullable<CustomError[]>;
+    community?: Nullable<Community>;
+}
+
+export class GetCommunityPayload {
+    errors?: Nullable<CustomError[]>;
+    community?: Nullable<CommunityPaginated>;
+}
+
+export class CommunityDeletePayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleted?: Nullable<boolean>;
+}
+
+export class CommunityPolicy {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    communityId?: Nullable<string>;
+    title?: Nullable<string>;
+    description?: Nullable<string>;
+}
+
+export class CommunityPolicyPaginated {
+    edges?: Nullable<CommunityPolicyEdge[]>;
+    pageInfo?: Nullable<CommunityPolicyPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class CommunityPolicyEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<CommunityPolicy>;
+}
+
+export class CommunityPolicyPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class CommunityPoliciesPayload {
+    errors?: Nullable<CustomError[]>;
+    data?: Nullable<CommunityPolicyPaginated>;
+}
+
+export class CommunityPolicyPayload {
+    errors?: Nullable<CustomError[]>;
+    data?: Nullable<CommunityPolicy>;
+}
+
+export class CommunityPolicyDeletePayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleted?: Nullable<boolean>;
+}
+
+export class CommunityPostMedia {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    metaTitle?: Nullable<string>;
+    description?: Nullable<string>;
+    imageURL?: Nullable<string>;
+    communityPostId?: Nullable<string>;
+    communityPost?: Nullable<CommunityPost>;
+}
+
+export class CommunityPost {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    text?: Nullable<string>;
+    communityId?: Nullable<string>;
+    slug?: Nullable<string>;
+    authorId?: Nullable<string>;
+    isDeleted?: Nullable<boolean>;
+    isApproved?: Nullable<boolean>;
+    communityPostMedia?: Nullable<CommunityPostMedia>;
+    community?: Nullable<Community>;
+    creator?: Nullable<User>;
+}
+
+export class CommunityPostPaginated {
+    edges?: Nullable<CommunityPostEdge[]>;
+    pageInfo?: Nullable<CommunityPostPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class CommunityPostEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<CommunityPost>;
+}
+
+export class CommunityPostPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class ThirdLevelComment {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    content?: Nullable<string>;
+    authorId?: Nullable<string>;
+    commentId?: Nullable<string>;
+    creator: User;
+    secondLevelComment?: Nullable<SecondLevelComment>;
+}
+
+export class ThirdLevelCommentPagination {
+    edges?: Nullable<ThirdLevelCommentEdge[]>;
+    pageInfo?: Nullable<ThirdLevelCommentPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class ThirdLevelCommentEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<ThirdLevelComment>;
+}
+
+export class ThirdLevelCommentPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class SecondLevelComment {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    content?: Nullable<string>;
+    authorId?: Nullable<string>;
+    commentId?: Nullable<string>;
+    thirdLevelComment: ThirdLevelCommentPagination;
+    creator: User;
+    firstLevelComment?: Nullable<FirstLevelComment>;
+}
+
+export class SecondLevelCommentPagination {
+    edges?: Nullable<SecondLevelCommentEdge[]>;
+    pageInfo?: Nullable<SecondLevelCommentPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class SecondLevelCommentEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<SecondLevelComment>;
+}
+
+export class SecondLevelCommentPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class FirstLevelComment {
+    id?: Nullable<string>;
+    createdAt?: Nullable<DateTime>;
+    updatedAt?: Nullable<DateTime>;
+    content?: Nullable<string>;
+    communityPostId?: Nullable<string>;
+    authorId?: Nullable<string>;
+    secondLevelComment: SecondLevelCommentPagination;
+    creator: User;
+    communityPost?: Nullable<CommunityPost>;
+    community?: Nullable<Community>;
+    mentions: User[];
+}
+
+export class FirstLevelCommentPagination {
+    edges?: Nullable<FirstLevelCommentEdge[]>;
+    pageInfo?: Nullable<FirstLevelCommentPageInfo>;
+    totalCount?: Nullable<number>;
+}
+
+export class FirstLevelCommentEdge {
+    cursor?: Nullable<string>;
+    node?: Nullable<FirstLevelComment>;
+}
+
+export class FirstLevelCommentPageInfo {
+    startCursor?: Nullable<string>;
+    endCursor?: Nullable<string>;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+export class FirstLevelCommentPaginatedPayload {
+    errors?: Nullable<CustomError[]>;
+    comment?: Nullable<FirstLevelCommentPagination>;
+}
+
+export class FirstLevelCommentPayload {
+    errors?: Nullable<CustomError[]>;
+    comment?: Nullable<FirstLevelComment>;
+}
+
+export class SecondLevelCommentPayload {
+    errors?: Nullable<CustomError[]>;
+    comment?: Nullable<SecondLevelComment>;
+}
+
+export class ThirdLevelCommentPayload {
+    errors?: Nullable<CustomError[]>;
+    comment?: Nullable<ThirdLevelComment>;
+}
+
+export class DeleteCommentPayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleted?: Nullable<boolean>;
+}
+
+export class CommunityPostPayload {
+    errors?: Nullable<CustomError[]>;
+    communityPost?: Nullable<CommunityPost>;
+    communityPostMedia?: Nullable<CommunityPostMedia[]>;
+    tags?: Nullable<Tag[]>;
+}
+
+export class GetCommunityPostPayload {
+    errors?: Nullable<CustomError[]>;
+    communityPost?: Nullable<CommunityPostPaginated>;
+}
+
+export class DeleteCommunityPostPayload {
+    errors?: Nullable<CustomError[]>;
+    isDeleteSuccessful?: Nullable<boolean>;
+}
+
+export class UpdateCommunityPostPayload {
+    errors?: Nullable<CustomError[]>;
+    communityPost?: Nullable<CommunityPost>;
+    communityPostMedia?: Nullable<CommunityPostMedia>;
+    tags?: Nullable<Tag[]>;
 }
 
 export abstract class IQuery {
@@ -968,7 +1500,7 @@ export abstract class IQuery {
 
     abstract getCompanyById(id: string): Company | Promise<Company>;
 
-    abstract getBranchesByCompanyId(id: string): Branch[] | Promise<Branch[]>;
+    abstract getBranchesByCompanyId(id: string): GetCompanyBranchPayload | Promise<GetCompanyBranchPayload>;
 
     abstract getTags(paginate?: Nullable<PaginationArgs>, order?: Nullable<OrderTagList>, query?: Nullable<TagQuery>): TagPagination | Promise<TagPagination>;
 
@@ -990,9 +1522,27 @@ export abstract class IQuery {
 
     abstract getCompanyDiscussion(companyId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListDiscussion>): DiscussionPaginated | Promise<DiscussionPaginated>;
 
+    abstract getCompanyDiscussionById(discussionId: string): CompanyDiscussion | Promise<CompanyDiscussion>;
+
     abstract getCompanyDiscussionByUser(): CompanyDiscussion[] | Promise<CompanyDiscussion[]>;
 
-    abstract getDiscussionAnswer(discussionId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListDiscussionAnswer>): DiscussionAnswerPaginated | Promise<DiscussionAnswerPaginated>;
+    abstract discussionVoteCount(discussionId: string): number | Promise<number>;
+
+    abstract getDiscussionAnswerByDiscussionId(discussionId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListDiscussionAnswer>): DiscussionAnswerPaginated | Promise<DiscussionAnswerPaginated>;
+
+    abstract getCommunity(companyId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListCommunity>): GetCommunityPayload | Promise<GetCommunityPayload>;
+
+    abstract getCommunityById(communityId: string): CommunityPayload | Promise<CommunityPayload>;
+
+    abstract getCommunityMember(communityId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderListCommunityMember>): GetCommunityMemberPayload | Promise<GetCommunityMemberPayload>;
+
+    abstract getCommunityPolicies(communityId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>): CommunityPoliciesPayload | Promise<CommunityPoliciesPayload>;
+
+    abstract getCommunityPolicy(id: string): CommunityPolicy | Promise<CommunityPolicy>;
+
+    abstract communityPost(communityId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<CommunityPostsOrderList>): GetCommunityPostPayload | Promise<GetCommunityPostPayload>;
+
+    abstract getComments(postId: string, before?: Nullable<string>, after?: Nullable<string>, first?: Nullable<number>, last?: Nullable<number>, order?: Nullable<OrderCommentList>): FirstLevelCommentPaginatedPayload | Promise<FirstLevelCommentPaginatedPayload>;
 }
 
 export abstract class IMutation {
@@ -1030,15 +1580,21 @@ export abstract class IMutation {
 
     abstract createCompanyGeneralInfo(data: CreateCompanyGeneralInput): Company | Promise<Company>;
 
-    abstract editCompany(id: string, data: CompanyEditInput, file?: Nullable<Upload>): CompanyPayload | Promise<CompanyPayload>;
+    abstract companyGeneralInfoEdit(companyId: string, data: CompanyEditInput): CompanyPayload | Promise<CompanyPayload>;
 
-    abstract createCompanyBranch(id: string, data: CompanyBranchInput): Branch | Promise<Branch>;
+    abstract companyAvatar(companyId: string, avatar: Upload): CompanyPayload | Promise<CompanyPayload>;
 
-    abstract editCompanyBranch(id: string, data: CompanyBranchEditInput): Branch | Promise<Branch>;
+    abstract createCompanyBranch(id: string, data: CompanyBranchInput): CompanyBranchPayload | Promise<CompanyBranchPayload>;
 
-    abstract deleteCompanyBranch(id: string, companyId: string): Branch | Promise<Branch>;
+    abstract editCompanyBranch(id: string, data: CompanyBranchEditInput): CompanyBranchPayload | Promise<CompanyBranchPayload>;
+
+    abstract deleteCompanyBranch(id: string, companyId: string): CompanyBranchDeletePayload | Promise<CompanyBranchDeletePayload>;
 
     abstract companyAccountStatus(data: CompanyAccountStatus, companyId: string): CompanyPayload | Promise<CompanyPayload>;
+
+    abstract companyDocumentCreate(input: CompanyDocumentInput, document: Upload[]): CompanyPayload | Promise<CompanyPayload>;
+
+    abstract companyDocumentEdit(companyId: string, documentId: string, editDocument: CompanyDocumentEditInput, document: Upload): CompanyDocumentEditPayload | Promise<CompanyDocumentEditPayload>;
 
     abstract post(data: CreatePostInput, companyId: string, file?: Nullable<Upload[]>): CreatePostPayload | Promise<CreatePostPayload>;
 
@@ -1053,6 +1609,10 @@ export abstract class IMutation {
     abstract removeRatingFromPost(postId: number): RatePayload | Promise<RatePayload>;
 
     abstract commentToPost(postId: string, input: CreateCommentInput, mention?: Nullable<CreateMentionsInput>): NewReplyPayload | Promise<NewReplyPayload>;
+
+    abstract commentUpdate(commentId: string, input: CreateCommentInput, mention?: Nullable<CreateMentionsInput>): NewReplyPayload | Promise<NewReplyPayload>;
+
+    abstract commentDelete(commentId: string): DeleteCommentPayload | Promise<DeleteCommentPayload>;
 
     abstract upvoteComment(commentId: string): RatePayload | Promise<RatePayload>;
 
@@ -1092,24 +1652,61 @@ export abstract class IMutation {
 
     abstract companyDiscussion(input: CompanyDiscussionInput): CompanyDiscussionPayload | Promise<CompanyDiscussionPayload>;
 
-    abstract updateCompanyDiscussion(input: CompanyDiscussionUpdateInput, id: string): CompanyDiscussionPayload | Promise<CompanyDiscussionPayload>;
+    abstract companyDiscussionUpdate(input: CompanyDiscussionUpdateInput, discussionId: string): CompanyDiscussionPayload | Promise<CompanyDiscussionPayload>;
 
-    abstract deleteCompanyDiscussion(id: string): CompanyDiscussionDeletePayload | Promise<CompanyDiscussionDeletePayload>;
+    abstract companyDiscussionDelete(id: string): CompanyDiscussionDeletePayload | Promise<CompanyDiscussionDeletePayload>;
 
     abstract discussionVote(input: DiscussionVoteInput): DiscussionVotePayload | Promise<DiscussionVotePayload>;
 
+    abstract discussionDownvote(input: DiscussionVoteInput): DiscussionVotePayload | Promise<DiscussionVotePayload>;
+
     abstract createDiscussionAnswer(answer: DiscussionAnswerInput): DiscussionAnswerPayload | Promise<DiscussionAnswerPayload>;
 
-    abstract updateAnswer(updateAnswer: DiscussionAnswerUpdateInput, id: string): DiscussionAnswerPayload | Promise<DiscussionAnswerPayload>;
+    abstract discussionAnswerUpdate(updateAnswer: DiscussionAnswerUpdateInput, answerId: string): DiscussionAnswerPayload | Promise<DiscussionAnswerPayload>;
 
-    abstract deleteAnswer(id: string): DiscussionAnswerDeletePayload | Promise<DiscussionAnswerDeletePayload>;
-
-    abstract replyToAnswer(input: ReplyToAnswerInput): DiscussionAnswerDeletePayload | Promise<DiscussionAnswerDeletePayload>;
+    abstract discussionAnswerDelete(id: string): DiscussionAnswerDeletePayload | Promise<DiscussionAnswerDeletePayload>;
 
     abstract discussionAnswerVote(input: DiscussionAnswerVoteInput): DiscussionAnswerVotePayload | Promise<DiscussionAnswerVotePayload>;
+
+    abstract discussionAnswerDownvote(input: DiscussionAnswerVoteInput): DiscussionAnswerVotePayload | Promise<DiscussionAnswerVotePayload>;
+
+    abstract discussionAnswerReply(input: ReplyToAnswerInput): DiscussionAnswerReplyPayload | Promise<DiscussionAnswerReplyPayload>;
+
+    abstract companyCommunity(input: CommunityInput, profile?: Nullable<Upload>, coverImage?: Nullable<Upload>): CommunityPayload | Promise<CommunityPayload>;
+
+    abstract companyCommunityEdit(communityId: string, input: CommunityEditInput, profile?: Nullable<Upload>, coverImage?: Nullable<Upload>): CommunityPayload | Promise<CommunityPayload>;
+
+    abstract companyCommunityDelete(communityId: string): CommunityDeletePayload | Promise<CommunityDeletePayload>;
+
+    abstract inviteUserByCommunityAdmin(input: CommunityMemberInviteInput): CommunityMemberPayload | Promise<CommunityMemberPayload>;
+
+    abstract acceptCommunityInvite(companyId: string, communityMemberId: string): AcceptInvitePayload | Promise<AcceptInvitePayload>;
+
+    abstract inviteUserByCommunityUser(input: CommunityMemberInviteInput): CommunityMemberPayload | Promise<CommunityMemberPayload>;
+
+    abstract joinPublicCommunity(input: CommunityMemberInput): JoinCommunityPayload | Promise<JoinCommunityPayload>;
+
+    abstract createCommunityPolicy(id: string, input: CommunityPolicyInput): CommunityPolicyPayload | Promise<CommunityPolicyPayload>;
+
+    abstract updateCommunityPolicy(id: string, input: CommunityPolicyUpdateInput): CommunityPolicyPayload | Promise<CommunityPolicyPayload>;
+
+    abstract deleteCommunityPolicy(id: string): CommunityPolicyDeletePayload | Promise<CommunityPolicyDeletePayload>;
+
+    abstract communityPostCreate(input: CommunityPostInput, files?: Nullable<Upload[]>): CommunityPostPayload | Promise<CommunityPostPayload>;
+
+    abstract communityPostUpdate(id: string, imageURL?: Nullable<string>, input?: Nullable<UpdateCommunityPostInput>, file?: Nullable<Upload>): UpdateCommunityPostPayload | Promise<UpdateCommunityPostPayload>;
+
+    abstract communityPostDelete(postId: string): DeleteCommunityPostPayload | Promise<DeleteCommunityPostPayload>;
+
+    abstract createSecondLevelComment(commentId: string, input: CommentInput, mention?: Nullable<MentionsInput>): SecondLevelCommentPayload | Promise<SecondLevelCommentPayload>;
+
+    abstract createFirstLevelComment(postId: string, input: CommentInput, mention?: Nullable<MentionsInput>): FirstLevelCommentPayload | Promise<FirstLevelCommentPayload>;
+
+    abstract updateComment(commentId: string, input: CommentInput, mention?: Nullable<MentionsInput>): FirstLevelCommentPayload | Promise<FirstLevelCommentPayload>;
+
+    abstract createThirdLevelComment(commentId: string, input: CommentInput, mention?: Nullable<MentionsInput>): ThirdLevelCommentPayload | Promise<ThirdLevelCommentPayload>;
 }
 
 export type DateTime = any;
-export type JSON = any;
 export type Upload = any;
 type Nullable<T> = T | null;
