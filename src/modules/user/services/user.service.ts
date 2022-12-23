@@ -1,20 +1,13 @@
 import { BadRequestException, Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT } from '@nestjs/graphql';
 import { User } from '@prisma/client';
-import {
-  customError,
-  EmailConflict,
-  UserIdIsRequired,
-} from 'src/common/errors';
+import { customError, UserIdIsRequired } from 'src/common/errors';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { PasswordService } from './password.service';
 import { SignupInput } from 'src/modules/auth/dto/signup.input';
-import { Operations } from 'src/modules/auth/enum/operations.enum';
 import { Role } from 'src/modules/auth/enum/role.enum';
 import { TokenService } from 'src/modules/auth/services/token.service';
-import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
-import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 
 import { ChangePasswordInput } from '../dto/change-password.input';
 import { FilterListUsers } from '../dto/filter-user.input';
@@ -25,7 +18,7 @@ import {
   UserDataInput,
 } from '../dto/user.input';
 
-import { v4 } from 'uuid';
+import { User as UserEntity } from '../entities/user.entity';
 import { Auth } from 'src/modules/auth/entities/auth.entity';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
@@ -118,6 +111,37 @@ export class UserService {
     }
   }
 
+  async getUserRoles(userId: string) {
+    try {
+      const role = await this.prisma.userRole.findMany({
+        where: { userId },
+        include: {
+          role: true,
+        },
+      });
+      return role;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  async getUserActiveRole(user: UserEntity) {
+    // TODO: would be better just get activeRole from user
+    try {
+      const userEntity = await this.prisma.user.findFirst({
+        where: {
+          id: user.id,
+        },
+        include: {
+          activeRole: true,
+        },
+      });
+      return userEntity.activeRole;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
   public async findUsersByIds(authorIds: readonly string[]): Promise<User[]> {
     return this.prisma.user.findMany({
       where: {
@@ -168,235 +192,6 @@ export class UserService {
 
   async signUp(payload: SignupInput): Promise<Auth> {
     try {
-      // const hashPassword = await this.passwordService.hashPassword(
-      //   payload.password,
-      // );
-      // const { isCompanyAccount, legalName, ...rest } = payload;
-      // const email = await this.prisma.user.findFirst({
-      //   where: { email: payload.email },
-      // });
-      // if (email) throw new Error('Email already exist');
-      // //function to assign roles to user
-      // const userRoles = async (userId, roleId) => {
-      //   await this.prisma.userRole.create({
-      //     data: {
-      //       userId: userId,
-      //       roleId: roleId,
-      //     },
-      //   });
-      // };
-      // //* create random username /
-      // const userName = (name: string) => {
-      //   const result = Date.now().toString(36);
-      //   return (name + result).toLowerCase();
-      // };
-      // // individual signup
-      // if (!isCompanyAccount) {
-      //   if (!payload.fullName) throw new Error('Fullname is required');
-      //   const user = await this.prisma.user.create({
-      //     data: {
-      //       ...rest,
-      //       // generate unique username based on email or firstname and lastnamex
-      //       // username: rest.username || rest.email,
-      //       password: hashPassword,
-      //       username: userName(payload.fullName),
-      //       UserProfile: {
-      //         create: [],
-      //       },
-      //     },
-      //   });
-      //   const role = await this.prisma.role.findFirst({
-      //     where: {
-      //       name: 'USER',
-      //     },
-      //   });
-      //   userRoles(user.id, role.id);
-      //   return { user, role: role.name };
-      //   // TODO username should be generated uniquely if not provided
-      // }
-      // // company signup
-      // if (legalName.length < 3) {
-      //   throw new Error('Legal name must be longer than 3 characters');
-      // }
-      // const companyName = await this.prisma.company.findFirst({
-      //   where: { legalName: legalName },
-      // });
-      // if (companyName) throw new Error('Company name already exist');
-      // await this.prisma.company.create({
-      //   data: {
-      //     legalName: legalName,
-      //     owner: {
-      //       connectOrCreate: {
-      //         where: { email: payload.email },
-      //         create: {
-      //           ...rest,
-      //           password: hashPassword,
-      //           username: userName(payload.email.split('@')[0]),
-      //         },
-      //       },
-      //     },
-      //   },
-      //   include: {
-      //     owner: true,
-      //   },
-      // });
-      // const user = await this.prisma.user.findFirst({
-      //   where: { email: payload.email },
-      //   include: { Company: true },
-      // });
-      // const role = await this.prisma.role.findFirst({
-      //   where: {
-      //     name: 'OWNER',
-      //   },
-      // });
-      // userRoles(user.id, role.id);
-      // return {
-      //   user: user,
-      //   role: role.name,
-      //   company: user.Company,
-      // };
-      // const hashPassword = await this.passwordService.hashPassword(
-      //   payload.password,
-      // );
-      // const { isCompanyAccount, legalName, ...rest } = payload;
-      // /**signup logic */
-      // //function to assign roles to user
-      // const userRoles = async (userId, roleId) => {
-      //   await this.prisma.userRole.create({
-      //     data: {
-      //       userId: userId,
-      //       roleId: roleId,
-      //     },
-      //   });
-      // };
-      // //* create random username /
-      // const userName = (name: string) => {
-      //   const result = Date.now().toString(36);
-      //   return (name + result).toLowerCase();
-      // };
-      // const result = await this.prisma.$transaction(async () => {
-      //   /**check if email already exist */
-      //   const email = await this.prisma.user.findFirst({
-      //     where: { email: payload.email },
-      //   });
-      //   if (email)
-      //     return customError(
-      //       USER_MESSAGE.ALREADY_EXIST,
-      //       USER_CODE.EMAIL_ALREADY_EXIST,
-      //       STATUS_CODE.BAD_REQUEST_EXCEPTION,
-      //     );
-      //   if (!isCompanyAccount) {
-      //     if (!payload.fullName)
-      //       return customError(
-      //         USER_MESSAGE.FULLNAME_REQUIRED,
-      //         USER_CODE.FULLNAME_REQUIRED,
-      //         STATUS_CODE.BAD_CONFLICT,
-      //       );
-      //     const user = await this.prisma.user.create({
-      //       data: {
-      //         ...rest,
-      //         // generate unique username based on email or firstname and lastnamex
-      //         // username: rest.username || rest.email,
-      //         password: hashPassword,
-      //         username: userName(payload.fullName),
-      //       },
-      //     });
-      //     const role = await this.prisma.role.findFirst({
-      //       where: {
-      //         name: 'USER',
-      //       },
-      //     });
-      //     await this.prisma.userProfile.create({
-      //       data: {
-      //         userId: user.id,
-      //       },
-      //     });
-      //     userRoles(user.id, role.id);
-      //     return { user, role: role.name };
-      //     // TODO username should be generated uniquely if not provided
-      //   }
-      //   // company signup
-      //   if (legalName.length < 3) {
-      //     return customError(
-      //       COMPANY_MESSAGE.INVALID_LEGALNAME_FORMAT,
-      //       COMPANY_CODE.INVALID_LEGALNAME_FORMAT,
-      //       STATUS_CODE.NOT_SUPPORTED,
-      //     );
-      //   }
-      //   const companyName = await this.prisma.company.findFirst({
-      //     where: { legalName: legalName },
-      //   });
-      //   if (companyName)
-      //     return customError(
-      //       COMPANY_MESSAGE.ALREADY_EXIST,
-      //       COMPANY_CODE.ALREADY_EXIST,
-      //       STATUS_CODE.BAD_REQUEST_EXCEPTION,
-      //     );
-      //   await this.prisma.company.create({
-      //     data: {
-      //       legalName: legalName,
-      //       owner: {
-      //         connectOrCreate: {
-      //           where: { email: payload.email },
-      //           create: {
-      //             ...rest,
-      //             password: hashPassword,
-      //             username: userName(payload.email.split('@')[0]),
-      //           },
-      //         },
-      //       },
-      //     },
-      //     include: {
-      //       owner: true,
-      //     },
-      //   });
-      //   const user = await this.prisma.user.findFirst({
-      //     where: { email: payload.email },
-      //     include: { Company: true },
-      //   });
-      //   const role = await this.prisma.role.findFirst({
-      //     where: {
-      //       name: 'OWNER',
-      //     },
-      //   });
-      //   userRoles(user.id, role.id);
-      //   return {
-      //     user: user,
-      //     role: role.name,
-      //     company: user.Company,
-      //   };
-      // });
-      // console.log(result, 'incoming result');
-      // return result;
-      // const hashPassword = await this.passwordService.hashPassword(
-      //   payload.password,
-      // );
-      // const { isCompanyAccount, legalName, ...rest } = payload;
-      // /**signup logic */
-      // //function to assign roles to user
-      // const userRoles = async (userId, roleId) => {
-      //   await this.prisma.userRole.create({
-      //     data: {
-      //       userId: userId,
-      //       roleId: roleId,
-      //     },
-      //   });
-      // };
-      // const result = await this.prisma.$transaction(async () => {
-      //   /**check if email already exist */
-      //   const email = await this.prisma.user.findFirst({
-      //     where: { email: payload.email },
-      //   });
-      //   console.log('incoming request');
-      //   if (email)
-      //     return customError(
-      //       USER_MESSAGE.ALREADY_EXIST,
-      //       USER_CODE.EMAIL_ALREADY_EXIST,
-      //       STATUS_CODE.BAD_REQUEST_EXCEPTION,
-      //     );
-      // });
-      // return result;
-
       const hashPassword = await this.passwordService.hashPassword(
         payload.password,
       );
@@ -411,10 +206,38 @@ export class UserService {
           },
         });
       };
-      //* create random username /
-      const userName = (name: string) => {
-        const result = Date.now().toString(36);
-        return (name + result).toLowerCase();
+      // create unique username. Need this to be move elsewhere
+      const generateUsername = (fullName: string, email: string) => {
+        // Check if fullName or email is provided
+        if (fullName) {
+          // Use fullName as the base for the username
+          let username = fullName.toLowerCase().replace(/\s/g, '');
+          // Check if the username is already taken
+          const user = this.prisma.user.findFirst({
+            where: { username: username },
+          });
+          // If the username is taken, add a random string to make it unique
+          if (user) {
+            username += Date.now().toString(36);
+          }
+          return username;
+        } else if (email) {
+          // Use email as the base for the username
+          let username = email.split('@')[0].toLowerCase();
+          // Check if the username is already taken
+          const user = this.prisma.user.findFirst({
+            where: { username: username },
+          });
+          // If the username is taken, add a random string to make it unique
+          if (user) {
+            username += Date.now().toString(36);
+          }
+          return username;
+        }
+        // If fullName and email are not provided, throw an error
+        throw new Error(
+          'Full name or email is required to generate a username',
+        );
       };
       const result = await this.prisma.$transaction(async () => {
         /**check if email already exist */
@@ -427,10 +250,8 @@ export class UserService {
           const user = await this.prisma.user.create({
             data: {
               ...rest,
-              // generate unique username based on email or firstname and lastnamex
-              // username: rest.username || rest.email,
               password: hashPassword,
-              username: userName(payload.fullName),
+              username: generateUsername(payload.fullName, payload.email),
             },
           });
           const role = await this.prisma.role.findFirst({
@@ -445,7 +266,7 @@ export class UserService {
           });
           userRoles(user.id, role.id);
           await this.prisma.userProfile.create({ data: { userId: user.id } });
-          return { user, role: role.name };
+          return { user, role: [role] };
           // TODO username should be generated uniquely if not provided
         }
         // company signup
@@ -458,14 +279,20 @@ export class UserService {
         await this.prisma.company.create({
           data: {
             legalName: legalName,
-            slug: userName(payload.legalName.split(' ')[0]),
+            slug: generateUsername(
+              payload.legalName.split(' ')[0],
+              payload.email,
+            ),
             owner: {
               connectOrCreate: {
                 where: { email: payload.email },
                 create: {
                   ...rest,
                   password: hashPassword,
-                  username: userName(payload.email.split('@')[0]),
+                  username: generateUsername(
+                    payload.email.split('@')[0],
+                    payload.email,
+                  ),
                 },
               },
             },
@@ -478,16 +305,39 @@ export class UserService {
           where: { email: payload.email },
           include: { Company: true },
         });
-        const role = await this.prisma.role.findFirst({
+        // create the OWNER role for the user
+        const ownerRole = await this.prisma.role.findFirst({
           where: {
             name: 'OWNER',
           },
         });
-        userRoles(user.id, role.id);
+        userRoles(user.id, ownerRole.id);
+        const userRole = await this.prisma.role.findFirst({
+          where: {
+            name: 'USER',
+          },
+        });
+        userRoles(user.id, userRole.id);
         await this.prisma.userProfile.create({ data: { userId: user.id } });
+        const rolesOfUser = await this.prisma.userRole.findMany({
+          where: { userId: user.id },
+          include: { role: true },
+        });
+        const roles = rolesOfUser.map((userRole) => userRole.role);
+        const hasOwnerRole = roles.some((role) => role.name === 'OWNER');
+        const activeRole = hasOwnerRole
+          ? roles.find((role) => role.name === 'OWNER')
+          : roles.find((role) => role.name === 'USER');
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            activeRole: { connect: { id: activeRole.id } },
+          },
+        });
         return {
           user: user,
-          role: role.name,
+          role: roles,
+          activeRole,
           company: user.Company,
         };
       });

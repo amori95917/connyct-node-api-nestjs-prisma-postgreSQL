@@ -41,6 +41,7 @@ export function createUser(data?: {
     isEmailVerified: false,
     createdAt: new Date(),
     updatedAt: null,
+    roleId: null,
   };
 }
 

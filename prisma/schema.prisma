@@ -32,6 +32,7 @@ model User {
   createdAt       DateTime?        @default(now())
   updatedAt       DateTime?        @updatedAt @db.Timestamp()
   // lastLogin
+  activeRole      Role?            @relation(fields: [roleId], references: [id])
   posts           Post[]
   postRatings     PostRating[]
   commentRatings  CommentRating[]
@@ -62,6 +63,7 @@ model User {
   CommunityComment         CommunityComment[]
   CommunityPost            CommunityPost[]
   CommunityPostReaction    CommunityPostReaction[]
+  roleId                   String?
 
   @@unique([id, email])
 }
@@ -74,6 +76,7 @@ model Role {
   userRoles       UserRole[]
   RoleRight       RoleRight[]
   InvitedEmployee InvitedEmployee[]
+  User            User[]
 }
 
 model Right {
@@ -86,7 +89,7 @@ model Right {
 
 model UserRole {
   id        String    @id @default(uuid())
-  userId    String    @unique
+  userId    String
   user      User      @relation(fields: [userId], references: [id])
   roleId    String
   role      Role      @relation(fields: [roleId], references: [id])

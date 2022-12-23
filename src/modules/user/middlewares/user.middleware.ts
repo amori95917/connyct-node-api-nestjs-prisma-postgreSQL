@@ -4,7 +4,6 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { ValidationService } from 'src/modules/user/services/validation.service';
 
 import * as jwt from 'jsonwebtoken';
-import CommentsLoader from 'src/modules/comment/comment.loader';
 
 interface JWT {
   userId: string;
@@ -30,7 +29,7 @@ export class UserMiddleware implements NestMiddleware {
       const { userId } = jwt.decode(token) as JWT;
       const user = await this.prismaService.user.findFirst({
         where: { id: userId },
-        include: { userRoles: true },
+        include: { userRoles: true, activeRole: true },
       });
 
       if (user && !user.confirm) {

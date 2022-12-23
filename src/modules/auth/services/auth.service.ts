@@ -4,7 +4,7 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { customError, InvalidToken, UserNotFound } from 'src/common/errors';
 
 import { TokenService } from './token.service';
@@ -19,6 +19,7 @@ import { Auth } from '../entities/auth.entity';
 import { USER_MESSAGE } from 'src/common/errors/error.message';
 import { USER_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import { AccountType } from '../dto/switch-account.input';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +43,7 @@ export class AuthService {
       where: {
         OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
       },
-      include: { Company: true },
+      include: { Company: true, activeRole: true },
     });
     if (!user) throw new Error('User does not exist');
     // return customError(
@@ -70,24 +71,19 @@ export class AuthService {
       refreshToken: token.refreshToken,
       user: user,
     });
-    const userRole = await this.prisma.userRole.findFirst({
+    const userRoles = await this.prisma.userRole.findMany({
       where: { userId: user.id },
       include: { role: true },
     });
-    if (userRole.role.name === 'OWNER') {
-      return {
-        user,
-        accessToken: token.accessToken,
-        refreshToken: token.refreshToken,
-        role: userRole.role.name,
-        company: user.Company,
-      };
-    }
+    const roles = userRoles.map((userRole) => userRole.role);
+    // Check if the user has an OWNER role
     return {
       user,
       accessToken: token.accessToken,
       refreshToken: token.refreshToken,
-      role: userRole.role.name,
+      role: roles,
+      activeRole: user.activeRole,
+      company: user.Company,
     };
   }
 
@@ -105,6 +101,53 @@ export class AuthService {
     return {
       user,
       accessToken,
+    };
+  }
+
+  async findUserByIdAndAccountType(userId: string, accountType: AccountType) {
+    // validate accountType
+    if (!accountType) throw new Error('Account type is required');
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        Company: true,
+      },
+    });
+    if (!user) throw new Error('User does not exist');
+    // check the user's roles or permissions
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId },
+      include: { role: true },
+    });
+
+    const roles = userRoles.map((userRole) => userRole.role);
+    if (!roles.some((role) => role.name === accountType)) {
+      throw new Error(
+        'User does not have permission to access this account type',
+      );
+    }
+    // generate new tokens for the user
+    const token = this.tokenService.generateTokens({
+      userId,
+    });
+
+    // let activeRole: Role;
+    // if (roles.some((role) => role.name === 'OWNER')) {
+    //   activeRole = roles.find((role) => role.name === 'OWNER');
+    // } else {
+    //   activeRole = roles.find((role) => role.name === 'USER');
+    // }
+    const role = await this.prisma.role.findFirst({
+      where: { id: user.roleId },
+    });
+    console.log('ROLE', role);
+    return {
+      user,
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      role: roles,
+      activeRole: role,
+      company: user.Company,
     };
   }
 

@@ -2,7 +2,6 @@ import { Company } from 'src/modules/company/entities/company.entity';
 import { Field, HideField, ObjectType, ID } from '@nestjs/graphql';
 
 import { Role } from 'src/modules/auth/entities/role.entity';
-import { Paginated } from 'src/modules/prisma/resolvers/pagination/pagination';
 
 import { BaseEntity } from '../../prisma/entities/base.entity';
 import { Post } from '../../post/post.models';
@@ -26,10 +25,13 @@ export class User extends BaseEntity {
   @HideField()
   password: string;
 
-  roles?: Role[];
+  // roles?: Role[];
 
   @Field({ nullable: true })
   isSuperuser?: boolean;
+
+  @Field({ nullable: true })
+  activeRole?: Role;
 
   @Field({ nullable: true })
   confirm: boolean;
@@ -49,8 +51,8 @@ export class User extends BaseEntity {
   @Field(() => UserProfile, { nullable: true })
   userProfile?: UserProfile;
 
-  @Field(() => Role, { nullable: true })
-  role?: Role;
+  @Field(() => [Role], { nullable: true })
+  roles?: Role[];
 }
 
 @ObjectType()

@@ -20,7 +20,6 @@ import { ValidationService } from '../services/validation.service';
 import { Roles } from 'src/modules/auth/decorators/role.decorator';
 import { Role } from 'src/modules/auth/enum/role.enum';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
-import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 
 import { UserDecorator } from '../decorators/user.decorator';
 
@@ -82,6 +81,7 @@ export class UserResolver {
   @Query(() => User)
   @Roles(Role.Admin, Role.Owner, Role.Manager, Role.Editor, Role.User)
   async me(@UserDecorator() user: User): Promise<User> {
+    console.log('CURRENT USER IS', user);
     return user;
   }
 
@@ -184,8 +184,20 @@ export class UserResolver {
   }
 
   @ResolveField('role', () => RoleEntity)
-  async role(@Parent() user: User): Promise<RoleEntity | null> {
+  async role(@Parent() user: User): Promise<RoleEntity> {
     const { id } = user;
     return await this.userService.getUserRole(id);
+  }
+
+  @ResolveField('roles', () => [RoleEntity])
+  async roles(@Parent() user: User) {
+    const { id } = user;
+    return await this.userService.getUserRoles(id);
+  }
+
+  @ResolveField('activeRole', () => RoleEntity)
+  async activeRole(@Parent() user: User) {
+    // const { id } = user;
+    return await this.userService.getUserActiveRole(user);
   }
 }

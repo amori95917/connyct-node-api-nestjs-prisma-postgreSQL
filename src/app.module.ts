@@ -50,7 +50,6 @@ import { CommunityPostModule } from './modules/community-post/community-post.mod
       driver: ApolloDriver,
       useFactory: async (configService: ConfigService) => {
         const graphqlConfig = configService.get<GraphqlConfig>('graphql');
-        console.log('graphql config', graphqlConfig);
         return {
           sortSchema: graphqlConfig.sortSchema,
           autoSchemaFile: './src/schema.graphql',

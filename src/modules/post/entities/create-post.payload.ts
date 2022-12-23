@@ -1,7 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CustomError } from 'src/common/graphql/types/custom-error';
 
-import { MutationPayload } from '../../../common/graphql/interfaces/mutation-payload';
 import { Post } from '../post.models';
 import { PostImage } from './post-image.entity';
 import { Tag } from './tags.entity';

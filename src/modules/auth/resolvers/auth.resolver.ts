@@ -26,6 +26,9 @@ import { LoginInput, LoginLinkAccessInput } from '../dto/login.input';
 import { SignupInput } from '../dto/signup.input';
 import { Token } from '../entities/token.entity';
 import { OTPService } from 'src/modules/otp-verification/services/otp.service';
+import { SwitchAccountInput } from '../dto/switch-account.input';
+import { GqlAnonymousGuard } from '../guards/gql-anonymous.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -38,14 +41,9 @@ export class AuthResolver {
   ) {}
 
   @Mutation(() => Auth)
-  async signup(
-    @Args('data') data: SignupInput,
-    @Context() context,
-  ): Promise<Auth> {
+  async signup(@Args('data') data: SignupInput, @Context() context) {
     try {
-      const { user, company, role, errors } = await this.userService.signUp(
-        data,
-      );
+      const { user, company, role } = await this.userService.signUp(data);
 
       await this.emailService.sendEmailConfirmation({
         name: `${user.fullName} `,
@@ -76,12 +74,13 @@ export class AuthResolver {
     }
   }
 
+  @UseGuards(GqlAnonymousGuard)
   @Mutation(() => Auth)
   async login(
     @Args('data') { emailOrUsername, password }: LoginInput,
     @Context() context,
   ) {
-    const { accessToken, refreshToken, user, role, company } =
+    const { accessToken, refreshToken, user, role, activeRole, company } =
       await this.auth.login(emailOrUsername.toLowerCase(), password, context);
     // if (errors.length) return { errors: errors };
     return {
@@ -89,6 +88,7 @@ export class AuthResolver {
       refreshToken,
       user,
       role,
+      activeRole,
       company,
     };
   }
@@ -164,5 +164,28 @@ export class AuthResolver {
   async logout(@Context() context) {
     context.res.clearCookie('cookie-data');
     return true;
+  }
+
+  @Mutation(() => Auth)
+  @Roles(Role.Admin, Role.Editor, Role.Manager, Role.Owner, Role.User)
+  async switchAccount(
+    @Args('input') input: SwitchAccountInput,
+    @Context() ctx: any,
+  ) {
+    // retrieve the requested account from the database
+    const { accessToken, refreshToken, user, role, company } =
+      await this.auth.findUserByIdAndAccountType(
+        input.userId,
+        input.accountType,
+      );
+
+    // return the account to the frontend
+    return {
+      accessToken,
+      refreshToken,
+      user,
+      role,
+      company,
+    };
   }
 }
