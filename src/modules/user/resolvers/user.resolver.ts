@@ -39,6 +39,7 @@ import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { CompanyService } from 'src/modules/company/services/company.service';
 import { UserProfile } from '../userProfile.model';
 import { Role as RoleEntity } from 'src/modules/auth/entities/role.entity';
+import { UserConnectionsSummaryEntity } from '../entities/user-connections.entity';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -199,5 +200,11 @@ export class UserResolver {
   async activeRole(@Parent() user: User) {
     // const { id } = user;
     return await this.userService.getUserActiveRole(user);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => UserConnectionsSummaryEntity)
+  async userConnectionsSummary(@UserDecorator() user: User) {
+    return await this.userService.userConnectionsSummary(user.id);
   }
 }

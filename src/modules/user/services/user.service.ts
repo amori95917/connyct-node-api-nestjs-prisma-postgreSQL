@@ -432,4 +432,37 @@ export class UserService {
       throw new Error(err);
     }
   }
+
+  async userConnectionsSummary(userId: string) {
+    try {
+      const { id, username, fullName, isValid, _count } =
+        await this.prisma.user.findFirst({
+          where: { id: userId },
+          include: {
+            _count: {
+              select: {
+                FollowUnfollowCompany: true,
+                FollowedToUser: true,
+                FollowedByUser: true,
+                CompanyCommunity: true,
+              },
+            },
+          },
+        });
+      return {
+        id,
+        username,
+        fullName,
+        isValid,
+        summary: {
+          connectedBrands: _count.FollowUnfollowCompany,
+          connectedEvangelists: _count.FollowedToUser,
+          evangelers: _count.FollowedByUser,
+          connectedCommunities: _count.CompanyCommunity,
+        },
+      };
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
 }

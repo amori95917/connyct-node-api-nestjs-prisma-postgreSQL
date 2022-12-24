@@ -388,6 +388,25 @@ type UserProfilePayload {
   userProfile: UserProfile
 }
 
+type UserConnectionsSummary {
+  connectedBrands: Float
+
+  """Evangelists I have followed"""
+  connectedEvangelists: Float
+
+  """Evangelists that follow me"""
+  evangelers: Float
+  connectedCommunities: Float
+}
+
+type UserConnectionsSummaryEntity {
+  id: String
+  username: String
+  fullName: String
+  isValid: Boolean
+  summary: UserConnectionsSummary
+}
+
 type CompanyPayload {
   errors: [CustomError!]
   company: Company
@@ -1000,9 +1019,12 @@ type CommunityPost {
   authorId: String
   isDeleted: Boolean
   isApproved: Boolean
-  communityPostMedia: CommunityPostMedia
+  communityPostMedia: [CommunityPostMedia!]
+  tags: [Tag!]
   community: Community
   creator: User
+  reactionCount: Float
+  commentCount: Float
 }
 
 type CommunityPostPaginated {
@@ -1178,8 +1200,6 @@ type DeleteCommentPayload {
 type CommunityPostPayload {
   errors: [CustomError!]
   communityPost: CommunityPost
-  communityPostMedia: [CommunityPostMedia!]
-  tags: [Tag!]
 }
 
 type GetCommunityPostPayload {
@@ -1195,8 +1215,35 @@ type DeleteCommunityPostPayload {
 type UpdateCommunityPostPayload {
   errors: [CustomError!]
   communityPost: CommunityPost
-  communityPostMedia: CommunityPostMedia
-  tags: [Tag!]
+}
+
+type Reaction {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  postId: String
+  userId: String
+  reactions: String
+  user: User
+  communityPost: CommunityPost
+}
+
+type ReactionEdge {
+  cursor: String!
+  node: Reaction!
+}
+
+type CommunityPostReactionsPagination {
+  edges: [ReactionEdge!]
+  nodes: [Reaction!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+type ReactionPayload {
+  errors: [CustomError!]
+  data: Reaction
+  isDisliked: Boolean
 }
 
 type Query {
@@ -1246,6 +1293,7 @@ type Query {
     order: OrderListCompanies = {direction: desc, orderBy: name}
     filter: FilterListCompanies
   ): CompanyPaginated!
+  userConnectionsSummary: UserConnectionsSummaryEntity!
   companies(
     """Paginate before opaque cursor"""
     before: String
@@ -1430,6 +1478,7 @@ type Query {
     last: Float
     order: OrderCommentList = {direction: asc, orderBy: createdAt}
   ): FirstLevelCommentPaginatedPayload!
+  communityPostReaction(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommunityPostReactionsOrderList = {direction: desc}): CommunityPostReactionsPagination!
 }
 
 input OrderListUsers {
@@ -1555,6 +1604,16 @@ enum CommunityPostsOrderBy {
   createdAt
 }
 
+input CommunityPostReactionsOrderList {
+  direction: OrderDirection!
+  orderBy: CommunityPostReactionsOrderBy!
+}
+
+"""Order By:createdAt"""
+enum CommunityPostReactionsOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -1637,6 +1696,7 @@ type Mutation {
   createFirstLevelComment(postId: String!, input: CommentInput!, mention: MentionsInput): FirstLevelCommentPayload!
   updateComment(commentId: String!, input: CommentInput!, mention: MentionsInput): FirstLevelCommentPayload!
   createThirdLevelComment(commentId: String!, input: CommentInput!, mention: MentionsInput): ThirdLevelCommentPayload!
+  communityPostReactionCreate(data: ReactionInput!): ReactionPayload!
 }
 
 input UpdateStatusUserInput {
@@ -1928,4 +1988,9 @@ input CommentInput {
 
 input MentionsInput {
   mentionIds: [String!]
+}
+
+input ReactionInput {
+  postId: String!
+  reactionType: String!
 }

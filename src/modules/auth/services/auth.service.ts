@@ -137,10 +137,17 @@ export class AuthService {
     // } else {
     //   activeRole = roles.find((role) => role.name === 'USER');
     // }
+    // first check if role exist
     const role = await this.prisma.role.findFirst({
-      where: { id: user.roleId },
+      where: { name: accountType },
     });
-    console.log('ROLE', role);
+    console.log('role', role);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        activeRole: { connect: { id: role.id } },
+      },
+    });
     return {
       user,
       accessToken: token.accessToken,
