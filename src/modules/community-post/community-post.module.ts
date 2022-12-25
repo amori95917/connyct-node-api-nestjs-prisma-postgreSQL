@@ -17,6 +17,9 @@ import { ReactionResolver } from './resolvers/reactions/reactions.resolver';
 import { ReactionService } from './services/reactions/reactions.service';
 import { ReactionRepository } from './repository/reactions/reactions.repository';
 import { CommunityPostLoader } from './community-post.loader';
+import { CommunityPostCommentReactionResolver } from './resolvers/comment-reaction/comment-reaction.resolver';
+import { CommunityPostCommentReactionService } from './services/comment-reaction/comment-reaction.service';
+import { CommunityPostCommentReactionRepository } from './repository/comment-reaction/comment-reaction.repository';
 
 @Module({
   imports: [
@@ -40,6 +43,9 @@ import { CommunityPostLoader } from './community-post.loader';
     ReactionService,
     ReactionRepository,
     CommunityPostLoader,
+    CommunityPostCommentReactionResolver,
+    CommunityPostCommentReactionService,
+    CommunityPostCommentReactionRepository,
   ],
 })
 export class CommunityPostModule {}

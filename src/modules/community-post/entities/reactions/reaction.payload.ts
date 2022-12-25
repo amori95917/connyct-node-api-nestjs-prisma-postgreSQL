@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CustomError } from 'src/common/graphql/types/custom-error';
-import { Reaction } from './reaction.entity';
+import { CommunityPostReactionsPagination, Reaction } from './reaction.entity';
 
 @ObjectType()
 export class ReactionPayload {
@@ -12,4 +12,12 @@ export class ReactionPayload {
 
   @Field({ nullable: true })
   isDisliked?: boolean;
+}
+@ObjectType()
+export class ReactionPaginationPayload {
+  @Field(() => [CustomError], { nullable: true })
+  errors?: CustomError[];
+
+  @Field(() => CommunityPostReactionsPagination, { nullable: true })
+  data: CommunityPostReactionsPagination;
 }

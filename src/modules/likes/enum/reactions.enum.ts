@@ -1,6 +1,6 @@
 export enum Reactions {
   Like = 'LIKE',
-  Useeful = 'USEFUL',
+  Useful = 'USEFUL',
   Praise = 'PRAISE',
   Appreciation = 'APPRECIATION',
   Insightful = 'INSIGHTFUL',

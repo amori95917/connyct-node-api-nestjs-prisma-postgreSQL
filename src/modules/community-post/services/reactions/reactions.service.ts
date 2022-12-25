@@ -14,6 +14,8 @@ import {
 } from 'src/common/errors/error.message';
 import { POST_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { ReactionsType } from '@prisma/client';
 
 @Injectable()
 export class ReactionService {
@@ -24,7 +26,7 @@ export class ReactionService {
 
   async getLikes(
     postId: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: CommunityPostReactionsOrderList,
   ) {
     /**find post by postId */
@@ -37,6 +39,28 @@ export class ReactionService {
         STATUS_CODE.NOT_FOUND,
       );
     return await this.reactionRepository.getLikes(postId, paginate, order);
+  }
+  async getLikesByType(
+    postId: string,
+    reactionType: ReactionsType,
+    paginate: ConnectionArgs,
+    order: CommunityPostReactionsOrderList,
+  ) {
+    /**find post by postId */
+    const post = await this.communityPostsRepository.findPostById(postId);
+    /**check if post exists or not */
+    if (!post)
+      return customError(
+        POST_MESSAGE.NOT_FOUND,
+        POST_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    return await this.reactionRepository.getLikesByType(
+      postId,
+      reactionType,
+      paginate,
+      order,
+    );
   }
 
   async create(data: ReactionInput, userId: string): Promise<ReactionPayload> {

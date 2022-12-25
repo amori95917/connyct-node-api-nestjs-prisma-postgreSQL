@@ -1221,10 +1221,10 @@ type Reaction {
   id: ID
   createdAt: DateTime
   updatedAt: DateTime
-  postId: String
+  communityPostId: String
   userId: String
   reactions: String
-  user: User
+  reactor: User
   communityPost: CommunityPost
 }
 
@@ -1244,6 +1244,44 @@ type ReactionPayload {
   errors: [CustomError!]
   data: Reaction
   isDisliked: Boolean
+}
+
+type ReactionPaginationPayload {
+  errors: [CustomError!]
+  data: CommunityPostReactionsPagination
+}
+
+type CommunityPostCommentReaction {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  reactions: String
+  communityPostCommentId: String
+  userId: String
+  reactor: User
+}
+
+type CommunityPostCommentReactionEdge {
+  cursor: String!
+  node: CommunityPostCommentReaction!
+}
+
+type CommunityPostCommentReactionsPagination {
+  edges: [CommunityPostCommentReactionEdge!]
+  nodes: [CommunityPostCommentReaction!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+type CommunityPostCommentReactionPayload {
+  errors: [CustomError!]
+  data: CommunityPostCommentReaction
+  isDisliked: Boolean
+}
+
+type CommunityPostCommentReactionPaginationPayload {
+  errors: [CustomError!]
+  data: CommunityPostCommentReactionsPagination
 }
 
 type Query {
@@ -1478,7 +1516,72 @@ type Query {
     last: Float
     order: OrderCommentList = {direction: asc, orderBy: createdAt}
   ): FirstLevelCommentPaginatedPayload!
-  communityPostReaction(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: CommunityPostReactionsOrderList = {direction: desc}): CommunityPostReactionsPagination!
+  communityPostReaction(
+    postId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: CommunityPostReactionsOrderList = {direction: desc}
+  ): ReactionPaginationPayload!
+  listByReactionType(
+    postId: String!
+    reactionType: ReactionTypeInput!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: CommunityPostReactionsOrderList = {direction: desc}
+  ): ReactionPaginationPayload!
+  communityPostCommentReaction(
+    communityPostCommentId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: CommunityPostCommentReactionsOrderList = {direction: desc}
+  ): CommunityPostCommentReactionPaginationPayload!
+  listCommentByReactionType(
+    communityPostCommentId: String!
+    reactionType: ReactionTypeInput!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: CommunityPostCommentReactionsOrderList = {direction: desc}
+  ): CommunityPostCommentReactionPaginationPayload!
 }
 
 input OrderListUsers {
@@ -1614,6 +1717,20 @@ enum CommunityPostReactionsOrderBy {
   createdAt
 }
 
+input ReactionTypeInput {
+  reactionType: String!
+}
+
+input CommunityPostCommentReactionsOrderList {
+  direction: OrderDirection!
+  orderBy: CommunityPostCommentReactionsOrderBy!
+}
+
+"""Order By:createdAt"""
+enum CommunityPostCommentReactionsOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -1697,6 +1814,7 @@ type Mutation {
   updateComment(commentId: String!, input: CommentInput!, mention: MentionsInput): FirstLevelCommentPayload!
   createThirdLevelComment(commentId: String!, input: CommentInput!, mention: MentionsInput): ThirdLevelCommentPayload!
   communityPostReactionCreate(data: ReactionInput!): ReactionPayload!
+  communityPostCommentReactionCreate(input: CommunityPostCommentReactionInput!): CommunityPostCommentReactionPayload!
 }
 
 input UpdateStatusUserInput {
@@ -1993,4 +2111,9 @@ input MentionsInput {
 input ReactionInput {
   postId: String!
   reactionType: String!
+}
+
+input CommunityPostCommentReactionInput {
+  reactionType: String!
+  communityPostCommentId: String!
 }

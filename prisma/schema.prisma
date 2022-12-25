@@ -40,30 +40,31 @@ model User {
   RoleRight       RoleRight[]
   employee        CompanyEmployee? @relation("EmployeeUser")
 
-  Company                  Company[]
-  InvitedEmployee          InvitedEmployee[]
-  FollowUnfollowCompany    FollowUnfollowCompany[]
-  FollowedToUser           FollowUserToUser[]         @relation("Followed_To_User")
-  FollowedByUser           FollowUserToUser[]         @relation("Followed_By_User")
-  Like                     PostReaction[]
-  Comment                  Comment[]
-  CommentMentions          CommentMentions[]
-  CommentReactions         CommentReactions[]
-  UserProfile              UserProfile?
-  OTP                      OTP[]
-  DiscussionVote           DiscussionVote[]
-  DiscussionAnswer         DiscussionAnswer[]
-  CompanyDiscussions       CompanyDiscussions[]
-  DiscussionAnswerVote     DiscussionAnswerVote[]
-  DiscussionAnswerMentions DiscussionAnswerMentions[]
-  CompanyCommunity         CompanyCommunity[]
-  CompanyCommunityRole     CompanyCommunityRole[]
-  InvitedBYUser            CommunityMember[]          @relation("InvitedByUser")
-  CommunityMember          CommunityMember[]          @relation("InvitedMember")
-  CommunityComment         CommunityComment[]
-  CommunityPost            CommunityPost[]
-  CommunityPostReaction    CommunityPostReaction[]
-  roleId                   String?
+  Company                      Company[]
+  InvitedEmployee              InvitedEmployee[]
+  FollowUnfollowCompany        FollowUnfollowCompany[]
+  FollowedToUser               FollowUserToUser[]             @relation("Followed_To_User")
+  FollowedByUser               FollowUserToUser[]             @relation("Followed_By_User")
+  Like                         PostReaction[]
+  Comment                      Comment[]
+  CommentMentions              CommentMentions[]
+  CommentReactions             CommentReactions[]
+  UserProfile                  UserProfile?
+  OTP                          OTP[]
+  DiscussionVote               DiscussionVote[]
+  DiscussionAnswer             DiscussionAnswer[]
+  CompanyDiscussions           CompanyDiscussions[]
+  DiscussionAnswerVote         DiscussionAnswerVote[]
+  DiscussionAnswerMentions     DiscussionAnswerMentions[]
+  CompanyCommunity             CompanyCommunity[]
+  CompanyCommunityRole         CompanyCommunityRole[]
+  InvitedBYUser                CommunityMember[]              @relation("InvitedByUser")
+  CommunityMember              CommunityMember[]              @relation("InvitedMember")
+  CommunityComment             CommunityComment[]
+  CommunityPost                CommunityPost[]
+  CommunityPostReaction        CommunityPostReaction[]
+  roleId                       String?
+  CommunityPostCommentReaction CommunityPostCommentReaction[]
 
   @@unique([id, email])
 }
@@ -260,26 +261,25 @@ model TagWithPost {
 }
 
 model Post {
-  id                    String                  @id @default(uuid())
-  text                  String?
-  rating                Int                     @default(0)
-  creatorId             String
-  creator               User                    @relation(fields: [creatorId], references: [id])
-  postRating            PostRating[]
-  comments              Comment[]
-  createdAt             DateTime?               @default(now())
-  updatedAt             DateTime?               @updatedAt @db.Timestamp()
-  Product               Product[]
-  TagWithPost           TagWithPost[]
-  isSaleAble            Boolean                 @default(false)
-  isDeleted             Boolean                 @default(false)
-  isVerified            Boolean                 @default(false)
-  isPublished           Boolean                 @default(false)
-  companyId             String
-  company               Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  Like                  PostReaction[]
-  PostImage             PostImage[]
-  CommunityPostReaction CommunityPostReaction[]
+  id          String         @id @default(uuid())
+  text        String?
+  rating      Int            @default(0)
+  creatorId   String
+  creator     User           @relation(fields: [creatorId], references: [id])
+  postRating  PostRating[]
+  comments    Comment[]
+  createdAt   DateTime?      @default(now())
+  updatedAt   DateTime?      @updatedAt @db.Timestamp()
+  Product     Product[]
+  TagWithPost TagWithPost[]
+  isSaleAble  Boolean        @default(false)
+  isDeleted   Boolean        @default(false)
+  isVerified  Boolean        @default(false)
+  isPublished Boolean        @default(false)
+  companyId   String
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Like        PostReaction[]
+  PostImage   PostImage[]
 
   @@index([companyId])
 }
@@ -660,24 +660,36 @@ model CommunityPostReaction {
   user            User?          @relation(fields: [userId], references: [id])
   createdAt       DateTime?      @default(now())
   updatedAt       DateTime?      @updatedAt @db.Timestamp()
-  Post            Post?          @relation(fields: [postId], references: [id])
-  postId          String?
 
   @@index([communityPostId, userId])
 }
 
 model CommunityComment {
-  id               String             @id @default(uuid())
-  content          String
-  communityPostId  String?
-  communityPost    CommunityPost?     @relation(fields: [communityPostId], references: [id], onDelete: Cascade)
-  authorId         String
-  author           User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  commentId        String?
-  replies          CommunityComment?  @relation("CommentReplies", fields: [commentId], references: [id], onDelete: Cascade)
-  CommunityComment CommunityComment[] @relation("CommentReplies")
-  createdAt        DateTime?          @default(now())
-  updatedAt        DateTime?          @updatedAt @db.Timestamp()
+  id                           String                         @id @default(uuid())
+  content                      String
+  communityPostId              String?
+  communityPost                CommunityPost?                 @relation(fields: [communityPostId], references: [id], onDelete: Cascade)
+  authorId                     String
+  author                       User                           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentId                    String?
+  replies                      CommunityComment?              @relation("CommentReplies", fields: [commentId], references: [id], onDelete: Cascade)
+  CommunityComment             CommunityComment[]             @relation("CommentReplies")
+  createdAt                    DateTime?                      @default(now())
+  updatedAt                    DateTime?                      @updatedAt @db.Timestamp()
+  CommunityPostCommentReaction CommunityPostCommentReaction[]
 
   @@index([communityPostId, commentId])
+}
+
+model CommunityPostCommentReaction {
+  id                     String            @id @default(uuid())
+  reactions              ReactionsType
+  communityPostCommentId String
+  communityPostComment   CommunityComment? @relation(fields: [communityPostCommentId], references: [id])
+  userId                 String
+  user                   User?             @relation(fields: [userId], references: [id])
+  createdAt              DateTime?         @default(now())
+  updatedAt              DateTime?         @updatedAt @db.Timestamp()
+
+  @@index([communityPostCommentId])
 }

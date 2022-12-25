@@ -7,38 +7,32 @@ import {
   ReactionInput,
 } from '../../dto/reactions/reaction.input';
 import { ReactionPayload } from '../../entities/reactions/reaction.payload';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
+import { ReactionsType } from '@prisma/client';
 
 @Injectable()
 export class ReactionRepository {
   constructor(private readonly prisma: PrismaService) {}
   public async getLikes(
     communityPostId: string,
-    paginate: PaginationArgs,
+    paginate: ConnectionArgs,
     order: CommunityPostReactionsOrderList,
   ) {
-    /**fetch all the reactions from individual post along with users */
-    const nodes = await this.prisma.communityPostReaction.findMany({
-      where: { communityPostId },
-      skip: paginate.skip,
-      take: paginate.take,
-      orderBy: { [order.orderBy]: order.direction },
-      include: { user: true },
-    });
-    /**count all the reactions in individual post */
-    const totalCount = await this.prisma.communityPostReaction.count({
-      where: { communityPostId },
-    });
-    /**paginate next page or not */
-    const hasNextPage = haveNextPage(paginate.skip, paginate.take, totalCount);
-    return {
-      nodes,
-      totalCount,
-      hasNextPage,
-      edges: nodes?.map((node) => ({
-        node,
-        cursor: Buffer.from(node.id).toString('base64'),
-      })),
-    };
+    const reactions = await findManyCursorConnection(
+      (args) =>
+        this.prisma.communityPostReaction.findMany({
+          ...args,
+          where: { communityPostId },
+          orderBy: { [order.orderBy]: order.direction },
+        }),
+      () =>
+        this.prisma.communityPostReaction.count({
+          where: { communityPostId },
+        }),
+      { ...paginate },
+    );
+    return { data: reactions };
   }
 
   async getReactionCount(communityPostId: string) {
@@ -47,6 +41,27 @@ export class ReactionRepository {
     });
   }
 
+  public async getLikesByType(
+    communityPostId: string,
+    reactionType: ReactionsType,
+    paginate: ConnectionArgs,
+    order: CommunityPostReactionsOrderList,
+  ) {
+    const reactions = await findManyCursorConnection(
+      (args) =>
+        this.prisma.communityPostReaction.findMany({
+          ...args,
+          where: { communityPostId, reactions: reactionType },
+          orderBy: { [order.orderBy]: order.direction },
+        }),
+      () =>
+        this.prisma.communityPostReaction.count({
+          where: { communityPostId, reactions: reactionType },
+        }),
+      { ...paginate },
+    );
+    return { data: reactions };
+  }
   public async removeLike(
     postId: string,
     userId: string,
@@ -69,39 +84,41 @@ export class ReactionRepository {
     userId: string,
   ): Promise<ReactionPayload> {
     try {
-      const checkPostReaction =
-        await this.prisma.communityPostReaction.findFirst({
-          where: { communityPostId: input.postId, userId },
-        });
-      if (!checkPostReaction) {
-        /**create likes(reactions) if doesnot exist*/
-        const createReactions = await this.prisma.communityPostReaction.create({
-          data: {
-            communityPostId: input.postId,
-            reactions: input.reactionType,
+      const reactions = await this.prisma.$transaction(async () => {
+        const checkPostReaction =
+          await this.prisma.communityPostReaction.findFirst({
+            where: { communityPostId: input.postId, userId },
+          });
+        if (!checkPostReaction) {
+          /**create likes(reactions) if doesnot exist*/
+          const createReactions =
+            await this.prisma.communityPostReaction.create({
+              data: {
+                communityPostId: input.postId,
+                reactions: input.reactionType,
+                userId,
+              },
+            });
+          return { data: createReactions };
+        }
+        /**if post is already liked, remove it*/
+        if (
+          !checkPostReaction ||
+          checkPostReaction.reactions === input.reactionType
+        )
+          return await this.removeLike(
+            input.postId,
             userId,
-          },
+            checkPostReaction.id,
+          );
+        /**update reaction if user changes the reactions */
+        const updateReaction = await this.prisma.communityPostReaction.update({
+          where: { id: checkPostReaction.id },
+          data: { ...checkPostReaction, reactions: input.reactionType },
         });
-        return { data: createReactions };
-      }
-      /**if post is already liked, remove it*/
-      if (
-        !checkPostReaction ||
-        checkPostReaction.reactions === input.reactionType
-      )
-        return await this.removeLike(
-          input.postId,
-          userId,
-          checkPostReaction.id,
-        );
-      /**update reaction if user changes the reactions */
-      const updateReaction = await this.prisma.communityPostReaction.update({
-        where: { id: checkPostReaction.id },
-        data: { ...checkPostReaction, reactions: input.reactionType },
+        return { data: updateReaction };
       });
-      return {
-        data: updateReaction,
-      };
+      return reactions;
     } catch (err) {
       throw new Error(err);
     }

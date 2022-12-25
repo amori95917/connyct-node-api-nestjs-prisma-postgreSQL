@@ -48,6 +48,7 @@ Table User {
   CommunityPost CommunityPost [not null]
   CommunityPostReaction CommunityPostReaction [not null]
   roleId String
+  CommunityPostCommentReaction CommunityPostCommentReaction [not null]
 
   indexes {
     (id, email) [unique]
@@ -224,7 +225,6 @@ Table Post {
   company Company [not null]
   Like PostReaction [not null]
   PostImage PostImage [not null]
-  CommunityPostReaction CommunityPostReaction [not null]
 }
 
 Table PostImage {
@@ -547,8 +547,6 @@ Table CommunityPostReaction {
   user User
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
-  Post Post
-  postId String
 }
 
 Table CommunityComment {
@@ -561,6 +559,18 @@ Table CommunityComment {
   commentId String
   replies CommunityComment
   CommunityComment CommunityComment [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  CommunityPostCommentReaction CommunityPostCommentReaction [not null]
+}
+
+Table CommunityPostCommentReaction {
+  id String [pk]
+  reactions ReactionsType [not null]
+  communityPostCommentId String [not null]
+  communityPostComment CommunityComment
+  userId String [not null]
+  user User
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
 }
@@ -770,10 +780,12 @@ Ref: CommunityPostReaction.communityPostId > CommunityPost.id
 
 Ref: CommunityPostReaction.userId > User.id
 
-Ref: CommunityPostReaction.postId > Post.id
-
 Ref: CommunityComment.communityPostId > CommunityPost.id [delete: Cascade]
 
 Ref: CommunityComment.authorId > User.id [delete: Cascade]
 
 Ref: CommunityComment.commentId - CommunityComment.id [delete: Cascade]
+
+Ref: CommunityPostCommentReaction.communityPostCommentId > CommunityComment.id
+
+Ref: CommunityPostCommentReaction.userId > User.id

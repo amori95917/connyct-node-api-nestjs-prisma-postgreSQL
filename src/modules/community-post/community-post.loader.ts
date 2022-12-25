@@ -15,6 +15,7 @@ export class CommunityPostLoader {
     private readonly userService: UserService,
   ) {}
 
+  /**post loader */
   public communityPostMediaLoader = new DataLoader<
     string,
     CommunityPostMedia[]
@@ -34,4 +35,6 @@ export class CommunityPostLoader {
       return await this.communityRepository.findCommunityByIds(ids);
     },
   );
+
+  /**comment loader */
 }
