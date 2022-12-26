@@ -1,4 +1,4 @@
-# fly.toml file generated for connyct-node-api on 2022-12-02T18:10:07+05:45
+# fly.toml file generated for connyct-node-api on 2022-12-26T14:23:59+05:45
 app = "connyct-node-api"
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -11,12 +11,12 @@ builder = "heroku/buildpacks:20"
 PRISMA_SKIP_POSTINSTALL_GENERATE = true
 
 [deploy]
-release_command = "npx prisma db seed"
+release_command = "node dist/prisma/seed.js"
 
 [env]
 JWT_ACCESS_SECRET = "example"
-JWT_REFRESH_SECRET = "example"
 JWT_CONFIRM_SECRET = "example"
+JWT_REFRESH_SECRET = "example"
 LOG_SQL = true
 NODE_ENV = "development"
 PLAYGROUND_GRAPHQL = true

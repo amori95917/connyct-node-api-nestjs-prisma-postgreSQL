@@ -148,7 +148,7 @@ export class CompanyService {
 
   async getCompanyById(
     companyId: string,
-    userId: string,
+    userId?: string,
   ): Promise<Company | null> {
     try {
       const company = await this.prisma.company.findFirst({

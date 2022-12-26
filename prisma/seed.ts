@@ -1,10 +1,8 @@
 import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import { company } from './seed-data/company-seed';
-import { post } from './seed-data/post-seed';
 import { user } from './seed-data/user-seed';
-import { products } from './seed-data/product-seed';
-import { readdirSync } from 'fs';
+import { User } from 'src/modules/user/entities/user.entity';
 // import { Role } from 'src/modules/auth/enum/role.enum';
 
 const prisma = new PrismaClient();
@@ -95,33 +93,7 @@ async function main() {
   console.log(`Created admin with id: ${userInstance.id}`);
   console.log(`Admin Seeding finished.`);
 
-  const companyData = company.map((com) =>
-    Object.assign(com, { slug: userName(com.legalName.split(' ')[0]) }),
-  );
-
-  const companyUserData = await prisma.user.create({
-    data: {
-      ...companyUser,
-      password: await hashedPassword(companyUser.password),
-      userRoles: { create: { roleId: (await role(Role.Owner)).id } },
-      Company: {
-        createMany: {
-          data: companyData,
-          skipDuplicates: true,
-        },
-      },
-    },
-  });
-  const createManager = await prisma.user.create({
-    data: {
-      ...manager,
-      password: await hashedPassword(manager.password),
-      userRoles: { create: { roleId: (await role(Role.Manager)).id } },
-    },
-  });
-  console.log('createAllCompanies seeding', companyUser);
-  console.log('Company seeding finished');
-  const normalUserData = await Promise.all(
+  const userPass = await Promise.all(
     user.map(async (user) => {
       return {
         ...user,
@@ -130,48 +102,44 @@ async function main() {
     }),
   );
 
-  const normalUser = await prisma.user.createMany({
-    data: normalUserData,
-    skipDuplicates: true,
-  });
-  const userRole = await prisma.user.findMany({ where: { isActive: false } });
+  const userData = await Promise.all(
+    userPass.map(async (data) => {
+      return await prisma.user.create({
+        data: data,
+      });
+    }),
+  );
+  const userProfile = await Promise.all(
+    userData.map(
+      async (us) =>
+        await prisma.userProfile.create({
+          data: {
+            userId: us.id,
+          },
+        }),
+    ),
+  );
+  console.log(userProfile, 'seeding user profile');
+
   const newRole = await Promise.all(
-    userRole.map(async (user) => {
-      return { userId: user.id, roleId: (await role(Role.User)).id };
+    userData.map(async (user) => {
+      return { userId: user.id, roleId: (await role(Role.Owner)).id };
     }),
   );
   const createUserRole = await prisma.userRole.createMany({ data: newRole });
-  console.log('Normal user seeding', normalUser);
-  console.log('Normal user seeding finished');
+  console.log(createUserRole, 'seeding user roles');
 
-  const getCompany = await prisma.company.findMany();
-  const newPost = post.map((posts) =>
-    Object.assign(
-      posts,
-      { creatorId: createManager.id },
-      { companyId: getCompany[Math.floor(Math.random() * 50)].id },
-    ),
-  );
-  const companyPost = await prisma.post.createMany({
-    data: newPost,
+  const data = company.map((com, i) => ({
+    ...com,
+    slug: userName(com.legalName.split(' ')[0]),
+    ownerId: userData[i].id,
+  }));
+
+  const companyData = await prisma.company.createMany({
+    data: data,
     skipDuplicates: true,
   });
-  console.log('Post seeding', companyPost);
-  console.log('Post seeding finished');
-
-  // const fileName: string[] = [];
-  const files = readdirSync('./src/modules/post/uploads/feeds');
-  const fileNames = files.map((images) => images);
-  const getPost = await prisma.post.findMany();
-  const newProducts = products.map((product) =>
-    Object.assign(
-      product,
-      {
-        image: fileNames[Math.floor(Math.random() * 350)],
-      },
-      { postId: getPost[Math.floor(Math.random() * 500)].id },
-    ),
-  );
+  console.log(companyData, 'seeding company data');
 
   await prisma.reactions.createMany({
     data: reactions,

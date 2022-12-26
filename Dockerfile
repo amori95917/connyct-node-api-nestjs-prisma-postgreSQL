@@ -4,7 +4,8 @@ WORKDIR "/app"
 COPY prisma ./prisma/
 COPY . .
 RUN yarn install
-# RUN npm install -g @prisma/client prisma && prisma generate
+RUN npm install
+# @prisma/client prisma && prisma generate
 RUN yarn run postinstall
 
 
