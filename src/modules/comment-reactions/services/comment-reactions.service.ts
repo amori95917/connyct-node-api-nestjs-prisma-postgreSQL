@@ -26,14 +26,12 @@ export class CommentReactionsService {
   ) {
     try {
       const comment = await this.commentsRepository.findCommentById(commentId);
-      console.log(comment, 'incoming comment');
       if (!comment)
         return customError(
           COMMENT_MESSAGE.NOT_FOUND,
           COMMENT_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
-      console.log('incoming error message');
       return this.commentReactionsRepository.getComments(
         commentId,
         paginate,

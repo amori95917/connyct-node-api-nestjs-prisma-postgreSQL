@@ -42,6 +42,8 @@ import {
   CompanyDocumentEditInput,
   CompanyDocumentInput,
 } from '../dto/company-document.input';
+import { UserDecorator } from 'src/modules/user/decorators/user.decorator';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @Resolver(() => Company)
 export class CompanyResolver {
@@ -65,8 +67,11 @@ export class CompanyResolver {
   @UseGuards(GqlAuthGuard)
   @Roles(Role.Owner, Role.Manager, Role.Editor, Role.User)
   @Query(() => Company)
-  async getCompanyById(@Args('id', { type: () => String }) id: string) {
-    return this.companyService.getCompanyById(id);
+  async getCompanyById(
+    @Args('id', { type: () => String }) id: string,
+    @UserDecorator() user: User,
+  ) {
+    return this.companyService.getCompanyById(id, user.id);
   }
 
   @UseGuards(GqlAuthGuard)

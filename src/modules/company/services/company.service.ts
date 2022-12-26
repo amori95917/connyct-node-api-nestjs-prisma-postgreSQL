@@ -146,14 +146,27 @@ export class CompanyService {
     }
   }
 
-  async getCompanyById(companyId: string): Promise<Company | null> {
+  async getCompanyById(
+    companyId: string,
+    userId: string,
+  ): Promise<Company | null> {
     try {
       const company = await this.prisma.company.findFirst({
         where: { id: companyId },
       });
       if (!company) return null;
       const followers = await this.getCompanyFollowersCount(companyId);
-      return Object.assign(company, { followers });
+      const hasFollowedByUser =
+        await this.prisma.followUnfollowCompany.findMany({
+          where: {
+            followedById: userId,
+            followedToId: companyId,
+          },
+        });
+      return Object.assign(company, {
+        followers,
+        hasFollowedByUser: hasFollowedByUser.length > 0,
+      });
     } catch (err) {
       throw new Error(err);
     }
@@ -218,9 +231,9 @@ export class CompanyService {
       throw new Error(e);
     }
   }
-  async getCompanyByUserId(userId: string): Promise<Company> {
+  async getCompanyByUserId(userId: string) {
     try {
-      return await this.prisma.company.findFirst({
+      return await this.prisma.company.findMany({
         where: { ownerId: userId },
       });
     } catch (err) {

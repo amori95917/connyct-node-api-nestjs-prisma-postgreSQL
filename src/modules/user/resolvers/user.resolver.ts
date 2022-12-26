@@ -167,15 +167,11 @@ export class UserResolver {
     return await this.userService.editUserProfile(userProfile, file, id);
   }
 
-  @ResolveField('company', () => Company)
+  @ResolveField('company', () => [Company])
   @UseGuards(GqlAuthGuard)
-  async company(
-    @Parent() user: User,
-    @Info() info: any,
-  ): Promise<Company | null> {
-    console.log(info, 'info incoming');
-    console.log('info incoming');
-    return await this.companyService.getCompanyByUserId(user.id);
+  async company(@Parent() user: User) {
+    const company = await this.companyService.getCompanyByUserId(user.id);
+    return company;
   }
 
   @ResolveField('userProfile', () => UserProfile)

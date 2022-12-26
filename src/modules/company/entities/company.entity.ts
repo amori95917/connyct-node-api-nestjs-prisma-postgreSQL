@@ -104,6 +104,9 @@ export class Company extends BaseEntity {
 
   @Field(() => [CompanyDocument], { nullable: true })
   companyDocument?: CompanyDocument[];
+
+  @Field({ nullable: true })
+  hasFollowedByUser?: boolean;
 }
 
 @ObjectType()

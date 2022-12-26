@@ -67,6 +67,7 @@ type Company {
   accountStatus: String
   reason: String
   companyDocument: [CompanyDocument!]
+  hasFollowedByUser: Boolean
 }
 
 type CompanyPaginated {

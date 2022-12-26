@@ -141,7 +141,6 @@ export class AuthService {
     const role = await this.prisma.role.findFirst({
       where: { name: accountType },
     });
-    console.log('role', role);
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
