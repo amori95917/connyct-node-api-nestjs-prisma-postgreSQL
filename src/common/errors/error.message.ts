@@ -65,3 +65,6 @@ export const COMPANY_DISCUSSION_MESSAGE = {
   DISCUSSION_ANSWER_NOT_FOUND: 'Discussion answer not found',
   COMPANY_NOT_FOLLOWED: 'You must follow company in order complete this action',
 };
+export const PRODUCT_CATEGORY_MESSAGE = {
+  NOT_FOUND: 'Category not found',
+};

@@ -31,6 +31,7 @@ import { OtpVerificationModule } from './modules/otp-verification/otp-verificati
 import { CompanyDiscussionModule } from './modules/company-discussion/company-discussion.module';
 import { CompanyCommunityModule } from './modules/company-community/company-community.module';
 import { CommunityPostModule } from './modules/community-post/community-post.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { CommunityPostModule } from './modules/community-post/community-post.mod
     CompanyDiscussionModule,
     CompanyCommunityModule,
     CommunityPostModule,
+    ProductModule,
   ],
 })
 export class AppModule {

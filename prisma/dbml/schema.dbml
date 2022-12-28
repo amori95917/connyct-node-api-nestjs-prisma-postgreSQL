@@ -49,6 +49,7 @@ Table User {
   CommunityPostReaction CommunityPostReaction [not null]
   roleId String
   CommunityPostCommentReaction CommunityPostCommentReaction [not null]
+  ProductFeedback ProductFeedback [not null]
 
   indexes {
     (id, email) [unique]
@@ -147,6 +148,7 @@ Table Company {
   CompanyDocument CompanyDocument [not null]
   CompanyCommunity CompanyCommunity [not null]
   CommunityMember CommunityMember [not null]
+  Product Product [not null]
 }
 
 Table CompanyDocument {
@@ -237,15 +239,6 @@ Table PostImage {
   isDeleted Boolean [not null, default: false]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
-}
-
-Table Product {
-  id String [pk]
-  name String
-  description String
-  image String [not null]
-  postId String [not null]
-  post Post
 }
 
 Table Reactions {
@@ -575,6 +568,109 @@ Table CommunityPostCommentReaction {
   updatedAt DateTime
 }
 
+Table ProductCategory {
+  id String [pk]
+  categoryType String [unique, not null]
+  description String
+  image String
+  isRoot Boolean [not null, default: false]
+  isLeaf Boolean [not null, default: false]
+  level Float [not null]
+  isActive Boolean [not null, default: false]
+  parentId String
+  subCategory ProductCategory
+  category ProductCategory [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  Product Product [not null]
+}
+
+Table Product {
+  id String [pk]
+  sku String [not null]
+  productName String [not null]
+  price String [not null]
+  rating String
+  slug String
+  isSaleAble Boolean [not null, default: false]
+  isAvailable Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  companyId String [not null]
+  company Company [not null]
+  ProductImage ProductImage [not null]
+  ProductAttribute ProductAttribute
+  ProductVariation ProductVariation [not null]
+  categoryId String [not null]
+  category ProductCategory [not null]
+  ProductFeedback ProductFeedback [not null]
+  Post Post
+  postId String
+  ProductType ProductType
+  productTypeId String
+}
+
+Table ProductImage {
+  id String [pk]
+  image String [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  productId String [not null]
+  product Product [not null]
+  productVariationId String
+  productVariation ProductVariation
+}
+
+Table ProductAttribute {
+  id String [pk]
+  description String
+  specification String
+  benefits String
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  productVariationId String [unique]
+  productVariation ProductVariation
+  productId String [unique]
+  product Product
+  ProductType ProductType
+  productTypeId String
+}
+
+Table ProductVariation {
+  id String [pk]
+  title String [not null]
+  sku String [not null]
+  price String [not null]
+  size String
+  color String
+  rating String
+  isAvailable Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+  ProductAttribute ProductAttribute
+  productId String
+  product Product
+  ProductImage ProductImage [not null]
+}
+
+Table ProductType {
+  id String [pk]
+  name String [not null]
+  Product Product [not null]
+  ProductAttribute ProductAttribute [not null]
+}
+
+Table ProductFeedback {
+  id String [pk]
+  text String [not null]
+  userId String [not null]
+  user User [not null]
+  productId String [not null]
+  product Product [not null]
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
+}
+
 Enum RegistrationNumberType {
   PAN
   VAT
@@ -682,8 +778,6 @@ Ref: Post.companyId > Company.id [delete: Cascade]
 
 Ref: PostImage.postId > Post.id [delete: Cascade]
 
-Ref: Product.postId > Post.id [delete: Cascade]
-
 Ref: PostReaction.reactionId > Reactions.id
 
 Ref: PostReaction.postId > Post.id
@@ -789,3 +883,29 @@ Ref: CommunityComment.commentId - CommunityComment.id [delete: Cascade]
 Ref: CommunityPostCommentReaction.communityPostCommentId > CommunityComment.id
 
 Ref: CommunityPostCommentReaction.userId > User.id
+
+Ref: ProductCategory.parentId - ProductCategory.id
+
+Ref: Product.companyId > Company.id [delete: Cascade]
+
+Ref: Product.categoryId > ProductCategory.id
+
+Ref: Product.postId > Post.id
+
+Ref: Product.productTypeId > ProductType.id
+
+Ref: ProductImage.productId > Product.id
+
+Ref: ProductImage.productVariationId > ProductVariation.id [delete: Cascade]
+
+Ref: ProductAttribute.productVariationId - ProductVariation.id [delete: Cascade]
+
+Ref: ProductAttribute.productId - Product.id [delete: Cascade]
+
+Ref: ProductAttribute.productTypeId > ProductType.id
+
+Ref: ProductVariation.productId > Product.id [delete: Cascade]
+
+Ref: ProductFeedback.userId > User.id [delete: Cascade]
+
+Ref: ProductFeedback.productId > Product.id [delete: Cascade]

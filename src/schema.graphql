@@ -1285,6 +1285,25 @@ type CommunityPostCommentReactionPaginationPayload {
   data: CommunityPostCommentReactionsPagination
 }
 
+type ProductCategory {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  categoryType: String
+  parentId: String
+  description: String
+  image: String
+  isRoot: Boolean
+  isLeaf: Boolean
+  level: Float
+  subCategory: [ProductCategory!]
+}
+
+type ProductCategoryPayload {
+  errors: [CustomError!]
+  data: ProductCategory
+}
+
 type Query {
   listUsers(
     """Paginate before opaque cursor"""
@@ -1583,6 +1602,9 @@ type Query {
     last: Float
     order: CommunityPostCommentReactionsOrderList = {direction: desc}
   ): CommunityPostCommentReactionPaginationPayload!
+  productCategories: [ProductCategory!]!
+  rootCategory: [ProductCategory!]!
+  subCategoryList(parentId: String!): [ProductCategory!]!
 }
 
 input OrderListUsers {
@@ -1816,6 +1838,9 @@ type Mutation {
   createThirdLevelComment(commentId: String!, input: CommentInput!, mention: MentionsInput): ThirdLevelCommentPayload!
   communityPostReactionCreate(data: ReactionInput!): ReactionPayload!
   communityPostCommentReactionCreate(input: CommunityPostCommentReactionInput!): CommunityPostCommentReactionPayload!
+  productCategory(input: ProductCategoryInput!): ProductCategoryPayload!
+  updateProductCategory(input: ProductCategoryInput!, id: String!): ProductCategoryPayload!
+  deleteProductCategory(id: String!): ProductCategoryPayload!
 }
 
 input UpdateStatusUserInput {
@@ -2117,4 +2142,13 @@ input ReactionInput {
 input CommunityPostCommentReactionInput {
   reactionType: String!
   communityPostCommentId: String!
+}
+
+input ProductCategoryInput {
+  categoryType: String!
+  parentId: String
+  description: String
+  image: String
+  isRoot: Boolean = false
+  isLeaf: Boolean = false
 }
