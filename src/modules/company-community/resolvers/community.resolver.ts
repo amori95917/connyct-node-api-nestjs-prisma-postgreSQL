@@ -15,6 +15,7 @@ import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { CompanyService } from 'src/modules/company/services/company.service';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { UserDecorator } from 'src/modules/user/decorators/user.decorator';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserService } from 'src/modules/user/services/user.service';
 import { CommunityEditInput, CommunityInput } from '../dto/community.input';
@@ -49,11 +50,13 @@ export class CommunityResolver {
       defaultValue: { orderBy: 'name', direction: 'desc' },
     })
     order: OrderListCommunity,
+    @UserDecorator() user: User,
   ): Promise<GetCommunityPayload> {
     return await this.communityService.getCommunityByCompanyId(
       companyId,
       paginate,
       order,
+      user.id,
     );
   }
 

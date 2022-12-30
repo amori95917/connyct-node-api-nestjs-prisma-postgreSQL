@@ -1,12 +1,6 @@
-import { OrderFollowedCompanyList } from 'src/modules/follow-unfollow-company/dto/follow-company.input';
-import {
-  Company,
-  CompanyPaginated,
-} from 'src/modules/company/entities/company.entity';
 import { UseGuards } from '@nestjs/common';
 import {
   Args,
-  Info,
   Mutation,
   Parent,
   Query,
@@ -14,32 +8,37 @@ import {
   Resolver,
 } from '@nestjs/graphql';
 import { User as UserPrisma } from '@prisma/client';
+import {
+  Company,
+  CompanyPaginated,
+} from 'src/modules/company/entities/company.entity';
+import { OrderFollowedCompanyList } from 'src/modules/follow-unfollow-company/dto/follow-company.input';
 
-import { UserService } from '../services/user.service';
-import { ValidationService } from '../services/validation.service';
 import { Roles } from 'src/modules/auth/decorators/role.decorator';
 import { Role } from 'src/modules/auth/enum/role.enum';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
+import { UserService } from '../services/user.service';
+import { ValidationService } from '../services/validation.service';
 
 import { UserDecorator } from '../decorators/user.decorator';
 
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
+import { Role as RoleEntity } from 'src/modules/auth/entities/role.entity';
+import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
+import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
+import { CompanyService } from 'src/modules/company/services/company.service';
+import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
+import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { ChangePasswordInput } from '../dto/change-password.input';
 import { FilterListUsers } from '../dto/filter-user.input';
 import { OrderListUsers } from '../dto/order-users.input';
 import { UpdateStatusUserInput, UpdateUserInput } from '../dto/user.input';
-import { User, UserPaginated } from '../entities/user.entity';
-import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
-import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
-import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
-import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
-import { UserProfilePayload } from '../entities/userProfile.payload';
 import { UserProfileInput } from '../dto/userProfile.input';
-import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
-import { FileUpload, GraphQLUpload } from 'graphql-upload';
-import { CompanyService } from 'src/modules/company/services/company.service';
-import { UserProfile } from '../userProfile.model';
-import { Role as RoleEntity } from 'src/modules/auth/entities/role.entity';
 import { UserConnectionsSummaryEntity } from '../entities/user-connections.entity';
+import { User, UserPaginated } from '../entities/user.entity';
+import { UserProfilePayload } from '../entities/userProfile.payload';
+import { UserProfile } from '../userProfile.model';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -189,7 +188,8 @@ export class UserResolver {
   @ResolveField('roles', () => [RoleEntity])
   async roles(@Parent() user: User) {
     const { id } = user;
-    return await this.userService.getUserRoles(id);
+    const roles = await this.userService.getUserRoles(id);
+    return roles;
   }
 
   @ResolveField('activeRole', () => RoleEntity)

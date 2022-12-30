@@ -3,11 +3,11 @@ import { CONTEXT } from '@nestjs/graphql';
 import { User } from '@prisma/client';
 import { customError, UserIdIsRequired } from 'src/common/errors';
 
-import { PrismaService } from '../../prisma/prisma.service';
-import { PasswordService } from './password.service';
 import { SignupInput } from 'src/modules/auth/dto/signup.input';
 import { Role } from 'src/modules/auth/enum/role.enum';
 import { TokenService } from 'src/modules/auth/services/token.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PasswordService } from './password.service';
 
 import { ChangePasswordInput } from '../dto/change-password.input';
 import { FilterListUsers } from '../dto/filter-user.input';
@@ -18,19 +18,19 @@ import {
   UserDataInput,
 } from '../dto/user.input';
 
-import { User as UserEntity } from '../entities/user.entity';
+import { FileUpload } from 'graphql-upload';
+import { SharpService } from 'nestjs-sharp';
+import { USER_CODE } from 'src/common/errors/error.code';
+import { USER_MESSAGE } from 'src/common/errors/error.message';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { Auth } from 'src/modules/auth/entities/auth.entity';
+import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
+import { FileUploadService } from 'src/modules/files/services/file.service';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 import { UserProfileInput } from '../dto/userProfile.input';
-import { FileUpload } from 'graphql-upload';
-import { FileUploadService } from 'src/modules/files/services/file.service';
+import { User as UserEntity } from '../entities/user.entity';
 import { UserProfilePayload } from '../entities/userProfile.payload';
-import { COMPANY_MESSAGE, USER_MESSAGE } from 'src/common/errors/error.message';
-import { COMPANY_CODE, USER_CODE } from 'src/common/errors/error.code';
-import { STATUS_CODE } from 'src/common/errors/error.statusCode';
-import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
-import { SharpService } from 'nestjs-sharp';
 import { UserProfile } from '../userProfile.model';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -113,13 +113,13 @@ export class UserService {
 
   async getUserRoles(userId: string) {
     try {
-      const role = await this.prisma.userRole.findMany({
+      const roles = await this.prisma.userRole.findMany({
         where: { userId },
         include: {
           role: true,
         },
       });
-      return role;
+      return roles.map((r) => r.role);
     } catch (err) {
       throw new Error(err);
     }
@@ -190,6 +190,95 @@ export class UserService {
     });
   }
 
+  generateUsername(fullName: string, email: string) {
+    // Check if fullName or email is provided
+    if (fullName) {
+      // Use fullName as the base for the username
+      let username = fullName.toLowerCase().replace(/\s/g, '');
+      // Check if the username is already taken
+      const user = this.prisma.user.findFirst({
+        where: { username: username },
+      });
+      // If the username is taken, add a random string to make it unique
+      if (user) {
+        username += Date.now().toString(36);
+      }
+      return username;
+    } else if (email) {
+      // Use email as the base for the username
+      let username = email.split('@')[0].toLowerCase();
+      // Check if the username is already taken
+      const user = this.prisma.user.findFirst({
+        where: { username: username },
+      });
+      // If the username is taken, add a random string to make it unique
+      if (user) {
+        username += Date.now().toString(36);
+      }
+      return username;
+    }
+    // If fullName and email are not provided, throw an error
+    throw new Error('Full name or email is required to generate a username');
+  }
+
+  async createUserProfile(userId: string) {
+    await this.prisma.userProfile.create({ data: { userId } });
+  }
+
+  async assignUserRole(userId: string, roleName: string) {
+    console.log('userId', userId, roleName);
+    const role = await this.prisma.role.findFirst({
+      where: { name: roleName },
+    });
+    console.log('role in assignUserRole', role);
+    if (!role) {
+      throw new Error(`Role "${roleName}" does not exist`);
+    }
+    await this.prisma.userRole.create({
+      data: {
+        userId,
+        roleId: role.id,
+      },
+    });
+  }
+
+  async setActiveRole(userId: string, roleName: string) {
+    const role = await this.prisma.role.findFirst({
+      where: { name: roleName },
+    });
+    if (!role) {
+      throw new Error(`Role "${roleName}" does not exist`);
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { activeRole: { connect: { id: role.id } } },
+    });
+  }
+
+  async createCompany(
+    legalName: string,
+    email: string,
+    hashPassword: string,
+    rest: any,
+  ) {
+    const companySlug = this.generateUsername(legalName.split(' ')[0], email);
+    const { owner } = await this.prisma.company.create({
+      data: {
+        legalName,
+        slug: companySlug,
+        owner: {
+          create: {
+            ...rest,
+            password: hashPassword,
+            username: this.generateUsername(email.split('@')[0], email),
+          },
+        },
+      },
+      include: { owner: { include: { Company: true } } },
+    });
+    return owner;
+  }
+
   async signUp(payload: SignupInput): Promise<Auth> {
     try {
       const hashPassword = await this.passwordService.hashPassword(
@@ -197,128 +286,45 @@ export class UserService {
       );
       const { isCompanyAccount, legalName, ...rest } = payload;
       /**signup logic */
-      //function to assign roles to user
-      const userRoles = async (userId, roleId) => {
-        await this.prisma.userRole.create({
-          data: {
-            userId: userId,
-            roleId: roleId,
-          },
-        });
-      };
-      // create unique username. Need this to be move elsewhere
-      const generateUsername = (fullName: string, email: string) => {
-        // Check if fullName or email is provided
-        if (fullName) {
-          // Use fullName as the base for the username
-          let username = fullName.toLowerCase().replace(/\s/g, '');
-          // Check if the username is already taken
-          const user = this.prisma.user.findFirst({
-            where: { username: username },
-          });
-          // If the username is taken, add a random string to make it unique
-          if (user) {
-            username += Date.now().toString(36);
-          }
-          return username;
-        } else if (email) {
-          // Use email as the base for the username
-          let username = email.split('@')[0].toLowerCase();
-          // Check if the username is already taken
-          const user = this.prisma.user.findFirst({
-            where: { username: username },
-          });
-          // If the username is taken, add a random string to make it unique
-          if (user) {
-            username += Date.now().toString(36);
-          }
-          return username;
-        }
-        // If fullName and email are not provided, throw an error
-        throw new Error(
-          'Full name or email is required to generate a username',
-        );
-      };
+
       const result = await this.prisma.$transaction(async () => {
-        /**check if email already exist */
-        const email = await this.prisma.user.findFirst({
+        // Check if email already exists
+        const emailExists = await this.prisma.user.count({
           where: { email: payload.email },
         });
-        if (email) throw new Error('Email already exists');
+        if (emailExists) throw new Error('Email already exists');
+        // Individual user signup
         if (!isCompanyAccount) {
           if (!payload.fullName) throw new Error('Fullname is required');
           const user = await this.prisma.user.create({
             data: {
               ...rest,
               password: hashPassword,
-              username: generateUsername(payload.fullName, payload.email),
+              username: this.generateUsername(payload.fullName, payload.email),
             },
           });
-          const role = await this.prisma.role.findFirst({
-            where: {
-              name: 'USER',
-            },
-          });
-          await this.prisma.userProfile.create({
-            data: {
-              userId: user.id,
-            },
-          });
-          userRoles(user.id, role.id);
-          await this.prisma.userProfile.create({ data: { userId: user.id } });
-          return { user, role: [role] };
-          // TODO username should be generated uniquely if not provided
+          await this.createUserProfile(user.id);
+          await this.assignUserRole(user.id, 'USER');
+          await this.setActiveRole(user.id, 'USER');
+          return { user };
         }
         // company signup
         if (legalName.length < 3)
           throw new Error('legal name must be at least 3 characters');
-        const companyName = await this.prisma.company.findFirst({
+        const companyNameExists = await this.prisma.company.count({
           where: { legalName: legalName },
         });
-        if (companyName) throw new Error('Company already exists');
-        await this.prisma.company.create({
-          data: {
-            legalName: legalName,
-            slug: generateUsername(
-              payload.legalName.split(' ')[0],
-              payload.email,
-            ),
-            owner: {
-              connectOrCreate: {
-                where: { email: payload.email },
-                create: {
-                  ...rest,
-                  password: hashPassword,
-                  username: generateUsername(
-                    payload.email.split('@')[0],
-                    payload.email,
-                  ),
-                },
-              },
-            },
-          },
-          include: {
-            owner: true,
-          },
-        });
-        const user = await this.prisma.user.findFirst({
-          where: { email: payload.email },
-          include: { Company: true },
-        });
+        if (companyNameExists) throw new Error('Company already exists');
+        const user = await this.createCompany(
+          legalName,
+          payload.email,
+          hashPassword,
+          rest,
+        );
+        await this.createUserProfile(user.id);
         // create the OWNER role for the user
-        const ownerRole = await this.prisma.role.findFirst({
-          where: {
-            name: 'OWNER',
-          },
-        });
-        userRoles(user.id, ownerRole.id);
-        const userRole = await this.prisma.role.findFirst({
-          where: {
-            name: 'USER',
-          },
-        });
-        userRoles(user.id, userRole.id);
-        await this.prisma.userProfile.create({ data: { userId: user.id } });
+        await this.assignUserRole(user.id, 'OWNER');
+        await this.assignUserRole(user.id, 'USER');
         const rolesOfUser = await this.prisma.userRole.findMany({
           where: { userId: user.id },
           include: { role: true },
@@ -328,12 +334,7 @@ export class UserService {
         const activeRole = hasOwnerRole
           ? roles.find((role) => role.name === 'OWNER')
           : roles.find((role) => role.name === 'USER');
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            activeRole: { connect: { id: activeRole.id } },
-          },
-        });
+        await this.setActiveRole(user.id, activeRole.name);
         return {
           user: user,
           role: roles,

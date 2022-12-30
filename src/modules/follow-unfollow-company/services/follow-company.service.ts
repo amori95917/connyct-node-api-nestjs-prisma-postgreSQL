@@ -171,14 +171,26 @@ export class FollowCompanyService {
       //   updatedAt: 2022-10-04T02:45:23.466Z,
       //   followedTo: [Object]
       // },
+      const getCompanyFollowersCount = async (companyId: string) => {
+        const count = await this.companyService.getCompanyFollowersCount(
+          companyId,
+        );
+        return count;
+      };
+
       const companyFollowedByUser = {
         ...result,
-        edges: result.edges.map((companyEdge) => {
+        edges: result.edges.map(async (companyEdge) => {
           const { followedTo, ...rest } = companyEdge.node;
           // need followedCreatedAt, companyCreatedAt
           return {
             ...companyEdge,
-            node: { ...companyEdge.node, ...rest, ...followedTo },
+            node: {
+              ...companyEdge.node,
+              ...rest,
+              ...followedTo,
+              followers: await getCompanyFollowersCount(companyEdge.node.id),
+            },
           };
         }),
       };

@@ -46,6 +46,9 @@ export class Community extends BaseEntity {
 
   @Field(() => [CommunityRole], { nullable: true })
   communityRole?: CommunityRole[];
+
+  @Field({ nullable: true })
+  isConnected?: boolean;
 }
 
 @ObjectType()

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CommunityRole, CommunityType } from '@prisma/client';
+import {
+  CommunityRole,
+  CommunityType,
+  FollowUnfollowCompany,
+} from '@prisma/client';
 import { FileUpload } from 'graphql-upload';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
 import { FileUploadService } from 'src/modules/files/services/file.service';
@@ -55,22 +59,56 @@ export class CommunityRepository {
     companyId: string,
     paginate: ConnectionArgs,
     order: OrderListCommunity,
+    userId?: string,
   ) {
     try {
-      const community = await findManyCursorConnection(
+      const communityIds = await this.prisma.communityMember
+        .findMany({
+          where: {
+            AND: [{ companyId }, { memberId: userId }, { isAccepted: true }],
+          },
+          select: { communityId: true },
+        })
+        .then((communityMembers) =>
+          communityMembers.map((cm) => cm.communityId),
+        );
+      const queryWhereClause = userId
+        ? {
+            AND: [
+              { companyId },
+              {
+                OR: [{ id: { in: communityIds } }, { type: 'PUBLIC' as const }],
+              },
+            ],
+          }
+        : { companyId };
+      const communities = await findManyCursorConnection(
         (args) =>
           this.prisma.companyCommunity.findMany({
             ...args,
-            where: { companyId },
+            // where: { companyId },
+            where: queryWhereClause,
             orderBy: { [order.orderBy]: order.direction },
           }),
         () =>
           this.prisma.companyCommunity.count({
-            where: { companyId },
+            // where: { companyId },
+            where: queryWhereClause,
           }),
         { ...paginate },
       );
-      return { community };
+      return {
+        community: {
+          ...communities,
+          edges: communities.edges.map((edge) => ({
+            ...edge,
+            node: {
+              ...edge.node,
+              isConnected: communityIds.includes(edge.node.id),
+            },
+          })),
+        },
+      };
     } catch (err) {
       throw new Error(err);
     }
@@ -109,6 +147,33 @@ export class CommunityRepository {
     return (slug + result).toLowerCase();
   }
 
+  async insertFollowersInBatches(
+    followers: FollowUnfollowCompany[],
+    community: Community,
+    companyId: string,
+  ) {
+    const batchSize = 1000; // Number of followers to insert in each batch
+    let currentIndex = 0; // Current index in the followers array
+
+    while (currentIndex < followers.length) {
+      // Get the next batch of followers
+      const batch = followers.slice(currentIndex, currentIndex + batchSize);
+
+      // Insert the batch of followers
+      await this.prisma.communityMember.createMany({
+        data: batch.map((follower) => ({
+          communityId: community.id,
+          companyId: companyId,
+          memberId: follower.followedById,
+          isAccepted: true,
+        })),
+      });
+
+      // Update the current index to the end of the batch
+      currentIndex += batchSize;
+    }
+  }
+
   async createCommunity(
     input: CommunityInput,
     profile: FileUpload,
@@ -116,22 +181,31 @@ export class CommunityRepository {
     userId: string,
   ): Promise<CommunityPayload> {
     try {
-      let profileUrl: any;
-      let coverImageUrl: any;
-      if (profile) {
-        profileUrl = await this.fileUploadService.uploadImage(
-          'community/community-profile',
-          profile,
-        );
-        if (profileUrl.errors) return { errors: profileUrl.errors };
+      // Upload the profile and cover image in parallel
+      const [profileUrl, coverImageUrl] = await Promise.all([
+        profile
+          ? this.fileUploadService.uploadImage(
+              'community/community-profile',
+              profile,
+            )
+          : Promise.resolve(),
+        coverImage
+          ? this.fileUploadService.uploadImage(
+              'community/community-coverImage',
+              coverImage,
+            )
+          : Promise.resolve(),
+      ]);
+
+      // If any of the image uploads returned errors, return the errors
+      if (profileUrl?.errors || coverImageUrl?.errors) {
+        return {
+          errors: (profileUrl?.errors || []).concat(
+            coverImageUrl?.errors || [],
+          ),
+        };
       }
-      if (coverImage) {
-        coverImageUrl = await this.fileUploadService.uploadImage(
-          'community/community-coverImage',
-          coverImage,
-        );
-        if (coverImageUrl.errors) return { errors: coverImageUrl.errors };
-      }
+      console.log('profileImageURL', profileUrl, coverImageUrl);
       const create = await this.prisma.$transaction(async () => {
         const community = await this.prisma.companyCommunity.create({
           data: {
@@ -142,14 +216,38 @@ export class CommunityRepository {
             slug: this.generateSlug(input.name),
           },
         });
-        await this.prisma.communityMember.create({
-          data: {
-            communityId: community.id,
-            companyId: input.companyId,
-            memberId: userId,
-            isAccepted: true,
-          },
-        });
+        if (input.type === 'PUBLIC') {
+          const companyFollowers =
+            await this.prisma.followUnfollowCompany.findMany({
+              where: {
+                followedToId: input.companyId,
+              },
+            });
+          // const communityMembers = companyFollowers.map((follower) => ({
+          //   communityId: community.id,
+          //   companyId: input.companyId,
+          //   memberId: follower.followedById,
+          //   isAccepted: true,
+          // }));
+          // await this.prisma.communityMember.createMany({
+          //   data: communityMembers,
+          // });
+          await this.insertFollowersInBatches(
+            companyFollowers,
+            community,
+            input.companyId,
+          );
+        } else {
+          await this.prisma.communityMember.create({
+            data: {
+              communityId: community.id,
+              companyId: input.companyId,
+              memberId: userId,
+              isAccepted: true,
+            },
+          });
+        }
+
         await this.prisma.companyCommunityRole.create({
           data: {
             role: CommunityRole.ADMIN,

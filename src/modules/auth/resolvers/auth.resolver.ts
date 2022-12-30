@@ -29,6 +29,7 @@ import { OTPService } from 'src/modules/otp-verification/services/otp.service';
 import { SwitchAccountInput } from '../dto/switch-account.input';
 import { GqlAnonymousGuard } from '../guards/gql-anonymous.guard';
 import { UseGuards } from '@nestjs/common';
+import { UserDecorator } from 'src/modules/user/decorators/user.decorator';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -170,12 +171,12 @@ export class AuthResolver {
   @Roles(Role.Admin, Role.Editor, Role.Manager, Role.Owner, Role.User)
   async switchAccount(
     @Args('input') input: SwitchAccountInput,
-    @Context() ctx: any,
+    @UserDecorator() userEntity: User,
   ) {
     // retrieve the requested account from the database
     const { accessToken, refreshToken, user, role, company } =
       await this.auth.findUserByIdAndAccountType(
-        input.userId,
+        userEntity.id,
         input.accountType,
       );
 

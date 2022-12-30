@@ -384,11 +384,6 @@ type Auth {
   company: [Company!]
 }
 
-type UserProfilePayload {
-  errors: CustomError
-  userProfile: UserProfile
-}
-
 type UserConnectionsSummary {
   connectedBrands: Float
 
@@ -406,6 +401,11 @@ type UserConnectionsSummaryEntity {
   fullName: String
   isValid: Boolean
   summary: UserConnectionsSummary
+}
+
+type UserProfilePayload {
+  errors: CustomError
+  userProfile: UserProfile
 }
 
 type CompanyPayload {
@@ -862,6 +862,7 @@ type Community {
   ): CommunityMemberPaginated
   followersCount: Float
   communityRole: [CommunityRole!]
+  isConnected: Boolean
 }
 
 input OrderListCommunityMember {
@@ -1897,7 +1898,6 @@ input RequestResetPasswordInput {
 }
 
 input SwitchAccountInput {
-  userId: String!
   accountType: String!
 }
 

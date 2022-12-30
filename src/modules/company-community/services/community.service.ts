@@ -54,6 +54,7 @@ export class CommunityService {
     companyId: string,
     paginate: ConnectionArgs,
     order: OrderListCommunity,
+    userId?: string,
   ): Promise<GetCommunityPayload> {
     const company = await this.companyService.getCompanyById(companyId);
     if (!company)
@@ -66,6 +67,7 @@ export class CommunityService {
       companyId,
       paginate,
       order,
+      userId,
     );
   }
   async getCommunityById(communityId: string): Promise<CommunityPayload> {
