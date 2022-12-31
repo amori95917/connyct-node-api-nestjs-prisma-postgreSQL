@@ -64,8 +64,9 @@ export class CommunityResolver {
   @Query(() => CommunityPayload)
   async getCommunityById(
     @Args('communityId') communityId: string,
+    @CurrentUser() user: User,
   ): Promise<CommunityPayload> {
-    return await this.communityService.getCommunityById(communityId);
+    return await this.communityService.getCommunityById(communityId, user.id);
   }
 
   @UseGuards(GqlAuthGuard)

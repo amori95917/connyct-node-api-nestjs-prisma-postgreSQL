@@ -1,19 +1,14 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { BaseEntity } from 'src/modules/prisma/entities/base.entity';
 
 @ObjectType()
-export class FollowCompany {
-  @Field(() => ID)
-  id: string;
-
-  @Field()
+export class FollowCompany extends BaseEntity {
+  @Field({ nullable: true })
   followedById: string;
 
-  @Field()
+  @Field({ nullable: true })
   followedToId: string;
 
-  @Field()
-  createdAt: Date;
-
-  @Field()
-  updatedAt: Date;
+  @Field({ nullable: true })
+  isConnected: boolean;
 }

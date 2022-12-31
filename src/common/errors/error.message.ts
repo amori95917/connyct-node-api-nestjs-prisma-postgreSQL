@@ -17,6 +17,9 @@ export const COMMUNITY_MESSAGE = {
   COMMUNITY_NOT_JOINED: 'You must join community',
   COMMUNITY_ALREADY_JOINED: 'Community already joined',
   MUST_BE_PUBLIC_COMMUNITY: 'Community must be public',
+  NOT_A_OWNER: 'Only company owner can create community',
+  ALREADY_A_OWNER: 'Already a owner',
+  ATLEAST_SELECT_A_MEMBER: 'Atleast select one member',
 };
 
 export const COMMUNITY_POLICY_MESSAGE = {

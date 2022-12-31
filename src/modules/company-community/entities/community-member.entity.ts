@@ -15,6 +15,9 @@ export class CommunityMember extends BaseEntity {
   @Field({ nullable: true })
   memberId: string;
 
+  @Field({ nullable: true })
+  isConnected: boolean;
+
   @Field(() => Community, { nullable: true })
   community?: Community;
 

@@ -60,6 +60,7 @@ export class CommunityRepository {
     paginate: ConnectionArgs,
     order: OrderListCommunity,
     userId?: string,
+    ownerId?: string,
   ) {
     try {
       const communityIds = await this.prisma.communityMember
@@ -72,31 +73,30 @@ export class CommunityRepository {
         .then((communityMembers) =>
           communityMembers.map((cm) => cm.communityId),
         );
-      const queryWhereClause = userId
-        ? {
-            AND: [
-              { companyId },
-              {
-                OR: [{ id: { in: communityIds } }, { type: 'PUBLIC' as const }],
-              },
-            ],
-          }
-        : { companyId };
+      console.log(communityIds, 'incoming ids');
+      const queryWhereClause =
+        userId !== ownerId
+          ? {
+              OR: [
+                { companyId, type: 'PUBLIC' as const },
+                { id: { in: communityIds } },
+              ],
+            }
+          : { companyId };
       const communities = await findManyCursorConnection(
         (args) =>
           this.prisma.companyCommunity.findMany({
             ...args,
-            // where: { companyId },
             where: queryWhereClause,
             orderBy: { [order.orderBy]: order.direction },
           }),
         () =>
           this.prisma.companyCommunity.count({
-            // where: { companyId },
             where: queryWhereClause,
           }),
         { ...paginate },
       );
+      console.log(communities, 'incoming com');
       return {
         community: {
           ...communities,
@@ -119,8 +119,23 @@ export class CommunityRepository {
       where: { userId },
     });
   }
-  async getCommunityById(id: string): Promise<Community> {
-    return await this.prisma.companyCommunity.findFirst({ where: { id } });
+  async getCommunityMemberByMemberIdAndCommunityId(
+    communityId: string,
+    memberId: string,
+  ) {
+    return await this.prisma.communityMember.findFirst({
+      where: { communityId, memberId },
+    });
+  }
+  async getCommunityById(id: string, userId?: string): Promise<Community> {
+    const communityMember =
+      await this.getCommunityMemberByMemberIdAndCommunityId(id, userId);
+    const community = await this.prisma.companyCommunity.findFirst({
+      where: { id },
+    });
+    return Object.assign(community, {
+      isConnected: communityMember ? true : false,
+    });
   }
 
   async getCommunityFollowersCount(communityId: string) {
@@ -216,38 +231,36 @@ export class CommunityRepository {
             slug: this.generateSlug(input.name),
           },
         });
-        if (input.type === 'PUBLIC') {
-          const companyFollowers =
-            await this.prisma.followUnfollowCompany.findMany({
-              where: {
-                followedToId: input.companyId,
-              },
-            });
-          // const communityMembers = companyFollowers.map((follower) => ({
-          //   communityId: community.id,
-          //   companyId: input.companyId,
-          //   memberId: follower.followedById,
-          //   isAccepted: true,
-          // }));
-          // await this.prisma.communityMember.createMany({
-          //   data: communityMembers,
-          // });
-          await this.insertFollowersInBatches(
-            companyFollowers,
-            community,
-            input.companyId,
-          );
-        } else {
-          await this.prisma.communityMember.create({
-            data: {
-              communityId: community.id,
-              companyId: input.companyId,
-              memberId: userId,
-              isAccepted: true,
-            },
-          });
-        }
-
+        // if (input.type === 'PUBLIC') {
+        //   const companyFollowers =
+        //     await this.prisma.followUnfollowCompany.findMany({
+        //       where: {
+        //         followedToId: input.companyId,
+        //       },
+        //     });
+        // const communityMembers = companyFollowers.map((follower) => ({
+        //   communityId: community.id,
+        //   companyId: input.companyId,
+        //   memberId: follower.followedById,
+        //   isAccepted: true,
+        // }));
+        // await this.prisma.communityMember.createMany({
+        //   data: communityMembers,
+        // });
+        // await this.insertFollowersInBatches(
+        //   companyFollowers,
+        //   community,
+        //   input.companyId,
+        // );
+        // } else {
+        await this.prisma.communityMember.create({
+          data: {
+            communityId: community.id,
+            companyId: input.companyId,
+            memberId: userId,
+            isAccepted: true,
+          },
+        });
         await this.prisma.companyCommunityRole.create({
           data: {
             role: CommunityRole.ADMIN,
@@ -426,6 +439,7 @@ export class CommunityRepository {
           where: { id: communityMemberId },
           data: {
             isAccepted: true,
+            isConnected: true,
           },
         });
         await this.prisma.companyCommunityRole.create({
@@ -449,7 +463,7 @@ export class CommunityRepository {
     try {
       const joinCommunity = await this.prisma.$transaction(async () => {
         const join = await this.prisma.communityMember.create({
-          data: { ...input, memberId, isAccepted: true },
+          data: { ...input, memberId, isAccepted: true, isConnected: true },
         });
         await this.prisma.companyCommunityRole.create({
           data: {
@@ -460,7 +474,6 @@ export class CommunityRepository {
         });
         return join;
       });
-      console.log(joinCommunity, 'incoming ');
       return { joinCommunity };
     } catch (err) {
       throw new Error(err);
