@@ -508,19 +508,21 @@ type InvitedEmployee {
 }
 
 type FollowUserToUser {
-  id: ID!
-  followedToId: String!
-  followedById: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  followedToId: String
+  followedById: String
+  isConnected: Boolean
 }
 
 type FollowCompany {
-  id: ID!
-  followedById: String!
-  followedToId: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  followedById: String
+  followedToId: String
+  isConnected: Boolean
 }
 
 type Industry {
@@ -900,6 +902,7 @@ type CommunityMember {
   communityId: String
   invitedById: String
   memberId: String
+  isConnected: Boolean
   community: Community
   member: User
   communityRole: CommunityRole!

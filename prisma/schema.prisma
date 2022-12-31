@@ -443,6 +443,7 @@ model FollowUnfollowCompany {
   followedById String
   followedTo   Company   @relation(fields: [followedToId], references: [id], onDelete: Cascade)
   followedToId String
+  isConnected  Boolean   @default(true)
   createdAt    DateTime? @default(now())
   updatedAt    DateTime? @updatedAt @db.Timestamp()
 }
@@ -453,6 +454,7 @@ model FollowUserToUser {
   followedToId String
   followedBy   User     @relation("Followed_By_User", fields: [followedById], references: [id], onDelete: Cascade)
   followedById String
+  isConnected  Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt @db.Timestamp()
 }
@@ -596,6 +598,7 @@ model CommunityMember {
   companyId     String
   company       Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   isAccepted    Boolean          @default(false)
+  isConnected   Boolean          @default(false)
   createdAt     DateTime?        @default(now())
   updatedAt     DateTime?        @updatedAt @db.Timestamp()
 }

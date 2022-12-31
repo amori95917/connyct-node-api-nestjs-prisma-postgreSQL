@@ -54,6 +54,7 @@ export class RolesGuard implements CanActivate {
       where: { id: user.id },
       include: { userRoles: { include: { role: true } } },
     });
+    console.log(_user, 'user role');
     return _user.userRoles.some((role) =>
       requiredRoles.includes(role.role.name as any),
     );

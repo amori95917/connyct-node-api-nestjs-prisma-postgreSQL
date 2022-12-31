@@ -57,7 +57,7 @@ export class FollowCompanyService {
   ): Promise<string> {
     try {
       const checkDelete = await this.prisma.followUnfollowCompany.findFirst({
-        where: { followedToId: company.companyId },
+        where: { followedToId: company.companyId, followedById: user.id },
       });
       if (!checkDelete) throw new Error(`Company doesn't exist`);
       await this.prisma.followUnfollowCompany.deleteMany({

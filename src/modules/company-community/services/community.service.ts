@@ -63,16 +63,22 @@ export class CommunityService {
         COMPANY_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
+
     return await this.communityRepository.getCommunityByCompanyId(
       companyId,
       paginate,
       order,
       userId,
+      company.ownerId,
     );
   }
-  async getCommunityById(communityId: string): Promise<CommunityPayload> {
+  async getCommunityById(
+    communityId: string,
+    userId: string,
+  ): Promise<CommunityPayload> {
     const community = await this.communityRepository.getCommunityById(
       communityId,
+      userId,
     );
     return { community };
   }
@@ -89,6 +95,12 @@ export class CommunityService {
         COMPANY_MESSAGE.NOT_FOUND,
         COMPANY_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
+      );
+    if (company.ownerId !== userId)
+      return customError(
+        COMMUNITY_MESSAGE.NOT_A_OWNER,
+        COMMUNITY_CODE.NOT_A_OWNER,
+        STATUS_CODE.NOT_SUPPORTED,
       );
     return await this.communityRepository.createCommunity(
       input,
@@ -179,6 +191,12 @@ export class CommunityService {
         COMMUNITY_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
+    if (!input.memberId.length)
+      return customError(
+        COMMUNITY_MESSAGE.ATLEAST_SELECT_A_MEMBER,
+        COMMUNITY_CODE.ATLEAST_SELECT_A_MEMBER,
+        STATUS_CODE.BAD_CONFLICT,
+      );
 
     return await this.communityRepository.inviteUser(input, invitedById);
   }
@@ -263,6 +281,18 @@ export class CommunityService {
     //     COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
     //     STATUS_CODE.BAD_CONFLICT,
     //   );
+
+    const communityAdmin =
+      await this.communityRepository.getCommunityByIdAndUserId(
+        input.communityId,
+        userId,
+      );
+    if (communityAdmin)
+      return customError(
+        COMMUNITY_MESSAGE.ALREADY_A_OWNER,
+        COMMUNITY_CODE.ALREADY_A_OWNER,
+        STATUS_CODE.BAD_CONFLICT,
+      );
     const publicCommunity = await this.communityRepository.findPublicCommunity(
       input.communityId,
     );
@@ -272,6 +302,7 @@ export class CommunityService {
         COMMUNITY_CODE.MUST_BE_PUBLIC_COMMUNITY,
         STATUS_CODE.NOT_SUPPORTED,
       );
+
     const alreadyAccepted =
       await this.communityRepository.checkCommunityMemberExist(
         input.communityId,

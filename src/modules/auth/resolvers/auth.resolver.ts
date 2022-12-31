@@ -44,7 +44,9 @@ export class AuthResolver {
   @Mutation(() => Auth)
   async signup(@Args('data') data: SignupInput, @Context() context) {
     try {
-      const { user, company, role } = await this.userService.signUp(data);
+      const { user, company, role, activeRole } = await this.userService.signUp(
+        data,
+      );
 
       await this.emailService.sendEmailConfirmation({
         name: `${user.fullName} `,
@@ -68,6 +70,7 @@ export class AuthResolver {
         user,
         role,
         company,
+        activeRole,
         otp,
       };
     } catch (err) {
