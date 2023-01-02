@@ -1182,6 +1182,11 @@ type FirstLevelCommentPaginatedPayload {
   comment: FirstLevelCommentPagination
 }
 
+type SecondLevelCommentPaginatedPayload {
+  errors: [CustomError!]
+  comment: SecondLevelCommentPagination
+}
+
 type FirstLevelCommentPayload {
   errors: [CustomError!]
   comment: FirstLevelComment
@@ -1524,6 +1529,22 @@ type Query {
     last: Float
     order: CommunityPostsOrderList = {direction: desc, orderBy: createdAt}
   ): GetCommunityPostPayload!
+  getSecondLevelComments(
+    commentId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderCommentList = {direction: asc, orderBy: createdAt}
+  ): SecondLevelCommentPaginatedPayload!
   getComments(
     postId: String!
 

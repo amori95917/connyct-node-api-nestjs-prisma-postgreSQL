@@ -9,7 +9,6 @@ import {
 } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
-import { PrismaService } from 'src/modules/prisma/prisma.service';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { User } from 'src/modules/user/entities/user.entity';
 import { UserService } from 'src/modules/user/services/user.service';
@@ -18,6 +17,7 @@ import {
   MentionsInput,
   OrderCommentList,
 } from '../../dto/comment/comment.input';
+import { SecondLevelCommentPaginatedPayload } from '../../entities/comment/comment-pagination.payload';
 import { SecondLevelCommentPayload } from '../../entities/comment/createComment.payload';
 import { SecondLevelComment } from '../../entities/comment/second-level-comment.entity';
 import { ThirdLevelCommentPagination } from '../../entities/comment/third-level-comment.entity';
@@ -48,6 +48,25 @@ export class SecondLevelCommentResolver {
       mention,
     );
   }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => SecondLevelCommentPaginatedPayload)
+  async getSecondLevelComments(
+    @Args('commentId', { type: () => String }) commentId: string,
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'createdAt', direction: 'asc' },
+    })
+    order: OrderCommentList,
+  ): Promise<SecondLevelCommentPaginatedPayload> {
+    return this.commentService.getSecondLevelComment(
+      commentId,
+      paginate,
+      order,
+    );
+  }
+
   @ResolveField('thirdLevelComment', () => ThirdLevelCommentPagination)
   async getReplies(
     @Parent() replies: SecondLevelComment,

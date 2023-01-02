@@ -158,6 +158,11 @@ export class CommentService {
     paginate: ConnectionArgs,
     order: OrderCommentList,
   ) {
-    return this.commentRepository.getSecondLevelComment(id, paginate, order);
+    const comment = await this.commentRepository.getSecondLevelComment(
+      id,
+      paginate,
+      order,
+    );
+    return { comment };
   }
 }
