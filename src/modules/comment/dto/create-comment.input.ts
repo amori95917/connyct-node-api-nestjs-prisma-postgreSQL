@@ -3,15 +3,15 @@ import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Order } from 'src/modules/prisma/resolvers/order/order';
 
 @InputType()
-export class CreateCommentInput {
+export class PostCommentInput {
   @Field(() => String)
   @IsNotEmpty()
   @IsString()
-  public text!: string;
+  public content!: string;
 }
 
 @InputType()
-export class CreateMentionsInput {
+export class PostMentionsInput {
   @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsArray()

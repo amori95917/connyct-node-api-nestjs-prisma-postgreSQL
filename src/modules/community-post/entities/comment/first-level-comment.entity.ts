@@ -28,6 +28,9 @@ export class FirstLevelComment extends BaseEntity {
 
   @Field(() => Community, { nullable: true })
   community?: Community;
+
+  @Field(() => Number, { nullable: true })
+  repliesCount?: number;
 }
 @ObjectType()
 export class FirstLevelCommentPagination extends relayTypes<FirstLevelComment>(

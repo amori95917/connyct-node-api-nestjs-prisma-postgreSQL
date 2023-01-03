@@ -66,6 +66,7 @@ model User {
   roleId                       String?
   CommunityPostCommentReaction CommunityPostCommentReaction[]
   ProductFeedback              ProductFeedback[]
+  CommunityPostCommentMentions CommunityPostCommentMentions[]
 
   @@unique([id, email])
 }
@@ -333,26 +334,22 @@ model PostRating {
 }
 
 model Comment {
-  id                 String             @id @default(uuid())
-  text               String
-  rating             Int                @default(0)
-  creatorId          String
-  postId             String?
-  repliedToCommentId String?
-  repliedToReplyId   String?
-  commentRating      CommentRating[]
-  user               User               @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  post               Post?              @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parentComment      Comment?           @relation(name: "CommentToComment", fields: [repliedToCommentId], references: [id], onDelete: Cascade)
-  comments           Comment[]          @relation(name: "CommentToComment")
-  parentReply        Comment?           @relation(name: "ReplyToReply", fields: [repliedToReplyId], references: [id], onDelete: Cascade)
-  replies            Comment[]          @relation(name: "ReplyToReply")
-  createdAt          DateTime?          @default(now())
-  updatedAt          DateTime?          @updatedAt @db.Timestamp()
-  CommentMentions    CommentMentions[]
-  CommentReactions   CommentReactions[]
+  id               String             @id @default(uuid())
+  content          String
+  postId           String?
+  post             Post?              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentId        String?
+  replies          Comment?           @relation("CommentReplies", fields: [commentId], references: [id], onDelete: Cascade)
+  Comment          Comment[]          @relation("CommentReplies")
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @updatedAt @db.Timestamp()
+  CommentMentions  CommentMentions[]
+  CommentReactions CommentReactions[]
+  CommentRating    CommentRating[]
 
-  @@index([postId, repliedToCommentId, repliedToReplyId, creatorId])
+  @@index([postId, commentId])
 }
 
 model CommentMentions {
@@ -673,8 +670,19 @@ model CommunityComment {
   createdAt                    DateTime?                      @default(now())
   updatedAt                    DateTime?                      @updatedAt @db.Timestamp()
   CommunityPostCommentReaction CommunityPostCommentReaction[]
+  CommunityPostCommentMentions CommunityPostCommentMentions[]
 
   @@index([communityPostId, commentId])
+}
+
+model CommunityPostCommentMentions {
+  id                   String            @id @default(uuid())
+  mentionId            String?
+  user                 User?             @relation(fields: [mentionId], references: [id], onDelete: Cascade)
+  commentId            String?
+  communityPostComment CommunityComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt            DateTime?         @default(now())
+  updatedAt            DateTime?         @updatedAt @db.Timestamp()
 }
 
 model CommunityPostCommentReaction {

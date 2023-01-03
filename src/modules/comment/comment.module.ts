@@ -7,8 +7,10 @@ import { UserModule } from '../user/user.module';
 
 import CommentsLoader from './comment.loader';
 import { CommentsRepository } from './repository/comment.repository';
-import { CommentsResolver } from './resolvers/comment.resolver';
 import { CommentsService } from './services/comment.service';
+import { FirstLevelCommentResolver } from './resolvers/first-level-comment.resolver';
+import { LikesRepository } from '../likes/repository/likes.repository';
+import { SecondLevelCommentResolver } from './resolvers/second-level-comment.resolver';
 
 @Module({
   exports: [CommentsService, CommentsRepository],
@@ -20,9 +22,11 @@ import { CommentsService } from './services/comment.service';
   ],
   providers: [
     CommentsService,
-    CommentsResolver,
+    FirstLevelCommentResolver,
+    SecondLevelCommentResolver,
     CommentsLoader,
     CommentsRepository,
+    LikesRepository,
   ],
 })
 export class CommentModule {}

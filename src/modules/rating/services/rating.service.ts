@@ -65,42 +65,42 @@ export class RatingService {
     };
   }
 
-  public async changeCommentRatingStatus(
-    commentId: string,
-    userId: string,
-    ratingStatus: RatingStatus,
-  ): Promise<RatePayload> {
-    const previousStatus = await this.ratingRepository.findCommentRating(
-      userId,
-      commentId,
-    );
-    if (previousStatus && previousStatus.rating === ratingStatus) {
-      return {
-        isRateSuccessful: true,
-      };
-    }
-    if (previousStatus === null) {
-      await this.changeCommentRating(
-        commentId,
-        RatingStatus.NEUTRAL,
-        ratingStatus,
-      );
-    } else {
-      await this.changeCommentRating(
-        commentId,
-        previousStatus.rating,
-        ratingStatus,
-      );
-    }
-    await this.ratingRepository.upsertCommentRating(
-      userId,
-      commentId,
-      ratingStatus,
-    );
-    return {
-      isRateSuccessful: true,
-    };
-  }
+  // public async changeCommentRatingStatus(
+  //   commentId: string,
+  //   userId: string,
+  //   ratingStatus: RatingStatus,
+  // ): Promise<RatePayload> {
+  //   const previousStatus = await this.ratingRepository.findCommentRating(
+  //     userId,
+  //     commentId,
+  //   );
+  //   if (previousStatus && previousStatus.rating === ratingStatus) {
+  //     return {
+  //       isRateSuccessful: true,
+  //     };
+  //   }
+  //   if (previousStatus === null) {
+  //     await this.changeCommentRating(
+  //       commentId,
+  //       RatingStatus.NEUTRAL,
+  //       ratingStatus,
+  //     );
+  //   } else {
+  //     await this.changeCommentRating(
+  //       commentId,
+  //       previousStatus.rating,
+  //       ratingStatus,
+  //     );
+  //   }
+  //   await this.ratingRepository.upsertCommentRating(
+  //     userId,
+  //     commentId,
+  //     ratingStatus,
+  //   );
+  //   return {
+  //     isRateSuccessful: true,
+  //   };
+  // }
 
   public async getMyPostRatingStatus(
     postId: string,
@@ -140,19 +140,19 @@ export class RatingService {
     await this.postsRepository.incrementRatingById(postId, incrementRating);
   }
 
-  private async changeCommentRating(
-    commentId: string,
-    previousStatus: RatingStatus,
-    newStatus: RatingStatus,
-  ): Promise<void> {
-    const incrementRating = RatingService.getRatingIncrement(
-      previousStatus,
-      newStatus,
-    );
+  // private async changeCommentRating(
+  //   commentId: string,
+  //   previousStatus: RatingStatus,
+  //   newStatus: RatingStatus,
+  // ): Promise<void> {
+  //   const incrementRating = RatingService.getRatingIncrement(
+  //     previousStatus,
+  //     newStatus,
+  //   );
 
-    await this.commentsRepository.incrementRatingById(
-      commentId,
-      incrementRating,
-    );
-  }
+  //   await this.commentsRepository.incrementRatingById(
+  //     commentId,
+  //     incrementRating,
+  //   );
+  // }
 }

@@ -1,91 +1,58 @@
-import {
-  CreateMentionsInput,
-  OrderCommentsList,
-} from './../dto/create-comment.input';
 import { Injectable } from '@nestjs/common';
-
-import { CommentsRepository } from '../repository/comment.repository';
-
-import type { Comment } from '../comment.models';
-import type { CreateCommentInput } from '../dto/create-comment.input';
-import type {
-  CommentDeletePayload,
-  NewReplyPayload,
-} from '../entities/new-reply.payload';
-import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
-import { PostsRepository } from 'src/modules/post/repository/post.repository';
-import { COMMENT_CODE, POST_CODE } from 'src/common/errors/error.code';
-import { STATUS_CODE } from 'src/common/errors/error.statusCode';
-import { POST_MESSAGE, COMMENT_MESSAGE } from 'src/common/errors/error.message';
-import { User } from 'src/modules/user/entities/user.entity';
-import { ReplyToCommentPayload } from 'src/modules/replies/entities/reply-to-comment.payload';
 import { customError } from 'src/common/errors';
+import { COMMENT_CODE, POST_CODE } from 'src/common/errors/error.code';
+import { COMMENT_MESSAGE, POST_MESSAGE } from 'src/common/errors/error.message';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
+import { CommentsRepository } from '../repository/comment.repository';
+import { PostsRepository } from 'src/modules/post/repository/post.repository';
+import {
+  PostCommentInput,
+  PostMentionsInput,
+  OrderCommentsList,
+} from '../dto/create-comment.input';
+import {
+  PostDeleteCommentPayload,
+  PostFirstLevelCommentPayload,
+  GetPostFirstLevelCommentPayload,
+  PostSecondLevelCommentPayload,
+} from '../entities/comment.payload';
 
 @Injectable()
 export class CommentsService {
   public constructor(
-    private readonly commentsRepository: CommentsRepository,
-    private readonly postsRepository: PostsRepository,
+    private readonly commentRepository: CommentsRepository,
+    private readonly postRepository: PostsRepository,
   ) {}
 
-  public async replyToPost(
+  public async createFirstLevelComment(
     postId: string,
     creatorId: string,
-    input: CreateCommentInput,
-    mention: CreateMentionsInput,
-  ): Promise<NewReplyPayload> {
-    const { text } = input;
-    const post = await this.postsRepository.findPostById(postId);
+    input: PostCommentInput,
+    mention: PostMentionsInput,
+  ): Promise<PostFirstLevelCommentPayload> {
+    const { content } = input;
+    const post = await this.postRepository.findPostById(postId);
     if (!post)
       return customError(
         POST_MESSAGE.NOT_FOUND,
         POST_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
-    return await this.commentsRepository.createCommentToPost(
-      creatorId,
+    return await this.commentRepository.createFirstLevelComment(
       postId,
-      text,
-      mention,
-    );
-  }
-
-  public async replyToComment(
-    commentId: string,
-    creatorId: string,
-    input: CreateCommentInput,
-    mention: CreateMentionsInput,
-  ): Promise<ReplyToCommentPayload> {
-    const { text } = input;
-    return await this.commentsRepository.createCommentToComment(
       creatorId,
-      commentId,
-      text,
+      content,
       mention,
     );
   }
-  async createReplyToReply(
-    commentId: string,
-    input: CreateCommentInput,
-    userId: string,
-    mention: CreateMentionsInput,
-  ) {
-    return await this.commentsRepository.createReplyToReply(
-      commentId,
-      input.text,
-      userId,
-      mention,
-    );
-  }
-
   async updateComment(
     commentId: string,
-    input: CreateCommentInput,
-    mention: CreateMentionsInput,
+    input: PostCommentInput,
+    mention: PostMentionsInput,
     userId: string,
-  ): Promise<NewReplyPayload> {
-    const comment = await this.commentsRepository.findCOmmentByIdAndUserId(
+  ): Promise<PostFirstLevelCommentPayload> {
+    const comment = await this.commentRepository.findCommentByIdAndUserId(
       commentId,
       userId,
     );
@@ -95,7 +62,7 @@ export class CommentsService {
         COMMENT_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
-    return await this.commentsRepository.updateComment(
+    return await this.commentRepository.updateComment(
       commentId,
       input,
       mention,
@@ -105,9 +72,9 @@ export class CommentsService {
   async deleteComment(
     commentId: string,
     userId: string,
-  ): Promise<CommentDeletePayload> {
+  ): Promise<PostDeleteCommentPayload> {
     try {
-      const comment = await this.commentsRepository.findCOmmentByIdAndUserId(
+      const comment = await this.commentRepository.findCommentByIdAndUserId(
         commentId,
         userId,
       );
@@ -117,44 +84,84 @@ export class CommentsService {
           COMMENT_CODE.NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
-      return await this.commentsRepository.deleteComment(commentId);
+      return await this.commentRepository.deleteComment(commentId);
     } catch (err) {
       throw new Error(err);
     }
-  }
-
-  async getMentionsUser(id: string): Promise<User[]> {
-    return this.commentsRepository.getMentionsUser(id);
-  }
-  public async getCommentsByPostId(postId: string): Promise<Comment[]> {
-    return this.commentsRepository.findCommentsByPostId(postId);
   }
 
   public async getComments(
     postId: string,
     paginate: ConnectionArgs,
     order: OrderCommentsList,
-  ) {
+  ): Promise<GetPostFirstLevelCommentPayload> {
     /*check if the post exists */
-    const post = await this.postsRepository.findPostById(postId);
+    const post = await this.postRepository.findPostById(postId);
     if (!post)
       return customError(
         POST_MESSAGE.NOT_FOUND,
         POST_CODE.NOT_FOUND,
         STATUS_CODE.NOT_FOUND,
       );
-    const comments = await this.commentsRepository.getComments(
+    const data = await this.commentRepository.getComments(
       postId,
       paginate,
       order,
     );
-    return { comments };
+    return { data };
   }
-  public async getRepliesToComment(
+
+  public async secondLevelComment(
+    commentId: string,
+    creatorId: string,
+    input: PostCommentInput,
+    mention: PostMentionsInput,
+  ): Promise<PostSecondLevelCommentPayload> {
+    const { content } = input;
+    const comment = await this.commentRepository.findCommentById(commentId);
+    if (!comment)
+      return customError(
+        COMMENT_MESSAGE.NOT_FOUND,
+        COMMENT_CODE.NOT_FOUND,
+        STATUS_CODE.NOT_FOUND,
+      );
+    return await this.commentRepository.createSecondLevelComment(
+      creatorId,
+      commentId,
+      content,
+      mention,
+    );
+  }
+  // async createThirdLevelComment(
+  //   commentId: string,
+  //   input: PostCommentInput,
+  //   userId: string,
+  //   mention: PostMentionsInput,
+  // ): Promise<ThirdLevelCommentPayload> {
+  //   const comment = await this.commentRepository.findCommentById(commentId);
+  //   if (!comment)
+  //     return customError(
+  //       COMMENT_MESSAGE.NOT_FOUND,
+  //       COMMENT_CODE.NOT_FOUND,
+  //       STATUS_CODE.NOT_FOUND,
+  //     );
+  //   return await this.commentRepository.createThirdLevelComment(
+  //     commentId,
+  //     input.text,
+  //     userId,
+  //     mention,
+  //   );
+  // }
+  public async getSecondLevelComment(
     id: string,
     paginate: ConnectionArgs,
     order: OrderCommentsList,
   ) {
-    return this.commentsRepository.findRepliesToComment(id, paginate, order);
+    const data = await this.commentRepository.getSecondLevelComment(
+      id,
+      paginate,
+      order,
+    );
+    return { data };
   }
 }

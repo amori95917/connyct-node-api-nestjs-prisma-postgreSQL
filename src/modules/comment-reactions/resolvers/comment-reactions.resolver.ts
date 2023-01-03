@@ -22,14 +22,12 @@ import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator'
 import { User } from 'src/modules/user/entities/user.entity';
 import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
 import { CommentReactions } from '../comment-reactions.model';
-import { Comment } from 'src/modules/comment/comment.models';
 import { Post } from 'src/modules/post/post.models';
 
 @Resolver(() => CommentReactions)
 export class CommentReactionsResolver {
   constructor(
     private readonly commentReactionsService: CommentReactionsService,
-    private readonly commentRepository: CommentsRepository,
   ) {}
 
   @UseGuards(GqlAuthGuard)
@@ -45,12 +43,6 @@ export class CommentReactionsResolver {
     order: CommentReactionsOrderList,
   ) {
     return this.commentReactionsService.getComments(commentId, paginate, order);
-  }
-
-  @ResolveField('comment', () => Comment)
-  async comment(@Parent() commentReaction: CommentReactions): Promise<Comment> {
-    const { commentId } = commentReaction;
-    return this.commentRepository.findCommentById(commentId);
   }
 
   @UseGuards(GqlAuthGuard)

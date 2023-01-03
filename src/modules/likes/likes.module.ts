@@ -14,5 +14,6 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 @Module({
   imports: [PrismaModule, PostModule, FilesModule, CloudinaryModule],
   providers: [LikesResolver, LikesService, LikesRepository, CompanyService],
+  exports: [LikesRepository],
 })
 export class LikesModule {}

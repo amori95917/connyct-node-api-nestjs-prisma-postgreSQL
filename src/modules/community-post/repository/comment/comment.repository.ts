@@ -55,6 +55,13 @@ export class CommentRepository {
       },
     });
   }
+  async getRepliesCount(commentId: string) {
+    return await this.prisma.comment.count({
+      where: {
+        commentId,
+      },
+    });
+  }
   async findCommentById(id: string) {
     return await this.prisma.communityComment.findFirst({
       where: { id: id },
@@ -68,7 +75,7 @@ export class CommentRepository {
 
   async getMentionsUser(id: string): Promise<User[]> {
     try {
-      const mentions = await this.prisma.commentMentions.findMany({
+      const mentions = await this.prisma.communityPostCommentMentions.findMany({
         where: { commentId: id },
         include: { user: true },
       });
@@ -83,7 +90,7 @@ export class CommentRepository {
     });
     const user = await this.userService.findUsersByIds(mentions.mentionIds);
     if (user.length) {
-      await this.prisma.commentMentions.createMany({
+      await this.prisma.communityPostCommentMentions.createMany({
         data: commentMention,
       });
     }
@@ -95,11 +102,11 @@ export class CommentRepository {
     });
     const user = await this.userService.findUsersByIds(mentions);
     if (user.length) {
-      await this.prisma.commentMentions.deleteMany({
+      await this.prisma.communityPostCommentMentions.deleteMany({
         where: { commentId },
       });
 
-      await this.prisma.commentMentions.createMany({
+      await this.prisma.communityPostCommentMentions.createMany({
         data: commentMention,
       });
     }
@@ -164,7 +171,7 @@ export class CommentRepository {
     try {
       await this.prisma.$transaction(async () => {
         await this.prisma.comment.delete({ where: { id } });
-        await this.prisma.commentMentions.deleteMany({
+        await this.prisma.communityPostCommentMentions.deleteMany({
           where: { commentId: id },
         });
       });

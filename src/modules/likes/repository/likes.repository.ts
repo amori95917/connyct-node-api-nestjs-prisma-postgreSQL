@@ -19,6 +19,11 @@ export class LikesRepository {
     }
   }
 
+  async getReactionCount(postId: string) {
+    return await this.prisma.postReaction.count({
+      where: { postId },
+    });
+  }
   public async getLikes(
     postId: string,
     paginate: PaginationArgs,

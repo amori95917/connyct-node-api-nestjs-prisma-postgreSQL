@@ -50,6 +50,7 @@ Table User {
   roleId String
   CommunityPostCommentReaction CommunityPostCommentReaction [not null]
   ProductFeedback ProductFeedback [not null]
+  CommunityPostCommentMentions CommunityPostCommentMentions [not null]
 
   indexes {
     (id, email) [unique]
@@ -275,23 +276,19 @@ Table PostRating {
 
 Table Comment {
   id String [pk]
-  text String [not null]
-  rating Int [not null, default: 0]
-  creatorId String [not null]
+  content String [not null]
   postId String
-  repliedToCommentId String
-  repliedToReplyId String
-  commentRating CommentRating [not null]
-  user User [not null]
   post Post
-  parentComment Comment
-  comments Comment [not null]
-  parentReply Comment
-  replies Comment [not null]
+  authorId String [not null]
+  author User [not null]
+  commentId String
+  replies Comment
+  Comment Comment [not null]
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   CommentMentions CommentMentions [not null]
   CommentReactions CommentReactions [not null]
+  CommentRating CommentRating [not null]
 }
 
 Table CommentMentions {
@@ -558,6 +555,17 @@ Table CommunityComment {
   createdAt DateTime [default: `now()`]
   updatedAt DateTime
   CommunityPostCommentReaction CommunityPostCommentReaction [not null]
+  CommunityPostCommentMentions CommunityPostCommentMentions [not null]
+}
+
+Table CommunityPostCommentMentions {
+  id String [pk]
+  mentionId String
+  user User
+  commentId String
+  communityPostComment CommunityComment
+  createdAt DateTime [default: `now()`]
+  updatedAt DateTime
 }
 
 Table CommunityPostCommentReaction {
@@ -791,13 +799,11 @@ Ref: PostRating.userId > User.id
 
 Ref: PostRating.postId > Post.id
 
-Ref: Comment.creatorId > User.id [delete: Cascade]
-
 Ref: Comment.postId > Post.id [delete: Cascade]
 
-Ref: Comment.repliedToCommentId - Comment.id [delete: Cascade]
+Ref: Comment.authorId > User.id [delete: Cascade]
 
-Ref: Comment.repliedToReplyId - Comment.id [delete: Cascade]
+Ref: Comment.commentId - Comment.id [delete: Cascade]
 
 Ref: CommentMentions.mentionId > User.id [delete: Cascade]
 
@@ -882,6 +888,10 @@ Ref: CommunityComment.communityPostId > CommunityPost.id [delete: Cascade]
 Ref: CommunityComment.authorId > User.id [delete: Cascade]
 
 Ref: CommunityComment.commentId - CommunityComment.id [delete: Cascade]
+
+Ref: CommunityPostCommentMentions.mentionId > User.id [delete: Cascade]
+
+Ref: CommunityPostCommentMentions.commentId > CommunityComment.id [delete: Cascade]
 
 Ref: CommunityPostCommentReaction.communityPostCommentId > CommunityComment.id
 

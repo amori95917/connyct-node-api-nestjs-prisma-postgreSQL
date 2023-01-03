@@ -95,46 +95,58 @@ type Role {
   updatedAt: DateTime
 }
 
-type RepliesToReplies {
+type PostImage {
   id: ID
   createdAt: DateTime
   updatedAt: DateTime
-  text: String
-  creatorId: String
-  repliedToCommentId: String
-  repliedToReplyId: String
-  repliedToParentComment: Comment
-  creator: User
+  metaTitle: String
+  imageURL: String
+  description: String
+  postId: String
 }
 
-type RepliesToRepliesPagination {
-  edges: [RepliesToRepliesEdge!]
-  pageInfo: RepliesToRepliesPageInfo
+type Tag {
+  id: ID!
+  name: String!
+}
+
+type PostSecondLevelComment {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  content: String
+  authorId: String
+  commentId: String
+  creator: User!
+  firstLevelComment: PostFirstLevelComment
+}
+
+type PostSecondLevelCommentPagination {
+  edges: [PostSecondLevelCommentEdge!]
+  pageInfo: PostSecondLevelCommentPageInfo
   totalCount: Float
 }
 
-type RepliesToRepliesEdge {
+type PostSecondLevelCommentEdge {
   cursor: String
-  node: RepliesToReplies
+  node: PostSecondLevelComment
 }
 
-type RepliesToRepliesPageInfo {
+type PostSecondLevelCommentPageInfo {
   startCursor: String
   endCursor: String
   hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
-type Replies {
+type PostFirstLevelComment {
   id: ID
   createdAt: DateTime
   updatedAt: DateTime
-  text: String
+  content: String
   postId: String
-  creatorId: String
-  repliedToCommentId: String
-  repliedTo: Comment!
-  replies(
+  authorId: String
+  secondLevelComment(
     """Paginate before opaque cursor"""
     before: String
 
@@ -147,10 +159,12 @@ type Replies {
     """Paginate last"""
     last: Float
     order: OrderCommentsList = {direction: asc, orderBy: createdAt}
-  ): RepliesToRepliesPagination!
+  ): PostSecondLevelCommentPagination!
   creator: User!
-  mentions: [User!]!
   post: Post
+  company: Company
+  repliesCount: Float
+  mentions: [User!]!
 }
 
 input OrderCommentsList {
@@ -171,107 +185,47 @@ enum CommentOrderBy {
   createdAt
 }
 
-type RepliesPagination {
-  edges: [RepliesEdge!]
-  pageInfo: RepliesPageInfo
+type PostFirstLevelCommentPagination {
+  edges: [PostFirstLevelCommentEdge!]
+  pageInfo: PostFirstLevelCommentPageInfo
   totalCount: Float
 }
 
-type RepliesEdge {
+type PostFirstLevelCommentEdge {
   cursor: String
-  node: Replies
+  node: PostFirstLevelComment
 }
 
-type RepliesPageInfo {
+type PostFirstLevelCommentPageInfo {
   startCursor: String
   endCursor: String
   hasPreviousPage: Boolean!
   hasNextPage: Boolean!
 }
 
-type Comment {
+type Post {
   id: ID
   createdAt: DateTime
   updatedAt: DateTime
-  text: String!
-  creatorId: String!
-  postId: String
-  repliedToCommentId: String
-  repliedToReplyId: String
+  text: String
   rating: Int
-  replies(
-    """Paginate before opaque cursor"""
-    before: String
-
-    """Paginate after opaque cursor"""
-    after: String
-
-    """Paginate first"""
-    first: Float
-
-    """Paginate last"""
-    last: Float
-    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
-  ): RepliesPagination
   myRatingStatus: RatingStatus!
+  creatorId: String
+  comments: [PostFirstLevelComment!]
+  isSaleAble: Boolean
+  companyId: String
+  postImage: [PostImage!]!
+  tags: [Tag!]!
+  company: Company
   creator: User!
-  mentions: [User!]!
-  post: Post
+  reactionCount: Float
+  commentCount: Float
 }
 
 enum RatingStatus {
   NEUTRAL
   UPVOTED
   DOWNVOTED
-}
-
-type CommentPagination {
-  edges: [CommentEdge!]
-  pageInfo: CommentPageInfo
-  totalCount: Float
-}
-
-type CommentEdge {
-  cursor: String
-  node: Comment
-}
-
-type CommentPageInfo {
-  startCursor: String
-  endCursor: String
-  hasPreviousPage: Boolean!
-  hasNextPage: Boolean!
-}
-
-type PostImage {
-  id: ID
-  createdAt: DateTime
-  updatedAt: DateTime
-  metaTitle: String
-  imageURL: String
-  description: String
-  postId: String
-}
-
-type Tag {
-  id: ID!
-  name: String!
-}
-
-type Post {
-  id: ID!
-  text: String!
-  creator: User!
-  rating: Int!
-  createdAt: DateTime!
-  myRatingStatus: RatingStatus!
-  creatorId: String!
-  comments: [Comment!]!
-  isSaleAble: Boolean
-  companyId: String
-  postImage: [PostImage!]!
-  tags: [Tag!]!
-  company: Company
 }
 
 type PostPagination {
@@ -435,6 +389,31 @@ type CompanyBranchDeletePayload {
   isDeleted: Boolean
 }
 
+type GetPostFirstLevelCommentPayload {
+  errors: [CustomError!]
+  data: PostFirstLevelCommentPagination
+}
+
+type GetPostSecondLevelCommentPayload {
+  errors: [CustomError!]
+  data: PostSecondLevelCommentPagination
+}
+
+type PostFirstLevelCommentPayload {
+  errors: [CustomError!]
+  data: PostFirstLevelComment
+}
+
+type PostSecondLevelCommentPayload {
+  errors: [CustomError!]
+  data: PostSecondLevelComment
+}
+
+type PostDeleteCommentPayload {
+  errors: [CustomError!]
+  isDeleted: Boolean
+}
+
 type UserError {
   message: String!
   field: String
@@ -449,21 +428,6 @@ type RatePayload implements MutationPayload {
 
 interface MutationPayload {
   errors: [UserError!]
-}
-
-type NewReplyPayload implements MutationPayload {
-  errors: [UserError!]
-  comment: Comment
-}
-
-type CommentDeletePayload {
-  errors: [UserError!]
-  isDeleted: Boolean
-}
-
-type CommentPaginationPayload {
-  errors: [UserError!]
-  comments: CommentPagination
 }
 
 type CreatePostPayload {
@@ -576,16 +540,6 @@ type LikesPayload {
   isDisliked: Boolean
 }
 
-type ReplyToCommentPayload {
-  errors: [CustomError!]
-  replies: Replies
-}
-
-type RepliesToRepliesPayload {
-  errors: [CustomError!]
-  replies: RepliesToReplies
-}
-
 type CommentReactions {
   id: ID
   createdAt: DateTime
@@ -593,7 +547,6 @@ type CommentReactions {
   reactionId: String
   commentId: String
   creatorId: String
-  comment: Comment
   reactors: [User!]
 }
 
@@ -1156,6 +1109,7 @@ type FirstLevelComment {
   creator: User!
   communityPost: CommunityPost
   community: Community
+  repliesCount: Float
   mentions: [User!]!
 }
 
@@ -1408,7 +1362,7 @@ type Query {
     last: Float
     order: OrderPosts = {direction: desc, orderBy: createdAt}
   ): PostPagination
-  comments(
+  getPostsComments(
     postId: String!
 
     """Paginate before opaque cursor"""
@@ -1423,7 +1377,23 @@ type Query {
     """Paginate last"""
     last: Float
     order: OrderCommentsList = {direction: asc, orderBy: createdAt}
-  ): CommentPaginationPayload!
+  ): GetPostFirstLevelCommentPayload!
+  getPostSecondLevelComments(
+    commentId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderCommentsList = {direction: asc, orderBy: createdAt}
+  ): GetPostSecondLevelCommentPayload!
   getIndustry: IndustryPayload!
   getReactions: [Reactions!]!
   getLikesByPost(postId: String!, paginate: PaginationArgs = {skip: 0, take: 50}, order: ReactionsOrderList = {direction: desc}): ReactionsPagination!
@@ -1812,12 +1782,10 @@ type Mutation {
   upvotePost(postId: Int!): RatePayload!
   downvotePost(postId: Int!): RatePayload!
   removeRatingFromPost(postId: Int!): RatePayload!
-  commentToPost(postId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
-  commentUpdate(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): NewReplyPayload!
-  commentDelete(commentId: String!): DeleteCommentPayload!
-  upvoteComment(commentId: String!): RatePayload!
-  downvoteComment(commentId: String!): RatePayload!
-  removeRatingFromComment(commentId: String!): RatePayload!
+  createPostFirstLevelComment(postId: String!, input: PostCommentInput!, mention: PostMentionsInput): PostFirstLevelCommentPayload!
+  updatePostComment(commentId: String!, input: PostCommentInput!, mention: PostMentionsInput): PostFirstLevelCommentPayload!
+  commentPostDelete(commentId: String!): PostDeleteCommentPayload!
+  createPostSecondLevelComment(commentId: String!, input: PostCommentInput!, mention: PostMentionsInput): PostSecondLevelCommentPayload!
   inviteEmployee(data: InvitedEmployeeInput!): InvitedEmployee!
   createEmployee(data: UserEmployeeInput!): User!
   followCompany(data: FollowCompanyInput!): FollowCompany!
@@ -1830,8 +1798,6 @@ type Mutation {
   activeOrDeactiveIndustry(id: String!): IndustryPayload!
   createLikes(data: LikesInput!): LikesPayload!
   removeLike(postId: String!): Likes!
-  commentReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): ReplyToCommentPayload!
-  replyToReply(commentId: String!, input: CreateCommentInput!, mention: CreateMentionsInput): RepliesToRepliesPayload!
   commentReaction(input: CommentReactionsInput!): CommentReactionsPayload!
   companyDiscussion(input: CompanyDiscussionInput!): CompanyDiscussionPayload!
   companyDiscussionUpdate(input: CompanyDiscussionUpdateInput!, discussionId: String!): CompanyDiscussionPayload!
@@ -1860,6 +1826,7 @@ type Mutation {
   createSecondLevelComment(commentId: String!, input: CommentInput!, mention: MentionsInput): SecondLevelCommentPayload!
   createFirstLevelComment(postId: String!, input: CommentInput!, mention: MentionsInput): FirstLevelCommentPayload!
   updateComment(commentId: String!, input: CommentInput!, mention: MentionsInput): FirstLevelCommentPayload!
+  commentDelete(commentId: String!): DeleteCommentPayload!
   createThirdLevelComment(commentId: String!, input: CommentInput!, mention: MentionsInput): ThirdLevelCommentPayload!
   communityPostReactionCreate(data: ReactionInput!): ReactionPayload!
   communityPostCommentReactionCreate(input: CommunityPostCommentReactionInput!): CommunityPostCommentReactionPayload!
@@ -2009,11 +1976,11 @@ input UpdatePostInput {
   description: String
 }
 
-input CreateCommentInput {
-  text: String!
+input PostCommentInput {
+  content: String!
 }
 
-input CreateMentionsInput {
+input PostMentionsInput {
   mentionIds: [String!]
 }
 

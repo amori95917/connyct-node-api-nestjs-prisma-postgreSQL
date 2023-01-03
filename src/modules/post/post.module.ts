@@ -14,6 +14,7 @@ import { TagRepository } from '../tag/repository/tag.repository';
 import { CompanyService } from '../company/services/company.service';
 import { FilesModule } from '../files/files.module';
 import { CloudinaryService } from '../cloudinary/services/cloudinary.service';
+import { LikesRepository } from '../likes/repository/likes.repository';
 
 @Module({
   exports: [PostsService, PostsRepository],
@@ -33,6 +34,7 @@ import { CloudinaryService } from '../cloudinary/services/cloudinary.service';
     TagRepository,
     CompanyService,
     CloudinaryService,
+    LikesRepository,
   ],
 })
 export class PostModule {}

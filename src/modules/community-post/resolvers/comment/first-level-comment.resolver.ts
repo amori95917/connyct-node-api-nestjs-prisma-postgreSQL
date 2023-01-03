@@ -127,4 +127,12 @@ export class FirstLevelCommentResolver {
     const { id } = comment;
     return this.commentService.getSecondLevelComment(id, paginate, order);
   }
+
+  @ResolveField('repliesCount', () => Number)
+  public async repliesCount(
+    @Parent() firstLevelComment: FirstLevelComment,
+  ): Promise<number> {
+    const { id } = firstLevelComment;
+    return await this.commentRepository.getRepliesCount(id);
+  }
 }

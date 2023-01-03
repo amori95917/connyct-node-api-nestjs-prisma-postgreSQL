@@ -12,7 +12,6 @@ import {
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { GqlAnonymousGuard } from '../../auth/guards/gql-anonymous.guard';
 import { GqlAuthGuard } from '../../auth/guards/gql-auth.guard';
-import { Comment } from '../../comment/comment.models';
 import { CommentsService } from '../../comment/services/comment.service';
 import { RatePayload } from '../../rating/entities/rate.payload';
 import { RatingStatus } from '../../rating/entities/rating-status.enum';
@@ -37,6 +36,8 @@ import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.a
 import { OrderPosts } from '../dto/order-posts.input';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { CompanyService } from 'src/modules/company/services/company.service';
+import { LikesRepository } from 'src/modules/likes/repository/likes.repository';
+import { CommentsRepository } from 'src/modules/comment/repository/comment.repository';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -46,6 +47,8 @@ export class PostsResolver {
     private readonly commentsService: CommentsService,
     private readonly ratingService: RatingService,
     private readonly companyService: CompanyService,
+    private readonly likesRepository: LikesRepository,
+    private readonly commentRepository: CommentsRepository,
   ) {}
 
   @Mutation(() => CreatePostPayload)
@@ -199,10 +202,15 @@ export class PostsResolver {
     return this.postsLoaders.batchCreators.load(creatorId);
   }
 
-  @ResolveField('comments', () => [Comment])
-  public async getComments(@Parent() post: Post): Promise<Comment[]> {
-    const postId = post.id;
-    return this.commentsService.getCommentsByPostId(postId);
+  @ResolveField('reactionCount', () => Number)
+  async reactionCount(@Parent() post: Post): Promise<number> {
+    const { id } = post;
+    return await this.likesRepository.getReactionCount(id);
+  }
+  @ResolveField('commentCount', () => Number)
+  async commentCount(@Parent() post: Post): Promise<number> {
+    const { id } = post;
+    return await this.commentRepository.getCommentCount(id);
   }
 
   @ResolveField('myRatingStatus', () => RatingStatus)
