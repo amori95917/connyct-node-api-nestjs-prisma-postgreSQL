@@ -84,29 +84,33 @@ export class CommentsRepository {
       throw new Error(err);
     }
   }
-  public async mentions(mentions, commentId: string) {
+  public async mentions(mentions, commentId: string, prisma: any) {
     const commentMention = mentions.mentionIds.map((userId) => {
       return Object.assign({}, { mentionId: userId }, { commentId: commentId });
     });
     const user = await this.userService.findUsersByIds(mentions.mentionIds);
     if (user.length) {
-      await this.prisma.commentMentions.createMany({
+      await prisma.commentMentions.createMany({
         data: commentMention,
       });
     }
     return user;
   }
-  public async updateMentions(mentions: string[], commentId: string) {
+  public async updateMentions(
+    mentions: string[],
+    commentId: string,
+    prisma: any,
+  ) {
     const commentMention = mentions.map((userId: string) => {
       return Object.assign({}, { mentionId: userId }, { commentId });
     });
     const user = await this.userService.findUsersByIds(mentions);
     if (user.length) {
-      await this.prisma.commentMentions.deleteMany({
+      await prisma.commentMentions.deleteMany({
         where: { commentId },
       });
 
-      await this.prisma.commentMentions.createMany({
+      await prisma.commentMentions.createMany({
         data: commentMention,
       });
     }
@@ -119,8 +123,8 @@ export class CommentsRepository {
     mentions: PostMentionsInput,
   ): Promise<PostFirstLevelCommentPayload> {
     try {
-      const comment = await this.prisma.$transaction(async () => {
-        const create = await this.prisma.comment.create({
+      const comment = await this.prisma.$transaction(async (prisma) => {
+        const create = await prisma.comment.create({
           data: {
             authorId,
             postId,
@@ -129,7 +133,7 @@ export class CommentsRepository {
         });
 
         if (!mentions.mentionIds) return { create, user: null };
-        const user = await this.mentions(mentions, create.id);
+        const user = await this.mentions(mentions, create.id, prisma);
         return { create, user };
       });
       return {
@@ -145,8 +149,8 @@ export class CommentsRepository {
     mention: PostMentionsInput,
   ): Promise<PostFirstLevelCommentPayload> {
     try {
-      const updateReply = await this.prisma.$transaction(async () => {
-        const update = await this.prisma.comment.update({
+      const updateReply = await this.prisma.$transaction(async (prisma) => {
+        const update = await prisma.comment.update({
           where: { id: commentId },
           data: {
             content: input.content,
@@ -154,7 +158,11 @@ export class CommentsRepository {
         });
 
         if (!mention.mentionIds) return { update, user: null };
-        const user = await this.updateMentions(mention.mentionIds, commentId);
+        const user = await this.updateMentions(
+          mention.mentionIds,
+          commentId,
+          prisma,
+        );
         return { update, user };
       });
 
@@ -169,9 +177,9 @@ export class CommentsRepository {
   }
   async deleteComment(id: string): Promise<PostDeleteCommentPayload> {
     try {
-      await this.prisma.$transaction(async () => {
-        await this.prisma.comment.delete({ where: { id } });
-        await this.prisma.commentMentions.deleteMany({
+      await this.prisma.$transaction(async (prisma) => {
+        await prisma.comment.delete({ where: { id } });
+        await prisma.commentMentions.deleteMany({
           where: { commentId: id },
         });
       });
@@ -187,8 +195,8 @@ export class CommentsRepository {
     mention: PostMentionsInput,
   ): Promise<PostSecondLevelCommentPayload> {
     try {
-      const createReply = await this.prisma.$transaction(async () => {
-        const create = await this.prisma.comment.create({
+      const createReply = await this.prisma.$transaction(async (prisma) => {
+        const create = await prisma.comment.create({
           data: {
             authorId,
             content,
@@ -196,7 +204,7 @@ export class CommentsRepository {
           },
         });
         if (!mention.mentionIds) return { create, user: null };
-        const user = await this.mentions(mention, create.id);
+        const user = await this.mentions(mention, create.id, prisma);
         return { create, user };
       });
 

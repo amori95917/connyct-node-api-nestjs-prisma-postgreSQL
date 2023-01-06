@@ -2,6 +2,13 @@ import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import { company } from './seed-data/company-seed';
 import { user } from './seed-data/user-seed';
+import {
+  levelOne,
+  levelTwo,
+  levelTwoM,
+  levelThree,
+  levelThreeM,
+} from './seed-data/category.seed';
 import { User } from 'src/modules/user/entities/user.entity';
 // import { Role } from 'src/modules/auth/enum/role.enum';
 
@@ -74,8 +81,84 @@ const userName = (name: string) => {
   const result = Date.now().toString(36);
   return (name + result).toLowerCase();
 };
+
+const calculateCategoryLevel = async (id) => {
+  const categoryLevel = await prisma.productCategory.findFirst({
+    where: {
+      id,
+    },
+  });
+  return categoryLevel.level + 1;
+};
 async function main() {
   console.log(`Start seeding ...`);
+
+  /**Product category seed */
+  const oneLevel = await Promise.all(
+    levelOne.map(async (level) => {
+      return await prisma.productCategory.create({
+        data: {
+          ...level,
+          level: level.isRoot ? 1 : null,
+        },
+      });
+    }),
+  );
+
+  const catLevelTwo = oneLevel.map((cat, i) =>
+    Object.assign(levelTwo[i], { parentId: cat.id }),
+  );
+  const catLevelTwoM = oneLevel.map((cat, i) =>
+    Object.assign(levelTwoM[i], { parentId: cat.id }),
+  );
+  const secondLevel = await Promise.all(
+    catLevelTwo.map(async (level) => {
+      return await prisma.productCategory.create({
+        data: {
+          ...level,
+          level: await calculateCategoryLevel(level.parentId),
+        },
+      });
+    }),
+  );
+  const secondLevelM = await Promise.all(
+    catLevelTwoM.map(async (level) => {
+      return await prisma.productCategory.create({
+        data: {
+          ...level,
+          level: await calculateCategoryLevel(level.parentId),
+        },
+      });
+    }),
+  );
+  const catLevelThree = secondLevel.map((cat, i) =>
+    Object.assign(levelThree[i], { parentId: cat.id }),
+  );
+  const catLevelThreeM = secondLevelM.map((cat, i) =>
+    Object.assign(levelThreeM[i], { parentId: cat.id }),
+  );
+  const thirdLevel = await Promise.all(
+    catLevelThree.map(async (level) => {
+      return await prisma.productCategory.create({
+        data: {
+          ...level,
+          level: await calculateCategoryLevel(level.parentId),
+        },
+      });
+    }),
+  );
+  const thirdLevelM = await Promise.all(
+    catLevelThreeM.map(async (level) => {
+      return await prisma.productCategory.create({
+        data: {
+          ...level,
+          level: await calculateCategoryLevel(level.parentId),
+        },
+      });
+    }),
+  );
+  console.log(thirdLevel, thirdLevelM, 'category seeding');
+
   const createAllRoles = await prisma.role.createMany({
     data: roles,
     skipDuplicates: true,

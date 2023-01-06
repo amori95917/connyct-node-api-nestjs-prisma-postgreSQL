@@ -118,10 +118,10 @@ export class CommunityPostRepository {
     files: FileUpload[],
   ): Promise<CommunityPostPayload> {
     try {
-      const result = await this.prisma.$transaction(async () => {
+      const result = await this.prisma.$transaction(async (prisma) => {
         // let errors;
         // create post
-        const post = await this.prisma.communityPost.create({
+        const post = await prisma.communityPost.create({
           data: {
             text: input.text,
             authorId,
@@ -136,7 +136,7 @@ export class CommunityPostRepository {
           tags = await Promise.all(
             input.tags.map(async (tag) => {
               /**find tags */
-              const isTag = await this.prisma.tag.findUnique({
+              const isTag = await prisma.tag.findUnique({
                 where: {
                   name: tag,
                 },
@@ -144,7 +144,7 @@ export class CommunityPostRepository {
               /**if tags exist return tags */
               if (isTag) return isTag;
               /**create tag */
-              return await this.prisma.tag.create({
+              return await prisma.tag.create({
                 data: {
                   name: tag,
                 },
@@ -153,7 +153,7 @@ export class CommunityPostRepository {
           );
           /**create tagsId and postId in table tagWithPost */
           tags.forEach(async (tag) => {
-            await this.prisma.tagWithPost.create({
+            await prisma.tagWithPost.create({
               data: {
                 tagsId: tag.id,
                 communityPostId: post.id,
@@ -184,7 +184,7 @@ export class CommunityPostRepository {
           // create product
           postImage = await Promise.all(
             fileURL.map(async (imageURL) => {
-              return await this.prisma.communityPostMedia.create({
+              return await prisma.communityPostMedia.create({
                 data: {
                   metaTitle: input.metaTitle,
                   imageURL,
@@ -218,10 +218,10 @@ export class CommunityPostRepository {
     post,
   ): Promise<UpdateCommunityPostPayload> {
     try {
-      const result = await this.prisma.$transaction(async () => {
+      const result = await this.prisma.$transaction(async (prisma) => {
         let newPost: CommunityPost;
         if (input.text) {
-          newPost = await this.prisma.communityPost.update({
+          newPost = await prisma.communityPost.update({
             where: {
               id: postId,
             },
@@ -236,13 +236,13 @@ export class CommunityPostRepository {
         if (input.tags) {
           tags = await Promise.all(
             input.tags.map(async (tag) => {
-              const isTag = await this.prisma.tag.findUnique({
+              const isTag = await prisma.tag.findUnique({
                 where: {
                   name: tag,
                 },
               });
               if (isTag) return isTag;
-              return await this.prisma.tag.create({
+              return await prisma.tag.create({
                 data: {
                   name: tag,
                 },
@@ -251,11 +251,11 @@ export class CommunityPostRepository {
           );
           tags.forEach(async (tag) => {
             /**delete tags associated with post id */
-            await this.prisma.tagWithPost.deleteMany({
+            await prisma.tagWithPost.deleteMany({
               where: { id: tag.id, postId: postId },
             });
             /**create new tags */
-            await this.prisma.tagWithPost.create({
+            await prisma.tagWithPost.create({
               data: {
                 tagsId: tag.id,
                 communityPostId: post.id,
@@ -266,7 +266,7 @@ export class CommunityPostRepository {
         /**post image update */
         let newPostImage: CommunityPostMedia;
         if (imageURL) {
-          const postImage = await this.prisma.communityPostMedia.findUnique({
+          const postImage = await prisma.communityPostMedia.findUnique({
             where: {
               imageURL,
             },
@@ -294,7 +294,7 @@ export class CommunityPostRepository {
               this.cloudinary.getPublicId(imageURL),
             );
           }
-          newPostImage = await this.prisma.communityPostMedia.update({
+          newPostImage = await prisma.communityPostMedia.update({
             where: {
               imageURL,
             },
@@ -350,9 +350,9 @@ export class CommunityPostRepository {
   }
   public async delete(postId: string): Promise<DeleteCommunityPostPayload> {
     try {
-      await this.prisma.$transaction(async () => {
+      await this.prisma.$transaction(async (prisma) => {
         /**set isDeleted true in post  */
-        await this.prisma.communityPost.delete({
+        await prisma.communityPost.delete({
           where: { id: postId },
         });
       });

@@ -47,10 +47,10 @@ export class PostsRepository {
       let tags: Tag[];
       let postImage: PostImage[];
 
-      const result = await this.prisma.$transaction(async () => {
+      const result = await this.prisma.$transaction(async (prisma) => {
         // let errors;
         // create post
-        const post = await this.prisma.post.create({
+        const post = await prisma.post.create({
           data: {
             text: feedData.text,
             creatorId: creatorId,
@@ -63,7 +63,7 @@ export class PostsRepository {
           tags = await Promise.all(
             feedData.tags.map(async (tag) => {
               /**find tags */
-              const isTag = await this.prisma.tag.findUnique({
+              const isTag = await prisma.tag.findUnique({
                 where: {
                   name: tag,
                 },
@@ -71,7 +71,7 @@ export class PostsRepository {
               /**if tags exist return tags */
               if (isTag) return isTag;
               /**create tag */
-              return await this.prisma.tag.create({
+              return await prisma.tag.create({
                 data: {
                   name: tag,
                 },
@@ -80,7 +80,7 @@ export class PostsRepository {
           );
           /**create tagsId and postId in table tagWithPost */
           tags.forEach(async (tag) => {
-            await this.prisma.tagWithPost.create({
+            await prisma.tagWithPost.create({
               data: {
                 tagsId: tag.id,
                 postId: post.id,
@@ -111,7 +111,7 @@ export class PostsRepository {
           // create product
           postImage = await Promise.all(
             fileURL.map(async (imageURL) => {
-              return await this.prisma.postImage.create({
+              return await prisma.postImage.create({
                 data: {
                   metaTitle: feedData.metaTitle,
                   imageURL,
@@ -199,9 +199,9 @@ export class PostsRepository {
       let newPostImage: PostImage;
       let responseURL: any;
 
-      const result = await this.prisma.$transaction(async () => {
+      const result = await this.prisma.$transaction(async (prisma) => {
         if (input.text) {
-          newPost = await this.prisma.post.update({
+          newPost = await prisma.post.update({
             where: {
               id: postId,
             },
@@ -215,13 +215,13 @@ export class PostsRepository {
         if (input.tags) {
           tags = await Promise.all(
             input.tags.map(async (tag) => {
-              const isTag = await this.prisma.tag.findUnique({
+              const isTag = await prisma.tag.findUnique({
                 where: {
                   name: tag,
                 },
               });
               if (isTag) return isTag;
-              return await this.prisma.tag.create({
+              return await prisma.tag.create({
                 data: {
                   name: tag,
                 },
@@ -230,11 +230,11 @@ export class PostsRepository {
           );
           tags.forEach(async (tag) => {
             /**delete tags associated with post id */
-            await this.prisma.tagWithPost.deleteMany({
+            await prisma.tagWithPost.deleteMany({
               where: { id: tag.id, postId: postId },
             });
             /**create new tags */
-            await this.prisma.tagWithPost.create({
+            await prisma.tagWithPost.create({
               data: {
                 tagsId: tag.id,
                 postId: post.id,
@@ -244,7 +244,7 @@ export class PostsRepository {
         }
         /**post image update */
         if (imageURL) {
-          const postImage = await this.prisma.postImage.findUnique({
+          const postImage = await prisma.postImage.findUnique({
             where: {
               imageURL,
             },
@@ -271,7 +271,7 @@ export class PostsRepository {
               this.cloudinary.getPublicId(imageURL),
             );
           }
-          newPostImage = await this.prisma.postImage.update({
+          newPostImage = await prisma.postImage.update({
             where: {
               imageURL,
             },
@@ -315,22 +315,22 @@ export class PostsRepository {
 
   public async deletePostById(postId: string): Promise<DeletePostPayload> {
     try {
-      await this.prisma.$transaction(async () => {
+      await this.prisma.$transaction(async (prisma) => {
         /**set isDeleted true in post  */
-        await this.prisma.post.update({
+        await prisma.post.update({
           where: { id: postId },
           data: {
             isDeleted: true,
           },
         });
         /**set isDeleted true in postImage  */
-        const postImage = await this.prisma.postImage.findMany({
+        const postImage = await prisma.postImage.findMany({
           where: { postId },
         });
         if (postImage.length) {
           postImage.map(
             async (postImg) =>
-              await this.prisma.postImage.update({
+              await prisma.postImage.update({
                 where: { id: postImg.id },
                 data: {
                   isDeleted: true,

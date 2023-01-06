@@ -1252,7 +1252,7 @@ type ProductCategory {
   id: ID
   createdAt: DateTime
   updatedAt: DateTime
-  categoryType: String
+  name: String
   parentId: String
   description: String
   image: String
@@ -1265,6 +1265,100 @@ type ProductCategory {
 type ProductCategoryPayload {
   errors: [CustomError!]
   data: ProductCategory
+}
+
+type ProductMedia {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  mediaUrl: String
+  productId: String
+}
+
+type ProductAttribute {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  description: String
+  specification: String
+  productVariationId: String
+  productId: String
+}
+
+type ProductVariation {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  title: String
+  sku: Float
+  price: Float
+  size: String
+  color: String
+  isAvailable: Boolean
+  productId: String
+}
+
+type Product {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  sku: Float
+  productName: String
+  price: Float
+  slug: String
+  companyId: String
+  categoryId: String
+  category: ProductCategory
+  productMedia: [ProductMedia!]
+  productAttribute: ProductAttribute
+  productVariation: [ProductVariation!]
+}
+
+type ProductPaginated {
+  edges: [ProductEdge!]
+  pageInfo: ProductPageInfo
+  totalCount: Float
+}
+
+type ProductEdge {
+  cursor: String
+  node: Product
+}
+
+type ProductPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
+type FindProductPayload {
+  errors: [CustomError!]
+  data: ProductPaginated
+}
+
+type ProductPayload {
+  errors: [CustomError!]
+  data: Product
+}
+
+type ProductMediaPayload {
+  errors: [CustomError!]
+  data: [ProductMedia!]
+}
+
+type ProductMediaUpdatePayload {
+  data: ProductMedia
+}
+
+type ProductAttributePayload {
+  errors: [CustomError!]
+  data: ProductAttribute
+}
+
+type ProductVariationPayload {
+  errors: [CustomError!]
+  data: ProductVariation
 }
 
 type Query {
@@ -1600,6 +1694,22 @@ type Query {
   productCategories: [ProductCategory!]!
   rootCategory: [ProductCategory!]!
   subCategoryList(parentId: String!): [ProductCategory!]!
+  productFindAll(
+    companyId: String!
+
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListProduct = {direction: desc, orderBy: createdAt}
+  ): FindProductPayload!
 }
 
 input OrderListUsers {
@@ -1749,6 +1859,16 @@ enum CommunityPostCommentReactionsOrderBy {
   createdAt
 }
 
+input OrderListProduct {
+  direction: OrderDirection!
+  orderBy: ProductOrderBy!
+}
+
+"""Order by:createdAt"""
+enum ProductOrderBy {
+  createdAt
+}
+
 type Mutation {
   updateStatusUser(data: UpdateStatusUserInput!): User!
   updateUser(data: UpdateUserInput!): User!
@@ -1833,6 +1953,14 @@ type Mutation {
   productCategory(input: ProductCategoryInput!): ProductCategoryPayload!
   updateProductCategory(input: ProductCategoryInput!, id: String!): ProductCategoryPayload!
   deleteProductCategory(id: String!): ProductCategoryPayload!
+  product(product: ProductInput!, companyId: String!, image: [Upload!], mediaType: ProductMediaInput!): ProductPayload!
+  productEditAll(productId: String!, product: ProductInput!, image: Upload, mediaId: String!): ProductPayload!
+  productCreate(input: ProductInput!, companyId: String!): ProductPayload!
+  productEdit(productId: String!, input: ProductEditInput!): ProductPayload!
+  productMediaCreate(productId: String!, mediaType: ProductMediaInput!, media: [Upload!]!): ProductMediaPayload!
+  productMediaEdit(mediaId: String!, media: Upload): ProductMediaUpdatePayload!
+  productAttributeCreate(input: ProductAttributeInput!): ProductAttributePayload!
+  productVariationCreate(input: ProductVariationInput!): ProductVariationPayload!
 }
 
 input UpdateStatusUserInput {
@@ -2136,10 +2264,48 @@ input CommunityPostCommentReactionInput {
 }
 
 input ProductCategoryInput {
-  categoryType: String!
+  name: String!
   parentId: String
   description: String
   image: String
   isRoot: Boolean = false
   isLeaf: Boolean = false
+}
+
+input ProductInput {
+  categoryId: String!
+  productName: String!
+  sku: Float!
+  price: Float!
+  comparePrice: Float = 0
+  costPrice: Float = 0
+}
+
+input ProductMediaInput {
+  productId: String!
+}
+
+input ProductEditInput {
+  categoryId: String
+  productName: String
+  sku: Float
+  price: Float
+  comparePrice: Float = 0
+  costPrice: Float = 0
+}
+
+input ProductAttributeInput {
+  productId: String!
+  productVariationId: String
+  description: String
+  specification: String
+}
+
+input ProductVariationInput {
+  productId: String!
+  sku: Float!
+  title: String!
+  price: Float!
+  size: String!
+  color: String!
 }

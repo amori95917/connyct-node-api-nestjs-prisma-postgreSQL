@@ -71,3 +71,9 @@ export const COMPANY_DISCUSSION_MESSAGE = {
 export const PRODUCT_CATEGORY_MESSAGE = {
   NOT_FOUND: 'Category not found',
 };
+
+export const PRODUCT_MESSAGE = {
+  NOT_FOUND: 'Product not found',
+  ALREADY_EXIST: 'Product already exists',
+  PRODUCT_MEDIA_NOT_FOUND: 'Product media not found',
+};

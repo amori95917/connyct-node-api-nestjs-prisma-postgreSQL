@@ -190,13 +190,13 @@ export class UserService {
     });
   }
 
-  generateUsername(fullName: string, email: string) {
+  generateUsername(fullName: string, email: string, prisma?: any) {
     // Check if fullName or email is provided
     if (fullName) {
       // Use fullName as the base for the username
       let username = fullName.toLowerCase().replace(/\s/g, '');
       // Check if the username is already taken
-      const user = this.prisma.user.findFirst({
+      const user = prisma.user.findFirst({
         where: { username: username },
       });
       // If the username is taken, add a random string to make it unique
@@ -208,7 +208,7 @@ export class UserService {
       // Use email as the base for the username
       let username = email.split('@')[0].toLowerCase();
       // Check if the username is already taken
-      const user = this.prisma.user.findFirst({
+      const user = prisma.user.findFirst({
         where: { username: username },
       });
       // If the username is taken, add a random string to make it unique
@@ -221,20 +221,20 @@ export class UserService {
     throw new Error('Full name or email is required to generate a username');
   }
 
-  async createUserProfile(userId: string) {
-    await this.prisma.userProfile.create({ data: { userId } });
+  async createUserProfile(userId: string, prisma?: any) {
+    await prisma.userProfile.create({ data: { userId } });
   }
 
-  async assignUserRole(userId: string, roleName: string) {
+  async assignUserRole(userId: string, roleName: string, prisma?: any) {
     console.log('userId', userId, roleName);
-    const role = await this.prisma.role.findFirst({
+    const role = await prisma.role.findFirst({
       where: { name: roleName },
     });
     console.log('role in assignUserRole', role);
     if (!role) {
       throw new Error(`Role "${roleName}" does not exist`);
     }
-    await this.prisma.userRole.create({
+    await prisma.userRole.create({
       data: {
         userId,
         roleId: role.id,
@@ -242,14 +242,14 @@ export class UserService {
     });
   }
 
-  async setActiveRole(userId: string, roleName: string) {
-    const role = await this.prisma.role.findFirst({
+  async setActiveRole(userId: string, roleName: string, prisma?: any) {
+    const role = await prisma.role.findFirst({
       where: { name: roleName },
     });
     if (!role) {
       throw new Error(`Role "${roleName}" does not exist`);
     }
-    await this.prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: { activeRole: { connect: { id: role.id } } },
     });
@@ -260,8 +260,13 @@ export class UserService {
     email: string,
     hashPassword: string,
     rest: any,
+    prisma: any,
   ) {
-    const companySlug = this.generateUsername(legalName.split(' ')[0], email);
+    const companySlug = this.generateUsername(
+      legalName.split(' ')[0],
+      email,
+      prisma,
+    );
     const { owner } = await this.prisma.company.create({
       data: {
         legalName,
@@ -270,7 +275,7 @@ export class UserService {
           create: {
             ...rest,
             password: hashPassword,
-            username: this.generateUsername(email.split('@')[0], email),
+            username: this.generateUsername(email.split('@')[0], email, prisma),
           },
         },
       },
@@ -287,31 +292,35 @@ export class UserService {
       const { isCompanyAccount, legalName, ...rest } = payload;
       /**signup logic */
 
-      const result = await this.prisma.$transaction(async () => {
+      const result = await this.prisma.$transaction(async (prisma) => {
         // Check if email already exists
-        const emailExists = await this.prisma.user.count({
+        const emailExists = await prisma.user.count({
           where: { email: payload.email },
         });
         if (emailExists) throw new Error('Email already exists');
         // Individual user signup
         if (!isCompanyAccount) {
           if (!payload.fullName) throw new Error('Fullname is required');
-          const user = await this.prisma.user.create({
+          const user = await prisma.user.create({
             data: {
               ...rest,
               password: hashPassword,
-              username: this.generateUsername(payload.fullName, payload.email),
+              username: this.generateUsername(
+                payload.fullName,
+                payload.email,
+                prisma,
+              ),
             },
           });
-          await this.createUserProfile(user.id);
-          await this.assignUserRole(user.id, 'USER');
-          await this.setActiveRole(user.id, 'USER');
+          await this.createUserProfile(user.id, prisma);
+          await this.assignUserRole(user.id, 'USER', prisma);
+          await this.setActiveRole(user.id, 'USER', prisma);
           return { user };
         }
         // company signup
         if (legalName.length < 3)
           throw new Error('legal name must be at least 3 characters');
-        const companyNameExists = await this.prisma.company.count({
+        const companyNameExists = await prisma.company.count({
           where: { legalName: legalName },
         });
         if (companyNameExists) throw new Error('Company already exists');
@@ -320,12 +329,13 @@ export class UserService {
           payload.email,
           hashPassword,
           rest,
+          prisma,
         );
         await this.createUserProfile(user.id);
         // create the OWNER role for the user
         await this.assignUserRole(user.id, 'OWNER');
         await this.assignUserRole(user.id, 'USER');
-        const rolesOfUser = await this.prisma.userRole.findMany({
+        const rolesOfUser = await prisma.userRole.findMany({
           where: { userId: user.id },
           include: { role: true },
         });

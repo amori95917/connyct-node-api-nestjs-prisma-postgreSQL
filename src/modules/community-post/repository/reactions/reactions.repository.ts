@@ -66,9 +66,10 @@ export class ReactionRepository {
     postId: string,
     userId: string,
     id: string,
+    prisma: any,
   ): Promise<ReactionPayload> {
     try {
-      const dislike = await this.prisma.communityPostReaction.delete({
+      const dislike = await prisma.communityPostReaction.delete({
         where: { id },
       });
       return {
@@ -84,21 +85,19 @@ export class ReactionRepository {
     userId: string,
   ): Promise<ReactionPayload> {
     try {
-      const reactions = await this.prisma.$transaction(async () => {
-        const checkPostReaction =
-          await this.prisma.communityPostReaction.findFirst({
-            where: { communityPostId: input.postId, userId },
-          });
+      const reactions = await this.prisma.$transaction(async (prisma) => {
+        const checkPostReaction = await prisma.communityPostReaction.findFirst({
+          where: { communityPostId: input.postId, userId },
+        });
         if (!checkPostReaction) {
           /**create likes(reactions) if doesnot exist*/
-          const createReactions =
-            await this.prisma.communityPostReaction.create({
-              data: {
-                communityPostId: input.postId,
-                reactions: input.reactionType,
-                userId,
-              },
-            });
+          const createReactions = await prisma.communityPostReaction.create({
+            data: {
+              communityPostId: input.postId,
+              reactions: input.reactionType,
+              userId,
+            },
+          });
           return { data: createReactions };
         }
         /**if post is already liked, remove it*/
@@ -110,9 +109,10 @@ export class ReactionRepository {
             input.postId,
             userId,
             checkPostReaction.id,
+            prisma,
           );
         /**update reaction if user changes the reactions */
-        const updateReaction = await this.prisma.communityPostReaction.update({
+        const updateReaction = await prisma.communityPostReaction.update({
           where: { id: checkPostReaction.id },
           data: { ...checkPostReaction, reactions: input.reactionType },
         });

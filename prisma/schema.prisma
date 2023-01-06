@@ -67,6 +67,7 @@ model User {
   CommunityPostCommentReaction CommunityPostCommentReaction[]
   ProductFeedback              ProductFeedback[]
   CommunityPostCommentMentions CommunityPostCommentMentions[]
+  Product                      Product[]
 
   @@unique([id, email])
 }
@@ -699,36 +700,46 @@ model CommunityPostCommentReaction {
 }
 
 model ProductCategory {
-  id           String            @id @default(uuid())
-  categoryType String            @unique
-  description  String?
-  image        String?
-  isRoot       Boolean           @default(false)
-  isLeaf       Boolean           @default(false)
-  level        Float
-  isActive     Boolean           @default(false)
-  parentId     String?
-  subCategory  ProductCategory?  @relation("CategoryToCategory", fields: [parentId], references: [id])
-  category     ProductCategory[] @relation("CategoryToCategory")
-  createdAt    DateTime?         @default(now())
-  updatedAt    DateTime?         @updatedAt @db.Timestamp()
-  Product      Product[]
+  id          String            @id @default(uuid())
+  name        String            @unique
+  description String?
+  image       String?
+  isRoot      Boolean           @default(false)
+  isLeaf      Boolean           @default(false)
+  level       Float
+  isActive    Boolean           @default(false)
+  parentId    String?
+  subCategory ProductCategory?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  category    ProductCategory[] @relation("CategoryToCategory")
+  createdAt   DateTime?         @default(now())
+  updatedAt   DateTime?         @updatedAt @db.Timestamp()
+  Product     Product[]
+}
+
+// product media enum
+enum MediaType {
+  IMAGE
+  VIDEO
 }
 
 model Product {
   id               String             @id @default(uuid())
-  sku              String
+  sku              Float
   productName      String
-  price            String
+  price            Float
+  comparePrice     Float?
+  costPrice        Float?
   rating           String?
   slug             String?
   isSaleAble       Boolean            @default(false)
   isAvailable      Boolean            @default(false)
   createdAt        DateTime?          @default(now())
   updatedAt        DateTime?          @updatedAt @db.Timestamp()
+  authorId         String
+  author           User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
   companyId        String
   company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  ProductImage     ProductImage[]
+  ProductImage     ProductMedia[]
   ProductAttribute ProductAttribute?
   ProductVariation ProductVariation[]
   categoryId       String
@@ -742,47 +753,63 @@ model Product {
   @@index([companyId])
 }
 
-model ProductImage {
-  id                 String            @id @default(uuid())
-  image              String
-  createdAt          DateTime?         @default(now())
-  updatedAt          DateTime?         @updatedAt @db.Timestamp()
-  productId          String
-  product            Product           @relation(fields: [productId], references: [id])
-  productVariationId String?
-  productVariation   ProductVariation? @relation(fields: [productVariationId], references: [id], onDelete: Cascade)
+model ProductMedia {
+  id        String    @id @default(uuid())
+  mediaType MediaType
+  mediaUrl  String
+  productId String
+  product   Product   @relation(fields: [productId], references: [id])
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 model ProductAttribute {
-  id                 String            @id @default(uuid())
-  description        String?
-  specification      String?
-  benefits           String?
-  createdAt          DateTime?         @default(now())
-  updatedAt          DateTime?         @updatedAt @db.Timestamp()
-  productVariationId String?           @unique
-  productVariation   ProductVariation? @relation(fields: [productVariationId], references: [id], onDelete: Cascade)
-  productId          String?           @unique
-  product            Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
-  ProductType        ProductType?      @relation(fields: [productTypeId], references: [id])
-  productTypeId      String?
+  id                        String                      @id @default(uuid())
+  description               String?
+  specification             String?
+  createdAt                 DateTime?                   @default(now())
+  updatedAt                 DateTime?                   @updatedAt @db.Timestamp()
+  productId                 String?                     @unique
+  product                   Product?                    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ProductType               ProductType?                @relation(fields: [productTypeId], references: [id])
+  productTypeId             String?
+  ProductVariationAttribute ProductVariationAttribute[]
+}
+
+model ProductVariationAttribute {
+  id                 String           @id @default(uuid())
+  productAttributeId String
+  productAttribute   ProductAttribute @relation(fields: [productAttributeId], references: [id])
+  productVariationId String
+  productVariation   ProductVariation @relation(fields: [productVariationId], references: [id], onDelete: Cascade)
+  createdAt          DateTime?        @default(now())
+  updatedAt          DateTime?        @updatedAt @db.Timestamp()
 }
 
 model ProductVariation {
-  id               String            @id @default(uuid())
-  title            String
-  sku              String
-  price            String
-  size             String?
-  color            String?
-  rating           String?
-  isAvailable      Boolean           @default(false)
-  createdAt        DateTime?         @default(now())
-  updatedAt        DateTime?         @updatedAt @db.Timestamp()
-  ProductAttribute ProductAttribute?
-  productId        String?
-  product          Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
-  ProductImage     ProductImage[]
+  id                        String                      @id @default(uuid())
+  title                     String
+  sku                       Float
+  price                     Float
+  size                      String?
+  color                     String?
+  rating                    String?
+  isAvailable               Boolean                     @default(false)
+  createdAt                 DateTime?                   @default(now())
+  updatedAt                 DateTime?                   @updatedAt @db.Timestamp()
+  productId                 String?
+  product                   Product?                    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ProductVariationImage     ProductVariationImage[]
+  ProductVariationAttribute ProductVariationAttribute[]
+}
+
+model ProductVariationImage {
+  id                 String            @id @default(uuid())
+  image              String
+  productVariationId String?
+  productVariation   ProductVariation? @relation(fields: [productVariationId], references: [id], onDelete: Cascade)
+  createdAt          DateTime?         @default(now())
+  updatedAt          DateTime?         @updatedAt @db.Timestamp()
 }
 
 model ProductType {
@@ -790,6 +817,8 @@ model ProductType {
   name             String
   Product          Product[]
   ProductAttribute ProductAttribute[]
+  createdAt        DateTime?          @default(now())
+  updatedAt        DateTime?          @updatedAt @db.Timestamp()
 }
 
 model ProductFeedback {

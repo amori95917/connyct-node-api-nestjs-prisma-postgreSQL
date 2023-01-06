@@ -20,6 +20,7 @@ import { USER_MESSAGE } from 'src/common/errors/error.message';
 import { USER_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { AccountType } from '../dto/switch-account.input';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class AuthService {
@@ -39,52 +40,55 @@ export class AuthService {
     password: string,
     context: any,
   ): Promise<Auth> {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
-      },
-      include: { Company: true, activeRole: true },
-    });
-    if (!user) throw new Error('User does not exist');
-    // return customError(
-    //   USER_MESSAGE.USER_NOT_FOUND,
-    //   USER_CODE.USER_NOT_FOUND,
-    //   STATUS_CODE.NOT_FOUND,
-    // );
-    if (
-      !(
-        user &&
-        (await this.passwordService.validatePassword(password, user.password))
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+        },
+        include: { Company: true, activeRole: true },
+      });
+      if (!user)
+        throw new ApolloError(
+          USER_MESSAGE.USER_NOT_FOUND,
+          USER_CODE.USER_NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      if (
+        !(
+          user &&
+          (await this.passwordService.validatePassword(password, user.password))
+        )
       )
-    )
-      throw new Error('Username or password incorrect');
-    // return customError(
-    //   USER_MESSAGE.LOGIN_ERROR,
-    //   USER_CODE.LOGIN_ERROR,
-    //   STATUS_CODE.BAD_CONFLICT,
-    // );
-    const token = this.tokenService.generateTokens({
-      userId: user.id,
-    });
-    context.res.cookie('cookie-data', {
-      accessToken: token.accessToken,
-      refreshToken: token.refreshToken,
-      user: user,
-    });
-    const userRoles = await this.prisma.userRole.findMany({
-      where: { userId: user.id },
-      include: { role: true },
-    });
-    const roles = userRoles.map((userRole) => userRole.role);
-    // Check if the user has an OWNER role
-    return {
-      user,
-      accessToken: token.accessToken,
-      refreshToken: token.refreshToken,
-      role: roles,
-      activeRole: user.activeRole,
-      company: user.Company,
-    };
+        throw new ApolloError(USER_MESSAGE.LOGIN_ERROR, USER_CODE.LOGIN_ERROR, {
+          statusCode: STATUS_CODE.BAD_CONFLICT,
+        });
+      const token = this.tokenService.generateTokens({
+        userId: user.id,
+      });
+      context.res.cookie('cookie-data', {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        user: user,
+      });
+      const userRoles = await this.prisma.userRole.findMany({
+        where: { userId: user.id },
+        include: { role: true },
+      });
+      const roles = userRoles.map((userRole) => userRole.role);
+      // Check if the user has an OWNER role
+      return {
+        user,
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        role: roles,
+        activeRole: user.activeRole,
+        company: user.Company,
+      };
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async loginLinkAccess(email: string): Promise<{

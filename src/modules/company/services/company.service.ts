@@ -566,7 +566,7 @@ export class CompanyService {
           COMPANY_CODE.COMPANY_DOCUMENT_NOT_FOUND,
           STATUS_CODE.NOT_FOUND,
         );
-      const updateDocument = await this.prisma.$transaction(async () => {
+      const updateDocument = await this.prisma.$transaction(async (prisma) => {
         let updatedDocumentURL: any;
         if (document) {
           await this.fileUploadService.deleteImage(
@@ -580,7 +580,7 @@ export class CompanyService {
           if (updatedDocumentURL.errors)
             return { errors: updatedDocumentURL.errors };
         }
-        const update = await this.prisma.companyDocument.update({
+        const update = await prisma.companyDocument.update({
           where: { id: documentId },
           data: {
             ...editDocument,

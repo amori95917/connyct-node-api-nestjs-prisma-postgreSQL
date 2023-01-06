@@ -76,7 +76,6 @@ export class ProductCategoryResolver {
     @Parent() category: ProductCategory,
   ): Promise<ProductCategory[] | null> {
     const { id } = category;
-    console.log(id, 'incoming id ');
     if (!id) return null;
     return await this.productCategoryLoader.subCategoryLoader.load(id);
   }

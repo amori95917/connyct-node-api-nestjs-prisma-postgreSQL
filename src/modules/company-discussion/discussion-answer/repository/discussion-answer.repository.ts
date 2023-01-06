@@ -88,28 +88,32 @@ export class DiscussionAnswerRepository {
     }
   }
 
-  public async mentions(mentions: string[], answerId: string) {
+  public async mentions(mentions: string[], answerId: string, prisma: any) {
     const answerMention = mentions.map((userId: string) => {
       return Object.assign({}, { mentionId: userId }, { answerId });
     });
     const user = await this.userService.findUsersByIds(mentions);
     if (user.length) {
-      await this.prisma.discussionAnswerMentions.createMany({
+      await prisma.discussionAnswerMentions.createMany({
         data: answerMention,
       });
     }
     return user;
   }
-  public async updateMentions(mentions: string[], answerId: string) {
+  public async updateMentions(
+    mentions: string[],
+    answerId: string,
+    prisma: any,
+  ) {
     const answerMention = mentions.map((userId: string) => {
       return Object.assign({}, { mentionId: userId }, { answerId });
     });
     const user = await this.userService.findUsersByIds(mentions);
     if (user.length) {
-      await this.prisma.discussionAnswerMentions.deleteMany({
+      await prisma.discussionAnswerMentions.deleteMany({
         where: { answerId },
       });
-      await this.prisma.discussionAnswerMentions.createMany({
+      await prisma.discussionAnswerMentions.createMany({
         data: answerMention,
       });
     }
@@ -132,18 +136,24 @@ export class DiscussionAnswerRepository {
     userId: string,
   ): Promise<DiscussionAnswerPayload> {
     try {
-      const discussionAnswer = await this.prisma.$transaction(async () => {
-        const createAnswer = await this.prisma.discussionAnswer.create({
-          data: {
-            answer: answer.answer,
-            discussionId: answer.discussionId,
-            userId,
-          },
-        });
-        if (!answer.mentionIds) return { createAnswer, user: null };
-        const user = await this.mentions(answer.mentionIds, createAnswer.id);
-        return { createAnswer, user };
-      });
+      const discussionAnswer = await this.prisma.$transaction(
+        async (prisma) => {
+          const createAnswer = await prisma.discussionAnswer.create({
+            data: {
+              answer: answer.answer,
+              discussionId: answer.discussionId,
+              userId,
+            },
+          });
+          if (!answer.mentionIds) return { createAnswer, user: null };
+          const user = await this.mentions(
+            answer.mentionIds,
+            createAnswer.id,
+            prisma,
+          );
+          return { createAnswer, user };
+        },
+      );
       return {
         discussionAnswer: Object.assign(discussionAnswer.createAnswer, {
           mentions: discussionAnswer.user,
@@ -176,17 +186,20 @@ export class DiscussionAnswerRepository {
     id: string,
   ): Promise<DiscussionAnswerPayload> {
     try {
-      const update = await this.prisma.$transaction(async () => {
-        const updateDiscussionAnswer =
-          await this.prisma.discussionAnswer.update({
-            where: { id },
-            data: {
-              answer: updateAnswer.answer,
-            },
-          });
+      const update = await this.prisma.$transaction(async (prisma) => {
+        const updateDiscussionAnswer = await prisma.discussionAnswer.update({
+          where: { id },
+          data: {
+            answer: updateAnswer.answer,
+          },
+        });
         if (!updateAnswer.mentionIds)
           return { updateDiscussionAnswer, user: null };
-        const user = await this.updateMentions(updateAnswer.mentionIds, id);
+        const user = await this.updateMentions(
+          updateAnswer.mentionIds,
+          id,
+          prisma,
+        );
         return { updateDiscussionAnswer, user };
       });
 
@@ -202,9 +215,9 @@ export class DiscussionAnswerRepository {
 
   async deleteAnswer(id: string): Promise<DiscussionAnswerDeletePayload> {
     try {
-      await this.prisma.$transaction(async () => {
-        await this.prisma.discussionAnswer.delete({ where: { id } });
-        await this.prisma.discussionAnswerMentions.deleteMany({
+      await this.prisma.$transaction(async (prisma) => {
+        await prisma.discussionAnswer.delete({ where: { id } });
+        await prisma.discussionAnswerMentions.deleteMany({
           where: { answerId: id },
         });
       });
@@ -233,8 +246,8 @@ export class DiscussionAnswerRepository {
     userId: string,
   ): Promise<DiscussionAnswerVotePayload> {
     try {
-      const vote = await this.prisma.$transaction(async () => {
-        const checkVote = await this.prisma.discussionAnswerVote.findFirst({
+      const vote = await this.prisma.$transaction(async (prisma) => {
+        const checkVote = await prisma.discussionAnswerVote.findFirst({
           where: {
             vote: input.vote,
             userId,
@@ -242,7 +255,7 @@ export class DiscussionAnswerRepository {
           },
         });
         if (!checkVote) {
-          const createVote = await this.prisma.discussionAnswerVote.create({
+          const createVote = await prisma.discussionAnswerVote.create({
             data: {
               ...input,
               userId,
@@ -250,7 +263,7 @@ export class DiscussionAnswerRepository {
           });
           return { createVote };
         }
-        await this.prisma.discussionAnswerVote.delete({
+        await prisma.discussionAnswerVote.delete({
           where: { id: checkVote.id },
         });
         return { remove: true };

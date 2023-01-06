@@ -12,7 +12,7 @@ export class ProductCategoryInput {
   @Field()
   @IsNotEmpty()
   @IsString()
-  categoryType: string;
+  name: string;
 
   @Field({ nullable: true })
   @IsOptional()

@@ -221,8 +221,8 @@ export class CommunityRepository {
         };
       }
       console.log('profileImageURL', profileUrl, coverImageUrl);
-      const create = await this.prisma.$transaction(async () => {
-        const community = await this.prisma.companyCommunity.create({
+      const create = await this.prisma.$transaction(async (prisma) => {
+        const community = await prisma.companyCommunity.create({
           data: {
             ...input,
             creatorId: userId,
@@ -253,7 +253,7 @@ export class CommunityRepository {
         //   input.companyId,
         // );
         // } else {
-        await this.prisma.communityMember.create({
+        await prisma.communityMember.create({
           data: {
             communityId: community.id,
             companyId: input.companyId,
@@ -261,7 +261,7 @@ export class CommunityRepository {
             isAccepted: true,
           },
         });
-        await this.prisma.companyCommunityRole.create({
+        await prisma.companyCommunityRole.create({
           data: {
             role: CommunityRole.ADMIN,
             userId,
@@ -288,7 +288,7 @@ export class CommunityRepository {
     try {
       let updatedProfileUrl: any;
       let updatedCoverImageUrl: any;
-      const community = await this.prisma.$transaction(async () => {
+      const community = await this.prisma.$transaction(async (prisma) => {
         if (profile) {
           if (communityData.profile) {
             await this.fileUploadService.deleteImage(
@@ -317,7 +317,7 @@ export class CommunityRepository {
           if (updatedCoverImageUrl.errors)
             return { errors: updatedCoverImageUrl.errors };
         }
-        const updateCommunity = await this.prisma.companyCommunity.update({
+        const updateCommunity = await prisma.companyCommunity.update({
           where: { id },
           data: {
             ...communityData,
@@ -341,7 +341,7 @@ export class CommunityRepository {
     coverImage: string,
   ): Promise<CommunityDeletePayload> {
     try {
-      const deleteCommunity = await this.prisma.$transaction(async () => {
+      const deleteCommunity = await this.prisma.$transaction(async (prisma) => {
         await this.fileUploadService.deleteImage(
           'community/community-profile',
           await this.cloudinary.getPublicId(profile),
@@ -350,7 +350,7 @@ export class CommunityRepository {
           'community/community-coverImage',
           await this.cloudinary.getPublicId(coverImage),
         );
-        await this.prisma.companyCommunity.delete({
+        await prisma.companyCommunity.delete({
           where: { id },
         });
         return true;
@@ -434,15 +434,15 @@ export class CommunityRepository {
     communityMemberId: string,
   ): Promise<AcceptInvitePayload> {
     try {
-      await this.prisma.$transaction(async () => {
-        const updated = await this.prisma.communityMember.update({
+      await this.prisma.$transaction(async (prisma) => {
+        const updated = await prisma.communityMember.update({
           where: { id: communityMemberId },
           data: {
             isAccepted: true,
             isConnected: true,
           },
         });
-        await this.prisma.companyCommunityRole.create({
+        await prisma.companyCommunityRole.create({
           data: {
             role: CommunityRole.MEMBER,
             communityId: updated.communityId,
@@ -461,11 +461,11 @@ export class CommunityRepository {
     memberId: string,
   ): Promise<JoinCommunityPayload> {
     try {
-      const joinCommunity = await this.prisma.$transaction(async () => {
-        const join = await this.prisma.communityMember.create({
+      const joinCommunity = await this.prisma.$transaction(async (prisma) => {
+        const join = await prisma.communityMember.create({
           data: { ...input, memberId, isAccepted: true, isConnected: true },
         });
-        await this.prisma.companyCommunityRole.create({
+        await prisma.companyCommunityRole.create({
           data: {
             role: CommunityRole.MEMBER,
             userId: memberId,

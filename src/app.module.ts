@@ -30,7 +30,7 @@ import { OtpVerificationModule } from './modules/otp-verification/otp-verificati
 import { CompanyDiscussionModule } from './modules/company-discussion/company-discussion.module';
 import { CompanyCommunityModule } from './modules/company-community/company-community.module';
 import { CommunityPostModule } from './modules/community-post/community-post.module';
-import { ProductModule } from './modules/product/product.module';
+import { ProductModule } from './modules/company-product/product.module';
 
 @Module({
   imports: [
@@ -67,8 +67,10 @@ import { ProductModule } from './modules/product/product.module';
             origin: true,
           },
           formatError: (error: GraphQLError) => {
-            const graphQLFormattedError: GraphQLFormattedError = {
-              message: error?.extensions?.exception?.code || error?.message,
+            const graphQLFormattedError = {
+              message: error?.message,
+              code: error?.extensions?.code,
+              statusCode: error?.extensions?.statusCode,
             };
             return graphQLFormattedError;
           },

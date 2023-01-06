@@ -7,6 +7,7 @@ import { customError } from 'src/common/errors';
 import { PRODUCT_CATEGORY_MESSAGE } from 'src/common/errors/error.message';
 import { PRODUCT_CATEGORY_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class ProductCategoryService {
@@ -34,29 +35,40 @@ export class ProductCategoryService {
     data: ProductCategoryInput,
     id: string,
   ): Promise<ProductCategoryPayload> {
-    const category = await this.productCategoryRepository.getCategoryById(id);
+    try {
+      const category = await this.productCategoryRepository.getCategoryById(id);
 
-    if (!category)
-      return customError(
-        PRODUCT_CATEGORY_MESSAGE.NOT_FOUND,
-        PRODUCT_CATEGORY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+      if (!category)
+        throw new ApolloError(
+          PRODUCT_CATEGORY_MESSAGE.NOT_FOUND,
+          PRODUCT_CATEGORY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.productCategoryRepository.updateProductCategory(
+        data,
+        id,
+        category,
       );
-    return await this.productCategoryRepository.updateProductCategory(
-      data,
-      id,
-      category,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   async deleteProductCategory(id: string): Promise<ProductCategoryPayload> {
-    const category = await this.productCategoryRepository.getCategoryById(id);
-
-    if (!category)
-      return customError(
-        PRODUCT_CATEGORY_MESSAGE.NOT_FOUND,
-        PRODUCT_CATEGORY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
-    return await this.productCategoryRepository.deleteProductCategory(id);
+    try {
+      const category = await this.productCategoryRepository.getCategoryById(id);
+      if (!category)
+        throw new ApolloError(
+          PRODUCT_CATEGORY_MESSAGE.NOT_FOUND,
+          PRODUCT_CATEGORY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.productCategoryRepository.deleteProductCategory(id);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 }

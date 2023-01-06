@@ -4,7 +4,7 @@ import { BaseEntity } from 'src/modules/prisma/entities/base.entity';
 @ObjectType()
 export class ProductCategory extends BaseEntity {
   @Field({ nullable: true })
-  categoryType: string;
+  name: string;
 
   @Field({ nullable: true })
   parentId: string;
