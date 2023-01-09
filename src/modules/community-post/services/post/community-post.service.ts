@@ -27,6 +27,7 @@ import {
 import { DeleteCommunityPostPayload } from '../../entities/post/delete-post.payload';
 import { UpdateCommunityPostPayload } from '../../entities/post/update-post.payload';
 import { CommunityPostRepository } from '../../repository/post/community-post.repository';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class CommunityPostService {
@@ -41,20 +42,26 @@ export class CommunityPostService {
     paginate: ConnectionArgs,
     order: CommunityPostsOrderList,
   ): Promise<GetCommunityPostPayload> {
-    const community = await this.communityRepository.getCommunityById(
-      communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community = await this.communityRepository.getCommunityById(
+        communityId,
       );
-    return this.communityPostRepository.findPostsByCompanyId(
-      communityId,
-      paginate,
-      order,
-    );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return this.communityPostRepository.findPostsByCompanyId(
+        communityId,
+        paginate,
+        order,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async create(
@@ -74,10 +81,10 @@ export class CommunityPostService {
       if (checkOwner)
         return await this.communityPostRepository.create(input, userId, files);
       if (!community)
-        return customError(
+        throw new ApolloError(
           COMMUNITY_MESSAGE.NOT_FOUND,
           COMMUNITY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -85,10 +92,10 @@ export class CommunityPostService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       const checkMember =
         await this.communityRepository.checkCommunityMemberExist(
@@ -96,14 +103,16 @@ export class CommunityPostService {
           userId,
         );
       if (!checkMember)
-        return customError(
+        throw new ApolloError(
           COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
           COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
-          STATUS_CODE.BAD_REQUEST_EXCEPTION,
+          { statusCode: STATUS_CODE.BAD_REQUEST_EXCEPTION },
         );
       return await this.communityPostRepository.create(input, userId, files);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -114,106 +123,114 @@ export class CommunityPostService {
     file: FileUpload,
     authorId: string,
   ): Promise<UpdateCommunityPostPayload> {
-    const post = await this.communityPostRepository.findPostByCreatorId(
-      authorId,
-      postId,
-    );
-    if (!post) {
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const post = await this.communityPostRepository.findPostByCreatorId(
+        authorId,
+        postId,
       );
+      if (!post) {
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      }
+      const community = await this.communityRepository.getCommunityById(
+        post.communityId,
+      );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          community.companyId,
+          authorId,
+        );
+      if (!followedCompany)
+        throw new ApolloError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      const checkMember =
+        await this.communityRepository.checkCommunityMemberExist(
+          community.id,
+          authorId,
+        );
+      if (!checkMember)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
+          COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
+          { statusCode: STATUS_CODE.BAD_REQUEST_EXCEPTION },
+        );
+      return await this.communityPostRepository.update(
+        postId,
+        imageURL,
+        input,
+        file,
+        post,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-    const community = await this.communityRepository.getCommunityById(
-      post.communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
-    const followedCompany =
-      await this.followCompanyService.checkIfUserFollowCompany(
-        community.companyId,
-        authorId,
-      );
-    if (!followedCompany)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-        COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-        STATUS_CODE.BAD_CONFLICT,
-      );
-    const checkMember =
-      await this.communityRepository.checkCommunityMemberExist(
-        community.id,
-        authorId,
-      );
-    if (!checkMember)
-      return customError(
-        COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
-        COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
-        STATUS_CODE.BAD_REQUEST_EXCEPTION,
-      );
-    return await this.communityPostRepository.update(
-      postId,
-      imageURL,
-      input,
-      file,
-      post,
-    );
   }
   public async delete(
     postId: string,
     userId: string,
   ): Promise<DeleteCommunityPostPayload> {
-    const post = await this.communityPostRepository.findPostByCreatorId(
-      userId,
-      postId,
-    );
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const post = await this.communityPostRepository.findPostByCreatorId(
+        userId,
+        postId,
       );
-    const community = await this.communityRepository.getCommunityById(
-      post.communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      const community = await this.communityRepository.getCommunityById(
+        post.communityId,
       );
-    const checkOwner = await this.communityPostRepository.checkOwner(
-      postId,
-      userId,
-    );
-    if (checkOwner) return await this.communityPostRepository.delete(postId);
-    const followedCompany =
-      await this.followCompanyService.checkIfUserFollowCompany(
-        community.companyId,
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      const checkOwner = await this.communityPostRepository.checkOwner(
+        postId,
         userId,
       );
-    if (!followedCompany)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-        COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-        STATUS_CODE.BAD_CONFLICT,
-      );
-    const checkMember =
-      await this.communityRepository.checkCommunityMemberExist(
-        community.id,
-        userId,
-      );
-    if (!checkMember)
-      return customError(
-        COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
-        COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
-        STATUS_CODE.BAD_REQUEST_EXCEPTION,
-      );
-    return await this.communityPostRepository.delete(post.id);
+      if (checkOwner) return await this.communityPostRepository.delete(postId);
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          community.companyId,
+          userId,
+        );
+      if (!followedCompany)
+        throw new ApolloError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      const checkMember =
+        await this.communityRepository.checkCommunityMemberExist(
+          community.id,
+          userId,
+        );
+      if (!checkMember)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
+          COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
+          { statusCode: STATUS_CODE.BAD_REQUEST_EXCEPTION },
+        );
+      return await this.communityPostRepository.delete(post.id);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 }

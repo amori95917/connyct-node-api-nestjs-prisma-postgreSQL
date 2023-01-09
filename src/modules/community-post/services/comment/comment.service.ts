@@ -18,6 +18,7 @@ import {
 import { DeleteCommentPayload } from '../../entities/comment/delete-comment.payload';
 import { CommentRepository } from '../../repository/comment/comment.repository';
 import { CommunityPostRepository } from '../../repository/post/community-post.repository';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class CommentService {
@@ -32,20 +33,24 @@ export class CommentService {
     input: CommentInput,
     mention: MentionsInput,
   ): Promise<FirstLevelCommentPayload> {
-    const { text } = input;
-    const post = await this.postRepository.findPostById(postId);
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const { text } = input;
+      const post = await this.postRepository.findPostById(postId);
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      return await this.commentRepository.createFirstLevelComment(
+        postId,
+        creatorId,
+        text,
+        mention,
       );
-    return await this.commentRepository.createFirstLevelComment(
-      postId,
-      creatorId,
-      text,
-      mention,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   async updateComment(
     commentId: string,
@@ -53,21 +58,27 @@ export class CommentService {
     mention: MentionsInput,
     userId: string,
   ): Promise<FirstLevelCommentPayload> {
-    const comment = await this.commentRepository.findCommentByIdAndUserId(
-      commentId,
-      userId,
-    );
-    if (!comment)
-      return customError(
-        COMMENT_MESSAGE.NOT_FOUND,
-        COMMENT_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const comment = await this.commentRepository.findCommentByIdAndUserId(
+        commentId,
+        userId,
       );
-    return await this.commentRepository.updateComment(
-      commentId,
-      input,
-      mention,
-    );
+      if (!comment)
+        throw new ApolloError(
+          COMMENT_MESSAGE.NOT_FOUND,
+          COMMENT_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.commentRepository.updateComment(
+        commentId,
+        input,
+        mention,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async deleteComment(
@@ -80,14 +91,16 @@ export class CommentService {
         userId,
       );
       if (!comment)
-        return customError(
+        throw new ApolloError(
           COMMENT_MESSAGE.NOT_FOUND,
           COMMENT_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       return await this.commentRepository.deleteComment(commentId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -96,20 +109,24 @@ export class CommentService {
     paginate: ConnectionArgs,
     order: OrderCommentList,
   ): Promise<FirstLevelCommentPaginatedPayload> {
-    /*check if the post exists */
-    const post = await this.postRepository.findPostById(postId);
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      /*check if the post exists */
+      const post = await this.postRepository.findPostById(postId);
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      const comment = await this.commentRepository.getComments(
+        postId,
+        paginate,
+        order,
       );
-    const comment = await this.commentRepository.getComments(
-      postId,
-      paginate,
-      order,
-    );
-    return { comment };
+      return { comment };
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   public async secondLevelComment(
@@ -118,20 +135,26 @@ export class CommentService {
     input: CommentInput,
     mention: MentionsInput,
   ): Promise<SecondLevelCommentPayload> {
-    const { text } = input;
-    const comment = await this.commentRepository.findCommentById(commentId);
-    if (!comment)
-      return customError(
-        COMMENT_MESSAGE.NOT_FOUND,
-        COMMENT_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const { text } = input;
+      const comment = await this.commentRepository.findCommentById(commentId);
+      if (!comment)
+        throw new ApolloError(
+          COMMENT_MESSAGE.NOT_FOUND,
+          COMMENT_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.commentRepository.createSecondLevelComment(
+        creatorId,
+        commentId,
+        text,
+        mention,
       );
-    return await this.commentRepository.createSecondLevelComment(
-      creatorId,
-      commentId,
-      text,
-      mention,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   async createThirdLevelComment(
     commentId: string,
@@ -139,19 +162,25 @@ export class CommentService {
     userId: string,
     mention: MentionsInput,
   ): Promise<ThirdLevelCommentPayload> {
-    const comment = await this.commentRepository.findCommentById(commentId);
-    if (!comment)
-      return customError(
-        COMMENT_MESSAGE.NOT_FOUND,
-        COMMENT_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const comment = await this.commentRepository.findCommentById(commentId);
+      if (!comment)
+        throw new ApolloError(
+          COMMENT_MESSAGE.NOT_FOUND,
+          COMMENT_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.commentRepository.createThirdLevelComment(
+        commentId,
+        input.text,
+        userId,
+        mention,
       );
-    return await this.commentRepository.createThirdLevelComment(
-      commentId,
-      input.text,
-      userId,
-      mention,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   public async getSecondLevelComment(
     id: string,

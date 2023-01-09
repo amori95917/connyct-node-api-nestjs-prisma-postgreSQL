@@ -41,6 +41,7 @@ import {
   CommunityPolicyInput,
   CommunityPolicyUpdateInput,
 } from '../dto/policy.input';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class CommunityService {
@@ -56,21 +57,27 @@ export class CommunityService {
     order: OrderListCommunity,
     userId?: string,
   ): Promise<GetCommunityPayload> {
-    const company = await this.companyService.getCompanyById(companyId);
-    if (!company)
-      return customError(
-        COMPANY_MESSAGE.NOT_FOUND,
-        COMPANY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
+    try {
+      const company = await this.companyService.getCompanyById(companyId);
+      if (!company)
+        throw new ApolloError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
 
-    return await this.communityRepository.getCommunityByCompanyId(
-      companyId,
-      paginate,
-      order,
-      userId,
-      company.ownerId,
-    );
+      return await this.communityRepository.getCommunityByCompanyId(
+        companyId,
+        paginate,
+        order,
+        userId,
+        company.ownerId,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   async getCommunityById(
     communityId: string,
@@ -89,25 +96,31 @@ export class CommunityService {
     coverImage: FileUpload,
     userId: string,
   ): Promise<CommunityPayload> {
-    const company = await this.companyService.getCompanyById(input.companyId);
-    if (!company)
-      return customError(
-        COMPANY_MESSAGE.NOT_FOUND,
-        COMPANY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const company = await this.companyService.getCompanyById(input.companyId);
+      if (!company)
+        throw new ApolloError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      if (company.ownerId !== userId)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_A_OWNER,
+          COMMUNITY_CODE.NOT_A_OWNER,
+          { statusCode: STATUS_CODE.NOT_SUPPORTED },
+        );
+      return await this.communityRepository.createCommunity(
+        input,
+        profile,
+        coverImage,
+        userId,
       );
-    if (company.ownerId !== userId)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_A_OWNER,
-        COMMUNITY_CODE.NOT_A_OWNER,
-        STATUS_CODE.NOT_SUPPORTED,
-      );
-    return await this.communityRepository.createCommunity(
-      input,
-      profile,
-      coverImage,
-      userId,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async editCommunity(
@@ -117,44 +130,58 @@ export class CommunityService {
     coverImage: FileUpload,
     userId: string,
   ): Promise<CommunityPayload> {
-    const community = await this.communityRepository.getCommunityByIdAndUserId(
-      communityId,
-      userId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community =
+        await this.communityRepository.getCommunityByIdAndUserId(
+          communityId,
+          userId,
+        );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.communityRepository.editCommunity(
+        input,
+        communityId,
+        community,
+        profile,
+        coverImage,
       );
-    return await this.communityRepository.editCommunity(
-      input,
-      communityId,
-      community,
-      profile,
-      coverImage,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async deleteCommunity(
     communityId: string,
     creatorId: string,
   ): Promise<CommunityDeletePayload> {
-    const community = await this.communityRepository.getCommunityByIdAndUserId(
-      communityId,
-      creatorId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community =
+        await this.communityRepository.getCommunityByIdAndUserId(
+          communityId,
+          creatorId,
+        );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.communityRepository.deleteCommunity(
+        communityId,
+        community.profile,
+        community.coverImage,
       );
-    return await this.communityRepository.deleteCommunity(
-      communityId,
-      community.profile,
-      community.coverImage,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async getCommunityMember(
@@ -162,43 +189,55 @@ export class CommunityService {
     paginate: ConnectionArgs,
     order: OrderListCommunityMember,
   ): Promise<GetCommunityMemberPayload> {
-    const community = await this.communityRepository.getCommunityById(
-      communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community = await this.communityRepository.getCommunityById(
+        communityId,
       );
-    return await this.communityRepository.getCommunityMember(
-      communityId,
-      paginate,
-      order,
-    );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.communityRepository.getCommunityMember(
+        communityId,
+        paginate,
+        order,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async inviteUserByAdmin(
     input: CommunityMemberInviteInput,
     invitedById: string,
   ): Promise<CommunityMemberPayload> {
-    const community = await this.communityRepository.getCommunityById(
-      input.communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community = await this.communityRepository.getCommunityById(
+        input.communityId,
       );
-    if (!input.memberId.length)
-      return customError(
-        COMMUNITY_MESSAGE.ATLEAST_SELECT_A_MEMBER,
-        COMMUNITY_CODE.ATLEAST_SELECT_A_MEMBER,
-        STATUS_CODE.BAD_CONFLICT,
-      );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      if (!input.memberId.length)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.ATLEAST_SELECT_A_MEMBER,
+          COMMUNITY_CODE.ATLEAST_SELECT_A_MEMBER,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
 
-    return await this.communityRepository.inviteUser(input, invitedById);
+      return await this.communityRepository.inviteUser(input, invitedById);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async acceptCommunityInvite(
@@ -206,131 +245,154 @@ export class CommunityService {
     communityMemberId: string,
     userId: string,
   ): Promise<AcceptInvitePayload> {
-    const alreadyAccepted = await this.communityRepository.checkMemberExist(
-      communityMemberId,
-    );
-    if (alreadyAccepted)
-      return customError(
-        COMMUNITY_MESSAGE.COMMUNITY_ALREADY_JOINED,
-        COMMUNITY_CODE.COMMUNITY_ALREADY_JOINED,
-        STATUS_CODE.BAD_CONFLICT,
+    try {
+      const alreadyAccepted = await this.communityRepository.checkMemberExist(
+        communityMemberId,
       );
-    const follow = await this.followService.checkIfUserFollowCompany(
-      companyId,
-      userId,
-    );
-    if (!follow)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-        COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-        STATUS_CODE.BAD_CONFLICT,
+      if (alreadyAccepted)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.COMMUNITY_ALREADY_JOINED,
+          COMMUNITY_CODE.COMMUNITY_ALREADY_JOINED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      const follow = await this.followService.checkIfUserFollowCompany(
+        companyId,
+        userId,
       );
-    return await this.communityRepository.acceptCommunityInvite(
-      communityMemberId,
-    );
+      if (!follow)
+        throw new ApolloError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      return await this.communityRepository.acceptCommunityInvite(
+        communityMemberId,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async inviteUserByCommunityUser(
     input: CommunityMemberInviteInput,
     userId: string,
   ): Promise<CommunityMemberPayload> {
-    const community = await this.communityRepository.getCommunityById(
-      input.communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
-    const follow = await this.followService.checkIfUserFollowCompany(
-      input.companyId,
-      userId,
-    );
-    if (!follow)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-        COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-        STATUS_CODE.BAD_CONFLICT,
-      );
-    const communityMember =
-      await this.communityRepository.checkCommunityMemberExist(
+    try {
+      const community = await this.communityRepository.getCommunityById(
         input.communityId,
+      );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      const follow = await this.followService.checkIfUserFollowCompany(
+        input.companyId,
         userId,
       );
-    if (!communityMember)
-      return customError(
-        COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
-        COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
-        STATUS_CODE.BAD_REQUEST_EXCEPTION,
-      );
-    return await this.communityRepository.inviteUser(input, userId);
+      if (!follow)
+        throw new ApolloError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      const communityMember =
+        await this.communityRepository.checkCommunityMemberExist(
+          input.communityId,
+          userId,
+        );
+      if (!communityMember)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.COMMUNITY_NOT_JOINED,
+          COMMUNITY_CODE.COMMUNITY_NOT_JOINED,
+          { statusCode: STATUS_CODE.BAD_REQUEST_EXCEPTION },
+        );
+      return await this.communityRepository.inviteUser(input, userId);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async joinPublicCommunity(
     input: CommunityMemberInput,
     userId: string,
   ): Promise<JoinCommunityPayload> {
-    // const follow = await this.followService.checkIfUserFollowCompany(
-    //   input.companyId,
-    //   userId,
-    // );
-    // if (!follow)
-    //   return customError(
-    //     COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-    //     COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-    //     STATUS_CODE.BAD_CONFLICT,
-    //   );
+    try {
+      // const follow = await this.followService.checkIfUserFollowCompany(
+      //   input.companyId,
+      //   userId,
+      // );
+      // if (!follow)
+      //   return customError(
+      //     COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+      //     COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+      //     STATUS_CODE.BAD_CONFLICT,
+      //   );
 
-    const communityAdmin =
-      await this.communityRepository.getCommunityByIdAndUserId(
-        input.communityId,
-        userId,
-      );
-    if (communityAdmin)
-      return customError(
-        COMMUNITY_MESSAGE.ALREADY_A_OWNER,
-        COMMUNITY_CODE.ALREADY_A_OWNER,
-        STATUS_CODE.BAD_CONFLICT,
-      );
-    const publicCommunity = await this.communityRepository.findPublicCommunity(
-      input.communityId,
-    );
-    if (!publicCommunity)
-      return customError(
-        COMMUNITY_MESSAGE.MUST_BE_PUBLIC_COMMUNITY,
-        COMMUNITY_CODE.MUST_BE_PUBLIC_COMMUNITY,
-        STATUS_CODE.NOT_SUPPORTED,
-      );
+      const communityAdmin =
+        await this.communityRepository.getCommunityByIdAndUserId(
+          input.communityId,
+          userId,
+        );
+      if (communityAdmin)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.ALREADY_A_OWNER,
+          COMMUNITY_CODE.ALREADY_A_OWNER,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      const publicCommunity =
+        await this.communityRepository.findPublicCommunity(input.communityId);
+      if (!publicCommunity)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.MUST_BE_PUBLIC_COMMUNITY,
+          COMMUNITY_CODE.MUST_BE_PUBLIC_COMMUNITY,
+          { statusCode: STATUS_CODE.NOT_SUPPORTED },
+        );
 
-    const alreadyAccepted =
-      await this.communityRepository.checkCommunityMemberExist(
-        input.communityId,
-        userId,
-      );
-    if (alreadyAccepted)
-      return customError(
-        COMMUNITY_MESSAGE.COMMUNITY_ALREADY_JOINED,
-        COMMUNITY_CODE.COMMUNITY_ALREADY_JOINED,
-        STATUS_CODE.BAD_CONFLICT,
-      );
-    return await this.communityRepository.joinPublicCommunity(input, userId);
+      const alreadyAccepted =
+        await this.communityRepository.checkCommunityMemberExist(
+          input.communityId,
+          userId,
+        );
+      if (alreadyAccepted)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.COMMUNITY_ALREADY_JOINED,
+          COMMUNITY_CODE.COMMUNITY_ALREADY_JOINED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      return await this.communityRepository.joinPublicCommunity(input, userId);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async getCommunityPolicies(communityId: string, paginate: ConnectionArgs) {
-    const community = await this.communityRepository.getCommunityById(
-      communityId,
-    );
-    if (!community)
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community = await this.communityRepository.getCommunityById(
+        communityId,
       );
-    return await this.communityRepository.getCommunityPolicies(
-      communityId,
-      paginate,
-    );
+      if (!community)
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      return await this.communityRepository.getCommunityPolicies(
+        communityId,
+        paginate,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async getCommunityPolicy(policyId: string) {
@@ -341,43 +403,61 @@ export class CommunityService {
     communityId: string,
     input: CommunityPolicyInput,
   ) {
-    const community = await this.communityRepository.getCommunityById(
-      communityId,
-    );
-    if (!community) {
-      return customError(
-        COMMUNITY_MESSAGE.NOT_FOUND,
-        COMMUNITY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const community = await this.communityRepository.getCommunityById(
+        communityId,
       );
+      if (!community) {
+        throw new ApolloError(
+          COMMUNITY_MESSAGE.NOT_FOUND,
+          COMMUNITY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      }
+      return await this.communityRepository.createCommunityPolicy(
+        communityId,
+        input,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-    return await this.communityRepository.createCommunityPolicy(
-      communityId,
-      input,
-    );
   }
 
   async updateCommunityPolicy(id: string, input: CommunityPolicyUpdateInput) {
-    const policy = await this.getCommunityPolicy(id);
-    if (!policy) {
-      return customError(
-        COMMUNITY_POLICY_MESSAGE.NOT_FOUND,
-        COMMUNITY_POLICY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
+    try {
+      const policy = await this.getCommunityPolicy(id);
+      if (!policy) {
+        throw new ApolloError(
+          COMMUNITY_POLICY_MESSAGE.NOT_FOUND,
+          COMMUNITY_POLICY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      }
+      return await this.communityRepository.updateCommunityPolicy(id, input);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-    return await this.communityRepository.updateCommunityPolicy(id, input);
   }
 
   async deleteCommunityPolicy(id: string) {
-    const policy = await this.getCommunityPolicy(id);
-    if (!policy) {
-      return customError(
-        COMMUNITY_POLICY_MESSAGE.NOT_FOUND,
-        COMMUNITY_POLICY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
+    try {
+      const policy = await this.getCommunityPolicy(id);
+      if (!policy) {
+        throw new ApolloError(
+          COMMUNITY_POLICY_MESSAGE.NOT_FOUND,
+          COMMUNITY_POLICY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      }
+      return await this.communityRepository.deleteCommunityPolicy(id);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-    return await this.communityRepository.deleteCommunityPolicy(id);
   }
 }

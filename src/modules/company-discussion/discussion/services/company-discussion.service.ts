@@ -25,6 +25,7 @@ import { DiscussionVoteInput } from '../dto/discussion-vote.input';
 import { DiscussionVotePayload } from '../../discussion-answer/entities/discussion-vote.payload';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderListDiscussion } from '../dto/order-discussion.input';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class CompanyDiscussionService {
@@ -59,10 +60,10 @@ export class CompanyDiscussionService {
     try {
       const company = await this.companyService.getCompanyById(input.companyId);
       if (!company)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       if (company.ownerId === userId)
         return this.companyDiscussionRepository.createDiscussion(input, userId);
@@ -72,14 +73,16 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return this.companyDiscussionRepository.createDiscussion(input, userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -101,10 +104,10 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!discussion)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.NOT_FOUND,
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -112,14 +115,16 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return await this.companyDiscussionRepository.update(input, id);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -139,10 +144,10 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!discussion)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.NOT_FOUND,
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -150,14 +155,16 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return await this.companyDiscussionRepository.delete(id);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -182,10 +189,10 @@ export class CompanyDiscussionService {
           input.discussionId,
         );
       if (!discussion)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.NOT_FOUND,
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -193,14 +200,16 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return this.companyDiscussionRepository.createVote(input, userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   async downVote(
@@ -219,10 +228,10 @@ export class CompanyDiscussionService {
           input.discussionId,
         );
       if (!discussion)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.NOT_FOUND,
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -230,14 +239,16 @@ export class CompanyDiscussionService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return this.companyDiscussionRepository.downVote(input, userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 }

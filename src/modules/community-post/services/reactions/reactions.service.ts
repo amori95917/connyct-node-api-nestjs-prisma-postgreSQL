@@ -16,6 +16,7 @@ import { POST_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { ReactionsType } from '@prisma/client';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class ReactionService {
@@ -29,16 +30,20 @@ export class ReactionService {
     paginate: ConnectionArgs,
     order: CommunityPostReactionsOrderList,
   ) {
-    /**find post by postId */
-    const post = await this.communityPostsRepository.findPostById(postId);
-    /**check if post exists or not */
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
-    return await this.reactionRepository.getLikes(postId, paginate, order);
+    try {
+      /**find post by postId */
+      const post = await this.communityPostsRepository.findPostById(postId);
+      /**check if post exists or not */
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      return await this.reactionRepository.getLikes(postId, paginate, order);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   async getLikesByType(
     postId: string,
@@ -46,33 +51,43 @@ export class ReactionService {
     paginate: ConnectionArgs,
     order: CommunityPostReactionsOrderList,
   ) {
-    /**find post by postId */
-    const post = await this.communityPostsRepository.findPostById(postId);
-    /**check if post exists or not */
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      /**find post by postId */
+      const post = await this.communityPostsRepository.findPostById(postId);
+      /**check if post exists or not */
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      return await this.reactionRepository.getLikesByType(
+        postId,
+        reactionType,
+        paginate,
+        order,
       );
-    return await this.reactionRepository.getLikesByType(
-      postId,
-      reactionType,
-      paginate,
-      order,
-    );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async create(data: ReactionInput, userId: string): Promise<ReactionPayload> {
-    /**find post by postId */
-    const post = await this.communityPostsRepository.findPostById(data.postId);
-    /**check if post exists or not */
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      /**find post by postId */
+      const post = await this.communityPostsRepository.findPostById(
+        data.postId,
       );
-    return await this.reactionRepository.create(data, userId);
+      /**check if post exists or not */
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      return await this.reactionRepository.create(data, userId);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 }

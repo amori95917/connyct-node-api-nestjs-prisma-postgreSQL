@@ -222,6 +222,8 @@ export class UserService {
   }
 
   async createUserProfile(userId: string, prisma?: any) {
+    console.log('here ************************');
+
     await prisma.userProfile.create({ data: { userId } });
   }
 
@@ -331,10 +333,10 @@ export class UserService {
           rest,
           prisma,
         );
-        await this.createUserProfile(user.id);
+        await this.createUserProfile(user.id, prisma);
         // create the OWNER role for the user
-        await this.assignUserRole(user.id, 'OWNER');
-        await this.assignUserRole(user.id, 'USER');
+        await this.assignUserRole(user.id, 'OWNER', prisma);
+        await this.assignUserRole(user.id, 'USER', prisma);
         const rolesOfUser = await prisma.userRole.findMany({
           where: { userId: user.id },
           include: { role: true },
@@ -344,7 +346,7 @@ export class UserService {
         const activeRole = hasOwnerRole
           ? roles.find((role) => role.name === 'OWNER')
           : roles.find((role) => role.name === 'USER');
-        await this.setActiveRole(user.id, activeRole.name);
+        await this.setActiveRole(user.id, activeRole.name, prisma);
         return {
           user: user,
           role: roles,
@@ -352,6 +354,7 @@ export class UserService {
           company: user.Company,
         };
       });
+      console.log(result, 'incoming user');
       return result;
     } catch (e) {
       throw new Error(e);

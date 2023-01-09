@@ -20,6 +20,7 @@ import {
   DiscussionAnswerReplyPayload,
 } from '../entities/discussion-answer.payload';
 import { DiscussionAnswerRepository } from '../repository/discussion-answer.repository';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class DiscussionAnswerService {
@@ -50,10 +51,10 @@ export class DiscussionAnswerService {
         answer.discussionId,
       );
       if (!discussion)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.NOT_FOUND,
           COMPANY_DISCUSSION_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const checkOwner = await this.companyDiscussionRepository.checkOwner(
         answer.discussionId,
@@ -67,14 +68,16 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return this.discussionAnswerRepository.createAnswer(answer, userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -99,10 +102,10 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!discussionAnswer)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
           COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -110,17 +113,19 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return await this.discussionAnswerRepository.updateAnswer(
         updateAnswer,
         id,
       );
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -141,10 +146,10 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!discussionAnswer)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
           COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -152,14 +157,16 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return await this.discussionAnswerRepository.deleteAnswer(id);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -167,34 +174,43 @@ export class DiscussionAnswerService {
     input: ReplyToAnswerInput,
     userId: string,
   ): Promise<DiscussionAnswerReplyPayload> {
-    const answer =
-      await this.discussionAnswerRepository.getDiscussionAnswerById(
+    try {
+      const answer =
+        await this.discussionAnswerRepository.getDiscussionAnswerById(
+          input.repliedToAnswerId,
+        );
+      if (!answer)
+        throw new ApolloError(
+          COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
+          COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      const checkOwner = await this.discussionAnswerRepository.checkOwner(
         input.repliedToAnswerId,
-      );
-    if (!answer)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
-        COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
-    const checkOwner = await this.discussionAnswerRepository.checkOwner(
-      input.repliedToAnswerId,
-      userId,
-    );
-    if (checkOwner)
-      return await this.discussionAnswerRepository.replyToAnswer(input, userId);
-    const followedCompany =
-      await this.followCompanyService.checkIfUserFollowCompany(
-        answer.discussion.companyId,
         userId,
       );
-    if (!followedCompany)
-      return customError(
-        COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
-        COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-        STATUS_CODE.BAD_CONFLICT,
-      );
-    return await this.discussionAnswerRepository.replyToAnswer(input, userId);
+      if (checkOwner)
+        return await this.discussionAnswerRepository.replyToAnswer(
+          input,
+          userId,
+        );
+      const followedCompany =
+        await this.followCompanyService.checkIfUserFollowCompany(
+          answer.discussion.companyId,
+          userId,
+        );
+      if (!followedCompany)
+        throw new ApolloError(
+          COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
+          COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      return await this.discussionAnswerRepository.replyToAnswer(input, userId);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
 
   async createAnswerVote(
@@ -214,10 +230,10 @@ export class DiscussionAnswerService {
           input.discussionAnswerId,
         );
       if (!discussionAnswer)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
           COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -225,14 +241,16 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return this.discussionAnswerRepository.createAnswerVote(input, userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   async createAnswerDownvote(
@@ -252,10 +270,10 @@ export class DiscussionAnswerService {
           input.discussionId,
         );
       if (!discussionAnswer)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.DISCUSSION_ANSWER_NOT_FOUND,
           COMPANY_DISCUSSION_CODE.DISCUSSION_ANSWER_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
         await this.followCompanyService.checkIfUserFollowCompany(
@@ -263,17 +281,19 @@ export class DiscussionAnswerService {
           userId,
         );
       if (!followedCompany)
-        return customError(
+        throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
           COMPANY_DISCUSSION_CODE.COMPANY_NOT_FOLLOWED,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
       return this.discussionAnswerRepository.createAnswerDownvote(
         input,
         userId,
       );
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 }
