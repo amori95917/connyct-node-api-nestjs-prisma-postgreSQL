@@ -17,6 +17,8 @@ import {
   ProductVariationInput,
   ProductEditInput,
   ProductMediaEditInput,
+  ProductTypeInput,
+  ProductTypeEditInput,
 } from '../dto/product.input';
 import { User } from 'src/modules/user/entities/user.entity';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
@@ -35,6 +37,7 @@ import { ProductMedia } from '../entities/product-media.entity';
 import { ProductLoader } from '../product.loader';
 import { ProductCategory } from '../../product-category/entities/product-category.entity';
 import { ProductCategoryRepository } from '../../product-category/repository/product-category.repository';
+import { ProductType } from '../entities/product-type.entity';
 
 @Resolver(() => Product)
 export class ProductResolver {
@@ -61,14 +64,16 @@ export class ProductResolver {
   @UseGuards(GqlAuthGuard)
   @Mutation(() => ProductPayload)
   async product(
+    @Args('productType') productType: ProductTypeInput,
     @Args('product') product: ProductInput,
     @Args('companyId') companyId: string,
-    @Args('image', { type: () => [GraphQLUpload], nullable: true })
+    @Args('media', { type: () => [GraphQLUpload], nullable: true })
     media: FileUpload[],
-    @Args('mediaType') mediaType: ProductMediaInput,
+    @Args('mediaType', { nullable: true }) mediaType: ProductMediaInput,
     @CurrentUser() user: User,
   ): Promise<ProductPayload> {
     return await this.productService.product(
+      productType,
       product,
       companyId,
       user.id,
@@ -80,14 +85,18 @@ export class ProductResolver {
   @UseGuards(GqlAuthGuard)
   @Mutation(() => ProductPayload)
   async productEditAll(
+    @Args('productTypeId', { nullable: true }) productTypeId: string,
+    @Args('productType') productType: ProductTypeEditInput,
     @Args('productId') productId: string,
     @Args('product') product: ProductInput,
     @Args('image', { type: () => GraphQLUpload, nullable: true })
     media: FileUpload,
-    @Args('mediaId') mediaId: string,
-    mediaType: ProductMediaInput,
+    @Args('mediaId', { nullable: true }) mediaId: string,
+    @Args('mediaType', { nullable: true }) mediaType: ProductMediaInput,
   ): Promise<ProductPayload> {
     return await this.productService.productEditAll(
+      productTypeId,
+      productType,
       productId,
       product,
       media,
@@ -156,6 +165,22 @@ export class ProductResolver {
     @Args('input') input: ProductVariationInput,
   ): Promise<ProductVariationPayload> {
     return await this.productService.productVariationCreate(input);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => ProductType)
+  async productType(
+    @Args('input') input: ProductTypeInput,
+  ): Promise<ProductType> {
+    return await this.productService.productType(input);
+  }
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => ProductType)
+  async productTypeEdit(
+    @Args('id') id: string,
+    @Args('input') input: ProductTypeEditInput,
+  ): Promise<ProductType> {
+    return await this.productService.productTypeEdit(id, input);
   }
 
   @ResolveField('productMedia', () => [ProductMedia])

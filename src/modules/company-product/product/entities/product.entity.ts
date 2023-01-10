@@ -15,6 +15,9 @@ export class Product extends BaseEntity {
   productName: string;
 
   @Field({ nullable: true })
+  description: string;
+
+  @Field({ nullable: true })
   price: number;
 
   @Field({ nullable: true })
@@ -25,6 +28,9 @@ export class Product extends BaseEntity {
 
   @Field({ nullable: true })
   categoryId: string;
+
+  @Field({ nullable: true })
+  productTypeId: string;
 
   @Field(() => ProductCategory, { nullable: true })
   category?: ProductCategory;

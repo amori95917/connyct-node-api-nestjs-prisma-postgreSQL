@@ -7,6 +7,8 @@ import {
   ProductVariationInput,
   ProductEditInput,
   ProductMediaEditInput,
+  ProductTypeInput,
+  ProductTypeEditInput,
 } from '../dto/product.input';
 import {
   FindProductPayload,
@@ -26,6 +28,7 @@ import { ApolloError } from 'apollo-server-express';
 import { PRODUCT_MESSAGE } from 'src/common/errors/error.message';
 import { PRODUCT_CODE } from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import { ProductType } from '../entities/product-type.entity';
 
 @Injectable()
 export class ProductRepository {
@@ -79,6 +82,7 @@ export class ProductRepository {
   }
 
   async product(
+    productType: ProductTypeInput,
     product: ProductInput,
     companyId: string,
     authorId: string,
@@ -87,26 +91,37 @@ export class ProductRepository {
   ): Promise<ProductPayload> {
     try {
       const productCreate = await this.prisma.$transaction(async (prisma) => {
+        let productTypeData: ProductType;
+        if (productType.name) {
+          productTypeData = await this.productType(productType, prisma);
+        }
         const productData = await this.productCreate(
           product,
           companyId,
           authorId,
+          productTypeData.id,
           prisma,
         );
-        const { data } = await this.productMediaCreate(
-          productData.data.id,
-          media,
-          mediaType,
-          prisma,
-        );
+        let productMedia: any;
+        if (media) {
+          productMedia = await this.productMediaCreate(
+            productData.data.id,
+            media,
+            mediaType,
+            prisma,
+          );
+        }
         return {
           productData,
-          data,
+          productMedia,
         };
       });
+      console.log(productCreate, 'inocming [roduct cr');
       return {
         data: Object.assign(productCreate.productData.data, {
-          productImage: productCreate.data ? productCreate.data : null,
+          productImage: productCreate.productMedia
+            ? productCreate.productMedia.data
+            : null,
         }),
       };
     } catch (err) {
@@ -116,30 +131,50 @@ export class ProductRepository {
     }
   }
   async productAllEdit(
+    productTypeId: string,
+    productType: ProductTypeEditInput,
     id: string,
-    product: ProductInput,
+    product: ProductEditInput,
     media: FileUpload,
     mediaId: string,
     mediaType: ProductMediaInput,
   ): Promise<ProductPayload> {
     try {
       const productUpdate = await this.prisma.$transaction(async (prisma) => {
-        const productData = await this.productEdit(id, product, prisma);
-        const { data } = await this.productMediaEdit(
-          mediaId,
-          media,
-          mediaType,
+        let productTypeData: ProductType;
+        if (productTypeId) {
+          productTypeData = await this.productTypeEdit(
+            productTypeId,
+            productType,
+            prisma,
+          );
+        }
+        const productData = await this.productEdit(
+          id,
+          product,
+          productTypeData.id ? productTypeData.id : productTypeId,
           prisma,
         );
+        let productMedia: any;
+        if (media) {
+          productMedia = await this.productMediaEdit(
+            mediaId,
+            media,
+            mediaType,
+            prisma,
+          );
+        }
         return {
           productData,
-          data,
+          productMedia,
         };
       });
 
       return {
         data: Object.assign(productUpdate.productData.data, {
-          productImage: productUpdate.data,
+          productImage: productUpdate.productMedia
+            ? productUpdate.productMedia.data
+            : null,
         }),
       };
     } catch (err) {
@@ -153,11 +188,12 @@ export class ProductRepository {
     input: ProductInput,
     companyId: string,
     authorId: string,
+    productTypeId?: string,
     prisma?: any,
   ): Promise<ProductPayload> {
     try {
       const product = await (prisma ? prisma : this.prisma).product.create({
-        data: { ...input, companyId, authorId },
+        data: { ...input, companyId, authorId, productTypeId },
       });
       return {
         data: product,
@@ -169,12 +205,13 @@ export class ProductRepository {
   async productEdit(
     id: string,
     input: ProductEditInput,
+    productTypeId?: string,
     prisma?: any,
   ): Promise<ProductPayload> {
     try {
       const product = await (prisma ? prisma : this.prisma).product.update({
         where: { id },
-        data: { ...input },
+        data: { ...input, productTypeId },
       });
       return {
         data: product,
@@ -187,7 +224,7 @@ export class ProductRepository {
   }
 
   async productMediaCreate(
-    productId: any,
+    productId: string,
     media: FileUpload[],
     mediaType: ProductMediaInput,
     prisma?: any,
@@ -283,6 +320,46 @@ export class ProductRepository {
       };
     } catch (err) {
       throw new Error(err);
+    }
+  }
+
+  async productType(
+    input: ProductTypeInput,
+    prisma?: any,
+  ): Promise<ProductType> {
+    try {
+      const productType = await (prisma
+        ? prisma
+        : this.prisma
+      ).productType.create({
+        data: { ...input },
+      });
+      return productType;
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
+  }
+
+  async productTypeEdit(
+    id: string,
+    input: ProductTypeEditInput,
+    prisma?: any,
+  ): Promise<ProductType> {
+    try {
+      const updateProductType = await (prisma
+        ? prisma
+        : this.prisma
+      ).productType.update({
+        where: { id },
+        data: { ...input },
+      });
+      return updateProductType;
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 }

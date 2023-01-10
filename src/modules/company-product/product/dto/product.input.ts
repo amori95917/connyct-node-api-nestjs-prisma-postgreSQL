@@ -22,6 +22,11 @@ export class ProductInput {
   @IsString()
   productName: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  description: string;
+
   @Field()
   @IsNotEmpty()
   @IsNumber()
@@ -57,6 +62,11 @@ export class ProductEditInput {
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
+  description: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
   @IsNumber()
   sku: number;
 
@@ -78,17 +88,17 @@ export class ProductEditInput {
 
 @InputType()
 export class ProductMediaInput {
-  @Field()
-  @IsNotEmpty()
+  @Field({ nullable: true })
+  @IsOptional()
   @IsEnum(MediaType)
-  productId: MediaType;
+  mediaType: MediaType;
 }
 @InputType()
 export class ProductMediaEditInput {
   @Field({ nullable: true })
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(MediaType)
-  productId: MediaType;
+  mediaType: MediaType;
 }
 @InputType()
 export class ProductAttributeInput {
@@ -147,4 +157,19 @@ export class ProductVariationInput {
   @IsString()
   @IsNotEmpty()
   color: string;
+}
+
+@InputType()
+export class ProductTypeInput {
+  @Field({ nullable: true })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}
+@InputType()
+export class ProductTypeEditInput {
+  @Field({ nullable: true })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }

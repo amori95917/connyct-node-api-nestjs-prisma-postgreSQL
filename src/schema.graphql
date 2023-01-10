@@ -1304,10 +1304,12 @@ type Product {
   updatedAt: DateTime
   sku: Float
   productName: String
+  description: String
   price: Float
   slug: String
   companyId: String
   categoryId: String
+  productTypeId: String
   category: ProductCategory
   productMedia: [ProductMedia!]
   productAttribute: ProductAttribute
@@ -1359,6 +1361,13 @@ type ProductAttributePayload {
 type ProductVariationPayload {
   errors: [CustomError!]
   data: ProductVariation
+}
+
+type ProductType {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  name: String!
 }
 
 type Query {
@@ -1953,14 +1962,16 @@ type Mutation {
   productCategory(input: ProductCategoryInput!): ProductCategoryPayload!
   updateProductCategory(input: ProductCategoryInput!, id: String!): ProductCategoryPayload!
   deleteProductCategory(id: String!): ProductCategoryPayload!
-  product(product: ProductInput!, companyId: String!, image: [Upload!], mediaType: ProductMediaInput!): ProductPayload!
-  productEditAll(productId: String!, product: ProductInput!, image: Upload, mediaId: String!): ProductPayload!
+  product(productType: ProductTypeInput!, product: ProductInput!, companyId: String!, media: [Upload!], mediaType: ProductMediaInput): ProductPayload!
+  productEditAll(productTypeId: String, productType: ProductTypeEditInput!, productId: String!, product: ProductInput!, image: Upload, mediaId: String, mediaType: ProductMediaInput): ProductPayload!
   productCreate(input: ProductInput!, companyId: String!): ProductPayload!
   productEdit(productId: String!, input: ProductEditInput!): ProductPayload!
   productMediaCreate(productId: String!, mediaType: ProductMediaInput!, media: [Upload!]!): ProductMediaPayload!
   productMediaEdit(mediaId: String!, media: Upload): ProductMediaUpdatePayload!
   productAttributeCreate(input: ProductAttributeInput!): ProductAttributePayload!
   productVariationCreate(input: ProductVariationInput!): ProductVariationPayload!
+  productType(input: ProductTypeInput!): ProductType!
+  productTypeEdit(id: String!, input: ProductTypeEditInput!): ProductType!
 }
 
 input UpdateStatusUserInput {
@@ -2272,9 +2283,14 @@ input ProductCategoryInput {
   isLeaf: Boolean = false
 }
 
+input ProductTypeInput {
+  name: String
+}
+
 input ProductInput {
   categoryId: String!
   productName: String!
+  description: String
   sku: Float!
   price: Float!
   comparePrice: Float = 0
@@ -2282,12 +2298,17 @@ input ProductInput {
 }
 
 input ProductMediaInput {
-  productId: String!
+  mediaType: String
+}
+
+input ProductTypeEditInput {
+  name: String
 }
 
 input ProductEditInput {
   categoryId: String
   productName: String
+  description: String
   sku: Float
   price: Float
   comparePrice: Float = 0

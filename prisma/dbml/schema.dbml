@@ -601,6 +601,7 @@ Table Product {
   id String [pk]
   sku Float [not null]
   productName String [not null]
+  description String
   price Float [not null]
   comparePrice Float
   costPrice Float

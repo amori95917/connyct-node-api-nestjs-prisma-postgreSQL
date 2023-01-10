@@ -726,6 +726,7 @@ model Product {
   id               String             @id @default(uuid())
   sku              Float
   productName      String
+  description      String?
   price            Float
   comparePrice     Float?
   costPrice        Float?
@@ -813,7 +814,7 @@ model ProductVariationImage {
 }
 
 model ProductType {
-  id               String             @id
+  id               String             @id @default(uuid())
   name             String
   Product          Product[]
   ProductAttribute ProductAttribute[]

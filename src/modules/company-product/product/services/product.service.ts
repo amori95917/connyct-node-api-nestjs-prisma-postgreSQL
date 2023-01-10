@@ -6,6 +6,9 @@ import {
   ProductInput,
   ProductVariationInput,
   ProductMediaEditInput,
+  ProductTypeInput,
+  ProductEditInput,
+  ProductTypeEditInput,
 } from '../dto/product.input';
 import {
   FindProductPayload,
@@ -19,19 +22,27 @@ import { CompanyService } from 'src/modules/company/services/company.service';
 import { customError } from 'src/common/errors';
 import {
   COMPANY_MESSAGE,
+  PRODUCT_CATEGORY_MESSAGE,
   PRODUCT_MESSAGE,
 } from 'src/common/errors/error.message';
-import { COMPANY_CODE, PRODUCT_CODE } from 'src/common/errors/error.code';
+import {
+  COMPANY_CODE,
+  PRODUCT_CATEGORY_CODE,
+  PRODUCT_CODE,
+} from 'src/common/errors/error.code';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { FileUpload } from 'graphql-upload';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderListProduct } from '../dto/order-product.input';
 import { ApolloError } from 'apollo-server-express';
+import { ProductType } from '../entities/product-type.entity';
+import { ProductCategoryRepository } from '../../product-category/repository/product-category.repository';
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly productRepository: ProductRepository,
+    private readonly productCategoryRepository: ProductCategoryRepository,
     private readonly companyService: CompanyService,
   ) {}
 
@@ -62,6 +73,7 @@ export class ProductService {
     }
   }
   async product(
+    productType: ProductTypeInput,
     product: ProductInput,
     companyId: string,
     userId: string,
@@ -78,8 +90,17 @@ export class ProductService {
             statusCode: STATUS_CODE.NOT_FOUND,
           },
         );
-
+      const category = await this.productCategoryRepository.getCategoryById(
+        product.categoryId,
+      );
+      if (!category)
+        throw new ApolloError(
+          PRODUCT_CATEGORY_MESSAGE.NOT_FOUND,
+          PRODUCT_CATEGORY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
       return await this.productRepository.product(
+        productType,
         product,
         companyId,
         userId,
@@ -93,21 +114,27 @@ export class ProductService {
     }
   }
   async productEditAll(
+    productTypeId: string,
+    productType: ProductTypeEditInput,
     productId: string,
-    product: ProductInput,
+    product: ProductEditInput,
     media: FileUpload,
     mediaId: string,
     mediaType: ProductMediaInput,
   ): Promise<ProductPayload> {
     try {
-      const product = await this.productRepository.findProductById(productId);
-      if (!product)
+      const checkProduct = await this.productRepository.findProductById(
+        productId,
+      );
+      if (!checkProduct)
         throw new ApolloError(
           PRODUCT_MESSAGE.NOT_FOUND,
           PRODUCT_CODE.NOT_FOUND,
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       return await this.productRepository.productAllEdit(
+        productTypeId,
+        productType,
         productId,
         product,
         media,
@@ -131,6 +158,15 @@ export class ProductService {
         throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
+      const category = await this.productCategoryRepository.getCategoryById(
+        input.categoryId,
+      );
+      if (!category)
+        throw new ApolloError(
+          PRODUCT_CATEGORY_MESSAGE.NOT_FOUND,
+          PRODUCT_CATEGORY_CODE.NOT_FOUND,
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       return await this.productRepository.productCreate(
@@ -194,5 +230,15 @@ export class ProductService {
     input: ProductVariationInput,
   ): Promise<ProductVariationPayload> {
     return await this.productRepository.productVariationCreate(input);
+  }
+
+  async productType(input: ProductTypeInput): Promise<ProductType> {
+    return await this.productRepository.productType(input);
+  }
+  async productTypeEdit(
+    id: string,
+    input: ProductTypeEditInput,
+  ): Promise<ProductType> {
+    return await this.productRepository.productTypeEdit(id, input);
   }
 }
