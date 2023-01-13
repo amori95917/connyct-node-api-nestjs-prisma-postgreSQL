@@ -1,5 +1,5 @@
 import { Company } from 'src/modules/company/entities/company.entity';
-import { Field, HideField, ObjectType, ID } from '@nestjs/graphql';
+import { Field, HideField, ObjectType } from '@nestjs/graphql';
 
 import { Role } from 'src/modules/auth/entities/role.entity';
 

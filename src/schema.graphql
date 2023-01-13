@@ -362,6 +362,64 @@ type UserProfilePayload {
   userProfile: UserProfile
 }
 
+type MutualUser {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  fullName: String
+  username: String
+  email: String!
+  isValid: Boolean
+  userProfile: UserProfile
+}
+
+type MutualUserPaginated {
+  edges: [MutualUserEdge!]
+  pageInfo: MutualUserPageInfo
+  totalCount: Float
+}
+
+type MutualUserEdge {
+  cursor: String
+  node: MutualUser
+}
+
+type MutualUserPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
+type ConnectedUser {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  fullName: String
+  username: String
+  email: String!
+  isValid: Boolean
+  userProfile: UserProfile
+}
+
+type ConnectedUserPaginated {
+  edges: [ConnectedUserEdge!]
+  pageInfo: ConnectedUserPageInfo
+  totalCount: Float
+}
+
+type ConnectedUserEdge {
+  cursor: String
+  node: ConnectedUser
+}
+
+type ConnectedUserPageInfo {
+  startCursor: String
+  endCursor: String
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+}
+
 type CompanyPayload {
   errors: [CustomError!]
   company: Company
@@ -1418,6 +1476,48 @@ type Query {
     filter: FilterListCompanies
   ): CompanyPaginated!
   userConnectionsSummary: UserConnectionsSummaryEntity!
+  mutualUsers(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListUsers = {direction: desc, orderBy: username}
+  ): MutualUserPaginated!
+  userFollowers(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListUsers = {direction: desc, orderBy: username}
+  ): ConnectedUserPaginated!
+  userFollowing(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListUsers = {direction: desc, orderBy: username}
+  ): ConnectedUserPaginated!
   companies(
     """Paginate before opaque cursor"""
     before: String

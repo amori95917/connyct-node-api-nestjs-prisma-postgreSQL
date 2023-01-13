@@ -39,6 +39,8 @@ import { UserConnectionsSummaryEntity } from '../entities/user-connections.entit
 import { User, UserPaginated } from '../entities/user.entity';
 import { UserProfilePayload } from '../entities/userProfile.payload';
 import { UserProfile } from '../userProfile.model';
+import { MutualUserPaginated } from '../entities/mutual-users.entity';
+import { ConnectedUserPaginated } from '../entities/connected-user.entity';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -201,5 +203,47 @@ export class UserResolver {
   @Query(() => UserConnectionsSummaryEntity)
   async userConnectionsSummary(@UserDecorator() user: User) {
     return await this.userService.userConnectionsSummary(user.id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => MutualUserPaginated)
+  async mutualUsers(
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'username', direction: 'desc' },
+    })
+    order: OrderListUsers,
+    @UserDecorator() user: User,
+  ) {
+    return await this.userService.mutualUsers(paginate, order, user.id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => ConnectedUserPaginated)
+  async userFollowers(
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'username', direction: 'desc' },
+    })
+    order: OrderListUsers,
+    @UserDecorator() user: User,
+  ) {
+    return await this.userService.userFollowers(paginate, order, user.id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => ConnectedUserPaginated)
+  async userFollowing(
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'username', direction: 'desc' },
+    })
+    order: OrderListUsers,
+    @UserDecorator() user: User,
+  ) {
+    return await this.userService.userFollowing(paginate, order, user.id);
   }
 }

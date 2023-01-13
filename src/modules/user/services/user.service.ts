@@ -479,4 +479,151 @@ export class UserService {
       throw new Error(err);
     }
   }
+
+  async mutualUsers(
+    paginate: ConnectionArgs,
+    order: OrderListUsers,
+    userId: string,
+  ) {
+    try {
+      const baseArgs = {
+        orderBy: { [order.orderBy]: order.direction },
+        where: {
+          AND: [
+            { id: { not: userId } },
+            {
+              FollowUnfollowCompany: {
+                some: {
+                  AND: [
+                    {
+                      followedTo: {
+                        id: {
+                          in: await this.prisma.followUnfollowCompany
+                            .findMany({
+                              where: {
+                                AND: [
+                                  { followedById: userId },
+                                  { isConnected: true },
+                                ],
+                              },
+                              select: { followedToId: true },
+                            })
+                            .then((res) =>
+                              res.map((result) => result.followedToId),
+                            ),
+                        },
+                      },
+                    },
+                    { isConnected: true },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          fullName: true,
+          username: true,
+          email: true,
+          isValid: true,
+          UserProfile: true,
+        },
+      };
+      const mutualUsers = await findManyCursorConnection(
+        async (args) =>
+          await this.prisma.user.findMany({ ...args, ...baseArgs }),
+        async () =>
+          await this.prisma.user.count({
+            where: baseArgs.where,
+          }),
+        { ...paginate },
+      );
+      const finalData = {
+        ...mutualUsers,
+        edges: mutualUsers.edges.map((edge) => {
+          return {
+            ...edge,
+            node: {
+              ...edge.node,
+              userProfile: edge.node.UserProfile,
+            },
+          };
+        }),
+      };
+      return finalData;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async userFollowers(
+    paginate: ConnectionArgs,
+    order: OrderListUsers,
+    userId: string,
+  ) {
+    try {
+      const baseArgs = {
+        orderBy: { [order.orderBy]: order.direction },
+        where: {
+          id: userId,
+        },
+        include: {
+          FollowedByUser: {
+            include: {
+              followedBy: true,
+            },
+          },
+        },
+      };
+      const followers = await findManyCursorConnection(
+        async (args) =>
+          await this.prisma.user.findMany({ ...args, ...baseArgs }),
+        async () =>
+          await this.prisma.user.count({
+            where: baseArgs.where,
+          }),
+        { ...paginate },
+      );
+      return followers;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async userFollowing(
+    paginate: ConnectionArgs,
+    order: OrderListUsers,
+    userId: string,
+  ) {
+    try {
+      const baseArgs = {
+        orderBy: { [order.orderBy]: order.direction },
+        where: {
+          id: userId,
+        },
+        include: {
+          FollowedToUser: {
+            include: {
+              followedTo: true,
+            },
+          },
+        },
+      };
+      const followings = await findManyCursorConnection(
+        async (args) =>
+          await this.prisma.user.findMany({ ...args, ...baseArgs }),
+        async () =>
+          await this.prisma.user.count({
+            where: baseArgs.where,
+          }),
+        { ...paginate },
+      );
+      return followings;
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
