@@ -568,25 +568,35 @@ export class UserService {
       const baseArgs = {
         orderBy: { [order.orderBy]: order.direction },
         where: {
-          id: userId,
+          followedToId: userId,
         },
         include: {
-          FollowedByUser: {
+          followedBy: {
             include: {
-              followedBy: true,
+              UserProfile: true,
             },
           },
         },
       };
       const followers = await findManyCursorConnection(
-        async (args) =>
-          await this.prisma.user.findMany({ ...args, ...baseArgs }),
+        async (args) => {
+          const followers = await this.prisma.followUserToUser.findMany({
+            ...args,
+            ...baseArgs,
+          });
+          return followers.map((follower) =>
+            Object.assign(follower.followedBy, {
+              userProfile: follower.followedBy.UserProfile,
+            }),
+          );
+        },
         async () =>
-          await this.prisma.user.count({
+          await this.prisma.followUserToUser.count({
             where: baseArgs.where,
           }),
         { ...paginate },
       );
+
       return followers;
     } catch (err) {
       console.error(err);
@@ -602,21 +612,30 @@ export class UserService {
       const baseArgs = {
         orderBy: { [order.orderBy]: order.direction },
         where: {
-          id: userId,
+          followedById: userId,
         },
         include: {
-          FollowedToUser: {
+          followedTo: {
             include: {
-              followedTo: true,
+              UserProfile: true,
             },
           },
         },
       };
       const followings = await findManyCursorConnection(
-        async (args) =>
-          await this.prisma.user.findMany({ ...args, ...baseArgs }),
+        async (args) => {
+          const following = await this.prisma.followUserToUser.findMany({
+            ...args,
+            ...baseArgs,
+          });
+          return following.map((follow) =>
+            Object.assign(follow.followedTo, {
+              userProfile: follow.followedTo.UserProfile,
+            }),
+          );
+        },
         async () =>
-          await this.prisma.user.count({
+          await this.prisma.followUserToUser.count({
             where: baseArgs.where,
           }),
         { ...paginate },

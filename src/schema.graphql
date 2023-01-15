@@ -1502,7 +1502,7 @@ type Query {
 
     """Paginate last"""
     last: Float
-    order: OrderListUsers = {direction: desc, orderBy: username}
+    order: OrderListUsers = {direction: desc, orderBy: createdAt}
   ): ConnectedUserPaginated!
   userFollowing(
     """Paginate before opaque cursor"""
@@ -1516,7 +1516,7 @@ type Query {
 
     """Paginate last"""
     last: Float
-    order: OrderListUsers = {direction: desc, orderBy: username}
+    order: OrderListUsers = {direction: desc, orderBy: createdAt}
   ): ConnectedUserPaginated!
   companies(
     """Paginate before opaque cursor"""

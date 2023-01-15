@@ -225,7 +225,7 @@ export class UserResolver {
     @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { orderBy: 'username', direction: 'desc' },
+      defaultValue: { orderBy: 'createdAt', direction: 'desc' },
     })
     order: OrderListUsers,
     @UserDecorator() user: User,
@@ -239,7 +239,7 @@ export class UserResolver {
     @Args() paginate: ConnectionArgs,
     @Args('order', {
       nullable: true,
-      defaultValue: { orderBy: 'username', direction: 'desc' },
+      defaultValue: { orderBy: 'createdAt', direction: 'desc' },
     })
     order: OrderListUsers,
     @UserDecorator() user: User,
