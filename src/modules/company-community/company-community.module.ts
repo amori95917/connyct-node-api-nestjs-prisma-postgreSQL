@@ -11,6 +11,8 @@ import { CommunityMemberResolver } from './resolvers/community-members.resolver'
 import { CommunityResolver } from './resolvers/community.resolver';
 import { CommunityPolicyResolver } from './resolvers/policy.resolver';
 import { CommunityService } from './services/community.service';
+import { FollowUnfollowRepository } from '../follow-unfollow-company/repository/followUnfollow.repository';
+import { CompanyRepository } from '../company/repository/company.repository';
 
 @Module({
   imports: [
@@ -27,7 +29,9 @@ import { CommunityService } from './services/community.service';
     CommunityPolicyResolver,
     CommunityService,
     CommunityRepository,
+    CompanyRepository,
     FollowCompanyService,
+    FollowUnfollowRepository,
   ],
   exports: [CommunityRepository],
 })

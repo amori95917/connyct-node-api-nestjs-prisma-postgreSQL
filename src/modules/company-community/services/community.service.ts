@@ -42,13 +42,14 @@ import {
   CommunityPolicyUpdateInput,
 } from '../dto/policy.input';
 import { ApolloError } from 'apollo-server-express';
+import { FollowUnfollowRepository } from 'src/modules/follow-unfollow-company/repository/followUnfollow.repository';
 
 @Injectable()
 export class CommunityService {
   constructor(
     private readonly communityRepository: CommunityRepository,
     private readonly companyService: CompanyService,
-    private readonly followService: FollowCompanyService,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
   ) {}
 
   async getCommunityByCompanyId(
@@ -255,10 +256,11 @@ export class CommunityService {
           COMMUNITY_CODE.COMMUNITY_ALREADY_JOINED,
           { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
-      const follow = await this.followService.checkIfUserFollowCompany(
-        companyId,
-        userId,
-      );
+      const follow =
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
+          companyId,
+          userId,
+        );
       if (!follow)
         throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
@@ -289,10 +291,11 @@ export class CommunityService {
           COMMUNITY_CODE.NOT_FOUND,
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
-      const follow = await this.followService.checkIfUserFollowCompany(
-        input.companyId,
-        userId,
-      );
+      const follow =
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
+          input.companyId,
+          userId,
+        );
       if (!follow)
         throw new ApolloError(
           COMPANY_DISCUSSION_MESSAGE.COMPANY_NOT_FOLLOWED,
@@ -323,7 +326,7 @@ export class CommunityService {
     userId: string,
   ): Promise<JoinCommunityPayload> {
     try {
-      // const follow = await this.followService.checkIfUserFollowCompany(
+      // const follow = await this.followUnfollowRepository.checkIfUserFollowCompany(
       //   input.companyId,
       //   userId,
       // );

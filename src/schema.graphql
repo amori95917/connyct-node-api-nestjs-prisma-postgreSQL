@@ -547,6 +547,10 @@ type FollowCompany {
   isConnected: Boolean
 }
 
+type UnfollowPayload {
+  isUnfollow: Boolean!
+}
+
 type Industry {
   id: ID
   createdAt: DateTime
@@ -2018,9 +2022,9 @@ type Mutation {
   inviteEmployee(data: InvitedEmployeeInput!): InvitedEmployee!
   createEmployee(data: UserEmployeeInput!): User!
   followCompany(data: FollowCompanyInput!): FollowCompany!
-  unfollowCompany(data: UnfollowCompanyInput!): String!
+  unfollowCompany(data: UnfollowCompanyInput!): UnfollowPayload!
   followUserToUser(data: FollowUserToUserInput!): FollowUserToUser!
-  unfollowUser(data: UnfollowUserInput!): String!
+  unfollowUser(data: UnfollowUserInput!): UnfollowPayload!
   createIndustry(data: IndustryInput!): IndustryPayload!
   updateIndustry(id: String!, data: IndustryInput!): IndustryPayload!
   deleteIndustry(id: String!): IndustryPayload!

@@ -1,4 +1,3 @@
-import { FollowCompanyService } from '../follow-unfollow-company/services/follow-company.service';
 import { Module } from '@nestjs/common';
 import { CompanyService } from '../company/services/company.service';
 import { FileUploadService } from '../files/services/file.service';
@@ -15,6 +14,8 @@ import { PasswordService } from '../user/services/password.service';
 import { TokenService } from '../auth/services/token.service';
 import { UserModule } from '../user/user.module';
 import { DiscussionAnswerReplyResolver } from './discussion-answer/resolvers/discussion-asnwer-reply.resolver';
+import { FollowUnfollowRepository } from '../follow-unfollow-company/repository/followUnfollow.repository';
+import { CompanyRepository } from '../company/repository/company.repository';
 
 @Module({
   imports: [PrismaModule, CloudinaryModule, UserModule],
@@ -24,11 +25,12 @@ import { DiscussionAnswerReplyResolver } from './discussion-answer/resolvers/dis
     CompanyDiscussionRepository,
     CompanyService,
     FileUploadService,
-    FollowCompanyService,
+    FollowUnfollowRepository,
     DiscussionAnswerResolver,
     DiscussionAnswerService,
     DiscussionAnswerRepository,
     DiscussionAnswerReplyResolver,
+    CompanyRepository,
   ],
 })
 export class CompanyDiscussionModule {}

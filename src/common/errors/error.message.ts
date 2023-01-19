@@ -21,7 +21,16 @@ export const COMMUNITY_MESSAGE = {
   ALREADY_A_OWNER: 'Already a owner',
   ATLEAST_SELECT_A_MEMBER: 'Atleast select one member',
 };
-
+export const FOLLOW_MESSAGES = {
+  USER_NOT_FOUND: 'User not found',
+  NO_COMMON_COMPANY:
+    'You must follow common company in order to follow each other',
+  USER_ALREADY_FOLLOWED: 'User already follow',
+  COMPANY_ALREADY_FOLLOWED: 'Company already followed',
+  COMPANY_NOT_FOLLOWED: 'Company not followed',
+  USER_NOT_FOLLOWED: 'User not followed',
+  INVALID_USER_ID: 'Invalid user ID',
+};
 export const COMMUNITY_POLICY_MESSAGE = {
   NOT_FOUND: 'COMMUNITY_POLICY_NOT_FOUND',
 };

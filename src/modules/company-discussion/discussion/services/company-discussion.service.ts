@@ -1,4 +1,3 @@
-import { FollowCompanyService } from '../../../follow-unfollow-company/services/follow-company.service';
 import { Injectable } from '@nestjs/common';
 import { customError } from 'src/common/errors';
 import {
@@ -26,13 +25,14 @@ import { DiscussionVotePayload } from '../../discussion-answer/entities/discussi
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderListDiscussion } from '../dto/order-discussion.input';
 import { ApolloError } from 'apollo-server-express';
+import { FollowUnfollowRepository } from 'src/modules/follow-unfollow-company/repository/followUnfollow.repository';
 
 @Injectable()
 export class CompanyDiscussionService {
   constructor(
     private readonly companyDiscussionRepository: CompanyDiscussionRepository,
     private readonly companyService: CompanyService,
-    private readonly followCompanyService: FollowCompanyService,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
   ) {}
 
   async find(
@@ -68,7 +68,7 @@ export class CompanyDiscussionService {
       if (company.ownerId === userId)
         return this.companyDiscussionRepository.createDiscussion(input, userId);
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           input.companyId,
           userId,
         );
@@ -110,7 +110,7 @@ export class CompanyDiscussionService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussion.companyId,
           userId,
         );
@@ -150,7 +150,7 @@ export class CompanyDiscussionService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussion.companyId,
           userId,
         );
@@ -195,7 +195,7 @@ export class CompanyDiscussionService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussion.companyId,
           userId,
         );
@@ -234,7 +234,7 @@ export class CompanyDiscussionService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussion.companyId,
           userId,
         );

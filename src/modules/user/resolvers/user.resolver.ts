@@ -28,7 +28,6 @@ import { Role as RoleEntity } from 'src/modules/auth/entities/role.entity';
 import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
 import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
 import { CompanyService } from 'src/modules/company/services/company.service';
-import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { ChangePasswordInput } from '../dto/change-password.input';
 import { FilterListUsers } from '../dto/filter-user.input';
@@ -41,13 +40,14 @@ import { UserProfilePayload } from '../entities/userProfile.payload';
 import { UserProfile } from '../userProfile.model';
 import { MutualUserPaginated } from '../entities/mutual-users.entity';
 import { ConnectedUserPaginated } from '../entities/connected-user.entity';
+import { FollowUnfollowRepository } from 'src/modules/follow-unfollow-company/repository/followUnfollow.repository';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly validationService: ValidationService,
-    private readonly followCompanyService: FollowCompanyService,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
     private readonly companyService: CompanyService,
   ) {}
 
@@ -102,7 +102,7 @@ export class UserResolver {
     @UserDecorator() user: User,
   ) {
     const { id } = user;
-    return this.followCompanyService.getCompanyFollowedByUser(
+    return this.followUnfollowRepository.getCompanyFollowedByUser(
       id,
       paginate,
       order,
@@ -146,7 +146,7 @@ export class UserResolver {
     order: OrderListCompanies,
     @Args('filter', { nullable: true }) filter: FilterListCompanies,
   ) {
-    return this.followCompanyService.companiesSuggestions(
+    return this.followUnfollowRepository.companiesSuggestions(
       user.id,
       paginate,
       order,

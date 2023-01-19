@@ -13,7 +13,6 @@ import {
 } from 'src/common/errors/error.message';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { CommunityRepository } from 'src/modules/company-community/repository/community.repository';
-import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import {
   CommunityPostInput,
@@ -28,13 +27,14 @@ import { DeleteCommunityPostPayload } from '../../entities/post/delete-post.payl
 import { UpdateCommunityPostPayload } from '../../entities/post/update-post.payload';
 import { CommunityPostRepository } from '../../repository/post/community-post.repository';
 import { ApolloError } from 'apollo-server-express';
+import { FollowUnfollowRepository } from 'src/modules/follow-unfollow-company/repository/followUnfollow.repository';
 
 @Injectable()
 export class CommunityPostService {
   constructor(
     private readonly communityPostRepository: CommunityPostRepository,
     private readonly communityRepository: CommunityRepository,
-    private readonly followCompanyService: FollowCompanyService,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
   ) {}
 
   public async findPostsByCommunityId(
@@ -87,7 +87,7 @@ export class CommunityPostService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           community.companyId,
           userId,
         );
@@ -143,7 +143,7 @@ export class CommunityPostService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           community.companyId,
           authorId,
         );
@@ -205,7 +205,7 @@ export class CommunityPostService {
       );
       if (checkOwner) return await this.communityPostRepository.delete(postId);
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           community.companyId,
           userId,
         );

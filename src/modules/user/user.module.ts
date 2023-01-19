@@ -15,6 +15,8 @@ import { UserResolver } from './resolvers/user.resolver';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CloudinaryService } from '../cloudinary/services/cloudinary.service';
 import { SharpModule } from 'nestjs-sharp';
+import { FollowUnfollowRepository } from '../follow-unfollow-company/repository/followUnfollow.repository';
+import { CompanyRepository } from '../company/repository/company.repository';
 
 @Module({
   imports: [PrismaModule, AuthModule, SharpModule],
@@ -29,6 +31,8 @@ import { SharpModule } from 'nestjs-sharp';
     CompanyService,
     FileUploadService,
     CloudinaryService,
+    FollowUnfollowRepository,
+    CompanyRepository,
     {
       provide: 'APP_GUARD',
       useClass: RolesGuard,

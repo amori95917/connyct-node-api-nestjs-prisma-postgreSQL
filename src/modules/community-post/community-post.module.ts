@@ -20,6 +20,8 @@ import { CommunityPostLoader } from './community-post.loader';
 import { CommunityPostCommentReactionResolver } from './resolvers/comment-reaction/comment-reaction.resolver';
 import { CommunityPostCommentReactionService } from './services/comment-reaction/comment-reaction.service';
 import { CommunityPostCommentReactionRepository } from './repository/comment-reaction/comment-reaction.repository';
+import { FollowUnfollowRepository } from '../follow-unfollow-company/repository/followUnfollow.repository';
+import { CompanyRepository } from '../company/repository/company.repository';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { CommunityPostCommentReactionRepository } from './repository/comment-rea
     CommunityPostCommentReactionResolver,
     CommunityPostCommentReactionService,
     CommunityPostCommentReactionRepository,
+    FollowUnfollowRepository,
+    CompanyRepository,
   ],
 })
 export class CommunityPostModule {}

@@ -10,10 +10,17 @@ import { CompanyService } from '../company/services/company.service';
 import { PostModule } from '../post/post.module';
 import { FilesModule } from '../files/files.module';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { CompanyRepository } from '../company/repository/company.repository';
 
 @Module({
   imports: [PrismaModule, PostModule, FilesModule, CloudinaryModule],
-  providers: [LikesResolver, LikesService, LikesRepository, CompanyService],
+  providers: [
+    LikesResolver,
+    LikesService,
+    LikesRepository,
+    CompanyService,
+    CompanyRepository,
+  ],
   exports: [LikesRepository],
 })
 export class LikesModule {}

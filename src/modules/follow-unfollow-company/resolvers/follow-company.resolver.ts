@@ -14,6 +14,7 @@ import {
 } from '@prisma/client';
 import { FollowUserToUserInput } from '../dto/follow-user.input';
 import { UnfollowUserInput } from '../dto/unfollow-user.input';
+import { UnfollowPayload } from '../entities/unfollow.payload';
 
 @Resolver()
 export class FollowCompanyResolver {
@@ -28,11 +29,11 @@ export class FollowCompanyResolver {
     return this.followCompanyService.followCompany(followCompany, user);
   }
   @Roles(Role.User)
-  @Mutation(() => String)
+  @Mutation(() => UnfollowPayload)
   async unfollowCompany(
     @Args('data') company: UnfollowCompanyInput,
     @UserDecorator() user: User,
-  ): Promise<string> {
+  ): Promise<UnfollowPayload> {
     return this.followCompanyService.unfollowCompany(company, user);
   }
 
@@ -46,11 +47,11 @@ export class FollowCompanyResolver {
   }
 
   @Roles(Role.User)
-  @Mutation(() => String)
+  @Mutation(() => UnfollowPayload)
   async unfollowUser(
     @Args('data') userId: UnfollowUserInput,
     @UserDecorator() user: User,
-  ): Promise<string> {
+  ): Promise<UnfollowPayload> {
     return this.followCompanyService.unfollowUser(userId, user);
   }
 }

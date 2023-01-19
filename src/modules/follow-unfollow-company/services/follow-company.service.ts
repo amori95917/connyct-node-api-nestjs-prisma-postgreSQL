@@ -15,60 +15,83 @@ import { OrderListCompanies } from 'src/modules/company/dto/order-companies.inpu
 import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
+import { UnfollowPayload } from '../entities/unfollow.payload';
+import { ApolloError } from 'apollo-server-express';
+import { CompanyRepository } from 'src/modules/company/repository/company.repository';
+import {
+  COMPANY_MESSAGE,
+  FOLLOW_MESSAGES,
+} from 'src/common/errors/error.message';
+import { COMPANY_CODE, FOLLOW_CODE } from 'src/common/errors/error.code';
+import { STATUS_CODE } from 'src/common/errors/error.statusCode';
+import { FollowUnfollowRepository } from '../repository/followUnfollow.repository';
 
 @Injectable()
 export class FollowCompanyService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly companyService: CompanyService,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
+    private readonly companyRepository: CompanyRepository,
   ) {}
   async followCompany(
     followCompany: FollowCompanyInput,
     user: User,
   ): Promise<FollowUnfollowCompany> {
     try {
-      const company = await this.prisma.company.findFirst({
-        where: { id: followCompany.followedToId },
-      });
-      if (!company) throw new Error('Company not found');
+      const company = await this.companyRepository.findCompany(
+        followCompany.followedToId,
+      );
+      if (!company)
+        throw new ApolloError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
+        );
       const checkFollowCompany =
-        await this.prisma.followUnfollowCompany.findFirst({
-          where: {
-            followedById: user.id,
-            followedToId: followCompany.followedToId,
-          },
-        });
-      if (checkFollowCompany) throw new Error('Company already followed');
-      const follow = await this.prisma.followUnfollowCompany.create({
-        data: {
-          followedById: user.id,
-          followedToId: followCompany.followedToId,
-        },
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
+          followCompany.followedToId,
+          user.id,
+        );
+      if (checkFollowCompany)
+        throw new ApolloError(
+          FOLLOW_MESSAGES.COMPANY_ALREADY_FOLLOWED,
+          FOLLOW_CODE.COMPANY_ALREADY_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      return await this.followUnfollowRepository.followCompany(
+        followCompany,
+        user.id,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-      return follow;
-    } catch (e) {
-      throw new Error(e);
     }
   }
 
   async unfollowCompany(
     company: UnfollowCompanyInput,
     user: User,
-  ): Promise<string> {
+  ): Promise<UnfollowPayload> {
     try {
-      const checkDelete = await this.prisma.followUnfollowCompany.findFirst({
-        where: { followedToId: company.companyId, followedById: user.id },
+      const checkIfUserFollowCompany =
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
+          company.companyId,
+          user.id,
+        );
+      if (!checkIfUserFollowCompany)
+        throw new ApolloError(
+          FOLLOW_MESSAGES.COMPANY_NOT_FOLLOWED,
+          FOLLOW_CODE.COMPANY_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
+        );
+      return await this.followUnfollowRepository.unfollowCompany(
+        company,
+        user.id,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-      if (!checkDelete) throw new Error(`Company doesn't exist`);
-      await this.prisma.followUnfollowCompany.deleteMany({
-        where: {
-          followedById: user.id,
-          followedToId: company.companyId,
-        },
-      });
-      return 'Company unfollowed';
-    } catch (e) {
-      throw new Error(e);
     }
   }
 
@@ -78,166 +101,76 @@ export class FollowCompanyService {
   ): Promise<FollowUserToUser> {
     try {
       if (user.id === userToUser.followedToID)
-        throw new Error('Invalid user ID');
-      const companyFollowedByUser =
-        await this.prisma.followUnfollowCompany.findMany({
-          where: {
-            followedById: userToUser.followedToID,
-          },
-          select: {
-            followedToId: true,
-          },
-        });
-      if (!companyFollowedByUser) throw new Error('User not found');
-      const companyFollowedByMe =
-        await this.prisma.followUnfollowCompany.findMany({
-          where: {
-            followedById: user.id,
-          },
-          select: {
-            followedToId: true,
-          },
-        });
-      const intersection = companyFollowedByUser.filter((userData) =>
-        companyFollowedByMe.some(
-          (ownData) => userData.followedToId === ownData.followedToId,
-        ),
-      );
-      if (intersection.length === 0)
-        throw new Error(
-          'You must follow common company inorder to follow each other',
+        throw new ApolloError(
+          FOLLOW_MESSAGES.INVALID_USER_ID,
+          FOLLOW_CODE.INVALID_USER_ID,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
-      const checkUserToUserFollow =
-        await this.prisma.followUserToUser.findFirst({
-          where: {
-            followedById: user.id,
-            followedToId: userToUser.followedToID,
-          },
-        });
-      if (checkUserToUserFollow) throw new Error('User already followed');
-      const follow = await this.prisma.followUserToUser.create({
-        data: {
-          followedById: user.id,
-          followedToId: userToUser.followedToID,
-        },
+      const companyFollowedByTargetUser =
+        await this.followUnfollowRepository.companyFollowedByUser(
+          userToUser.followedToID,
+        );
+      const companyFollowedByMe =
+        await this.followUnfollowRepository.companyFollowedByUser(user.id);
+      const commonCompany =
+        await this.followUnfollowRepository.checkForCommonCompany(
+          companyFollowedByTargetUser,
+          companyFollowedByMe,
+        );
+
+      if (!commonCompany.length)
+        throw new ApolloError(
+          FOLLOW_MESSAGES.NO_COMMON_COMPANY,
+          FOLLOW_CODE.NO_COMMON_COMPANY,
+          { statusCode: STATUS_CODE.BAD_REQUEST_EXCEPTION },
+        );
+      const checkFollowedUser =
+        await this.followUnfollowRepository.checkFollowedUser(
+          user.id,
+          userToUser.followedToID,
+        );
+      if (checkFollowedUser)
+        throw new ApolloError(
+          FOLLOW_MESSAGES.USER_ALREADY_FOLLOWED,
+          FOLLOW_CODE.USER_ALREADY_FOLLOWED,
+          { statusCode: STATUS_CODE.NOT_SUPPORTED },
+        );
+      return await this.followUnfollowRepository.followUserToUser(
+        userToUser,
+        user,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-      return follow;
-    } catch (e) {
-      throw new Error(e);
     }
   }
 
-  async unfollowUser(userId: UnfollowUserInput, user: User): Promise<string> {
+  async unfollowUser(
+    targetUser: UnfollowUserInput,
+    user: User,
+  ): Promise<UnfollowPayload> {
     try {
       // do i need to check for userId in database or?
-      const checkDeleteData = await this.prisma.followUserToUser.findFirst({
-        where: {
-          followedToId: userId.userId,
-        },
-      });
-      if (!checkDeleteData) throw new Error(`User doesn't exist`);
-      await this.prisma.followUserToUser.deleteMany({
-        where: { followedById: user.id, followedToId: userId.userId },
-      });
-      return 'User unfollowed';
-    } catch (e) {
-      throw new Error(e);
-    }
-  }
-
-  async getCompanyFollowedByUser(
-    userId: string,
-    paginate: ConnectionArgs,
-    order: OrderFollowedCompanyList,
-  ) {
-    try {
-      const baseArgs = {
-        orderBy: { [order.orderBy]: order.direction },
-        where: { followedById: userId },
-        include: { followedTo: true },
-      };
-      const result = await findManyCursorConnection(
-        (args) =>
-          this.prisma.followUnfollowCompany.findMany({ ...args, ...baseArgs }),
-        () =>
-          this.prisma.followUnfollowCompany.count({ where: baseArgs.where }),
-        { ...paginate },
-      );
-      //   {
-      //   id: '8156e0b3-e5cb-41ed-8869-727a6b2daf7f',
-      //   followedById: '36f0377d-9a42-4f29-82da-29a00059c029',
-      //   followedToId: 'c50abde9-5e63-45b9-a2a0-ddc54f892097',
-      //   createdAt: 2022-10-04T02:45:23.466Z,
-      //   updatedAt: 2022-10-04T02:45:23.466Z,
-      //   followedTo: [Object]
-      // },
-      const getCompanyFollowersCount = async (companyId: string) => {
-        const count = await this.companyService.getCompanyFollowersCount(
-          companyId,
+      const checkForUser =
+        await this.followUnfollowRepository.checkFollowedUser(
+          user.id,
+          targetUser.userId,
         );
-        return count;
-      };
-
-      const companyFollowedByUser = {
-        ...result,
-        edges: result.edges.map(async (companyEdge) => {
-          const { followedTo, ...rest } = companyEdge.node;
-          // need followedCreatedAt, companyCreatedAt
-          return {
-            ...companyEdge,
-            node: {
-              ...companyEdge.node,
-              ...rest,
-              ...followedTo,
-              followers: await getCompanyFollowersCount(companyEdge.node.id),
-            },
-          };
-        }),
-      };
-      return companyFollowedByUser;
-      // const nodes = companyFollowedByUser.map((company) => {
-      //   return company.followedTo;
-      // });
-    } catch (e) {
-      throw new Error(e);
-    }
-  }
-
-  async companiesSuggestions(
-    userId: string,
-    paginate: ConnectionArgs,
-    order: OrderListCompanies,
-    filter: FilterListCompanies,
-  ) {
-    try {
-      const followedCompany = await this.prisma.followUnfollowCompany.findMany({
-        where: {
-          followedById: userId,
-        },
-        select: {
-          followedToId: true,
-        },
-      });
-      const companyIds = followedCompany.map((company) => company.followedToId);
-      const companies = await this.companyService.list(
-        paginate,
-        order,
-        filter,
-        companyIds,
+      if (!checkForUser)
+        throw new ApolloError(
+          FOLLOW_MESSAGES.USER_NOT_FOLLOWED,
+          FOLLOW_CODE.USER_NOT_FOLLOWED,
+          { statusCode: STATUS_CODE.NOT_SUPPORTED },
+        );
+      return await this.followUnfollowRepository.unfollowUser(
+        targetUser,
+        user.id,
       );
-      return companies;
     } catch (err) {
-      throw new Error(err);
-    }
-  }
-
-  async checkIfUserFollowCompany(companyId: string, userId: string) {
-    try {
-      return await this.prisma.followUnfollowCompany.findFirst({
-        where: { followedById: userId, followedToId: companyId },
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-    } catch (err) {
-      throw new Error(err);
     }
   }
 }

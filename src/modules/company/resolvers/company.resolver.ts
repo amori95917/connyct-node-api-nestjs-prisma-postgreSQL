@@ -153,7 +153,7 @@ export class CompanyResolver {
     return this.companyService.deleteCompanyBranch(companyId, branchId);
   }
 
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   @Mutation(() => CompanyPayload)
   async companyAccountStatus(
     @Args('data') data: CompanyAccountStatus,

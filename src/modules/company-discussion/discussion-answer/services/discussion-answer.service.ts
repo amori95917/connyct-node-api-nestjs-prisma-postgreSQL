@@ -3,7 +3,6 @@ import { customError } from 'src/common/errors';
 import { COMPANY_DISCUSSION_CODE } from 'src/common/errors/error.code';
 import { COMPANY_DISCUSSION_MESSAGE } from 'src/common/errors/error.message';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
-import { FollowCompanyService } from 'src/modules/follow-unfollow-company/services/follow-company.service';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { CompanyDiscussionRepository } from '../../discussion/repository/company-discussion.repository';
 import { DiscussionAnswerVoteInput } from '../dto/discussion-answer-vote';
@@ -21,6 +20,7 @@ import {
 } from '../entities/discussion-answer.payload';
 import { DiscussionAnswerRepository } from '../repository/discussion-answer.repository';
 import { ApolloError } from 'apollo-server-express';
+import { FollowUnfollowRepository } from 'src/modules/follow-unfollow-company/repository/followUnfollow.repository';
 
 @Injectable()
 export class DiscussionAnswerService {
@@ -28,7 +28,7 @@ export class DiscussionAnswerService {
     private readonly discussionAnswerRepository: DiscussionAnswerRepository,
     private readonly discussionRepository: CompanyDiscussionRepository,
     private readonly companyDiscussionRepository: CompanyDiscussionRepository,
-    private readonly followCompanyService: FollowCompanyService,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
   ) {}
   async getDiscussionAnswer(
     discussionId: string,
@@ -63,7 +63,7 @@ export class DiscussionAnswerService {
       if (checkOwner)
         return this.discussionAnswerRepository.createAnswer(answer, userId);
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussion.companyId,
           userId,
         );
@@ -108,7 +108,7 @@ export class DiscussionAnswerService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussionAnswer.discussion.companyId,
           userId,
         );
@@ -152,7 +152,7 @@ export class DiscussionAnswerService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussionAnswer.discussion.companyId,
           userId,
         );
@@ -195,7 +195,7 @@ export class DiscussionAnswerService {
           userId,
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           answer.discussion.companyId,
           userId,
         );
@@ -236,7 +236,7 @@ export class DiscussionAnswerService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussionAnswer.discussion.companyId,
           userId,
         );
@@ -276,7 +276,7 @@ export class DiscussionAnswerService {
           { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const followedCompany =
-        await this.followCompanyService.checkIfUserFollowCompany(
+        await this.followUnfollowRepository.checkIfUserFollowCompany(
           discussionAnswer.discussion.companyId,
           userId,
         );

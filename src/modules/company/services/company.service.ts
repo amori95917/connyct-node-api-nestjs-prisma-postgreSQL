@@ -39,34 +39,12 @@ import {
   CompanyDocumentEditInput,
   CompanyDocumentInput,
 } from '../dto/company-document.input';
+import { CompanyRepository } from '../repository/company.repository';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
-  private allowOperation: boolean;
-
-  constructor(
-    @Inject(REQUEST) private request,
-    @Inject(CONTEXT) private context,
-    private prisma: PrismaService,
-    private fileUploadService: FileUploadService,
-    private cloudinary: CloudinaryService,
-  ) {
-    this.allowOperation = this.context?.req?.user?.isAdmin;
-  }
-
-  public setAllowOperation(value: boolean) {
-    this.allowOperation = value;
-  }
-
-  async getCompanyFollowersCount(companyId: string): Promise<number> {
-    try {
-      return await this.prisma.followUnfollowCompany.count({
-        where: { followedToId: companyId },
-      });
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
+  constructor(private readonly companyRepository: CompanyRepository) {}
 
   async list(
     paginate: ConnectionArgs,
@@ -75,74 +53,16 @@ export class CompanyService {
     companyids?: string[],
   ) {
     try {
-      const baseArgs = {
-        where: {
-          id: {
-            notIn: companyids,
-          },
-        },
-        orderBy: { [order.orderBy]: order.direction },
-      };
-      if (filter?.omni) {
-        baseArgs['name'] = {
-          contains: filter.omni,
-          mode: 'insensitive',
-        };
-      }
-      const companies = await findManyCursorConnection(
-        (args) => this.prisma.company.findMany({ ...args, ...baseArgs }),
-        () =>
-          this.prisma.company.count({
-            where: baseArgs.where,
-          }),
-        { ...paginate },
+      return await this.companyRepository.list(
+        paginate,
+        order,
+        filter,
+        companyids,
       );
-      await Promise.all(
-        companies?.edges.map(async (company) => {
-          const followers = await this.getCompanyFollowersCount(
-            company.node.id,
-          );
-          Object.assign(company, { ...company.node, followers });
-        }),
-      );
-      return companies;
-
-      // const nodes = await this.prisma.company.findMany({
-      //   skip: paginate.skip,
-      //   take: paginate.take,
-      //   orderBy: { [order.orderBy]: order.direction },
-      //   where: {
-      //     ...(filter?.omni && {
-      //       name: { contains: filter.omni, mode: 'insensitive' },
-      //     }),
-      //     id: {
-      //       notIn: companyids,
-      //     },
-      //   },
-      // });
-      // await Promise.all(
-      //   nodes.map(async (company) => {
-      //     const followers = await this.getCompanyFollowersCount(company.id);
-      //     Object.assign(company, { followers });
-      //   }),
-      // );
-      // const totalCount = await this.prisma.company.count({});
-      // const hasNextPage = haveNextPage(
-      //   paginate.skip,
-      //   paginate.take,
-      //   totalCount,
-      // );
-      // return {
-      //   nodes,
-      //   totalCount,
-      //   hasNextPage,
-      //   edges: nodes?.map((node) => ({
-      //     node,
-      //     cursor: Buffer.from(node.id).toString('base64'),
-      //   })),
-      // };
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -151,45 +71,32 @@ export class CompanyService {
     userId?: string,
   ): Promise<Company | null> {
     try {
-      const company = await this.prisma.company.findFirst({
-        where: { id: companyId },
-      });
-      if (!company) return null;
-      const followers = await this.getCompanyFollowersCount(companyId);
-      const hasFollowedByUser =
-        await this.prisma.followUnfollowCompany.findMany({
-          where: {
-            followedById: userId,
-            followedToId: companyId,
-          },
-        });
-      return Object.assign(company, {
-        followers,
-        hasFollowedByUser: hasFollowedByUser.length > 0,
-      });
+      return await this.companyRepository.getCompanyById(companyId, userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
-  async createCompany(company: any) {
-    return await this.prisma.company.create({
-      data: {
-        ...company,
-        employees: { create: { employeeId: this.request?.user?.id } },
-      },
-    });
+  async getCompanyFollowersCount(companyId: string): Promise<number> {
+    try {
+      return await this.companyRepository.getCompanyFollowersCount(companyId);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
-
+  async createCompany(company: any) {
+    return await this.companyRepository.createCompany(company);
+  }
   async createCompanyGeneralInfo(generalCompany: any) {
     // const data: Pick<Prisma.CompanyCreateInput> =
     // TODO: Need a way to check if company already exists or not. Validation is needed
-    return await this.prisma.company.create({
-      data: {
-        ...generalCompany,
-        employees: { create: { employeeId: this.request?.user?.id } },
-      },
-    });
+    return await this.companyRepository.createCompanyGeneralInfo(
+      generalCompany,
+    );
   }
 
   // async createCompanyAddress(companyAddress: CreateCompanyAddressInput) {
@@ -201,111 +108,97 @@ export class CompanyService {
     companyEditData: CompanyEditInput,
   ): Promise<CompanyPayload> {
     try {
-      const companyData = await this.prisma.company.findFirst({
-        where: { id: companyId },
-      });
+      const companyData = await this.companyRepository.findCompany(companyId);
       if (!companyData)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          {
+            statusCode: STATUS_CODE.NOT_FOUND,
+          },
         );
       /**only if file exist */
       /**TODO */
       if (companyEditData.establishedDate >= new Date())
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.INVALID_ESTABLISHED_DATE,
           COMPANY_CODE.INVALID_ESTABLISHED_DATE,
-          STATUS_CODE.BAD_REQUEST_EXCEPTION,
+          { statusCode: STATUS_CODE.BAD_REQUEST_EXCEPTION },
         );
-      const updatedData = await this.prisma.company.update({
-        where: { id: companyId },
-        data: {
-          ...companyData,
-          ...companyEditData,
-          accountStatus: AccountStatus.REVIEW,
-        },
+      return await this.companyRepository.editCompany(
+        companyId,
+        companyEditData,
+        companyData,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-      return { company: updatedData };
-    } catch (e) {
-      throw new Error(e);
     }
   }
   async getCompanyByUserId(userId: string) {
     try {
-      return await this.prisma.company.findMany({
-        where: { ownerId: userId },
-      });
+      return await this.companyRepository.getCompanyByUserId(userId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-  }
-
-  async isCompanyExist(companyId: string) {
-    return await this.prisma.company.findFirst({
-      where: { id: companyId },
-    });
-  }
-
-  async isHeadOfficeAlreadyExist(companyId: string) {
-    return await this.prisma.branch.findFirst({
-      where: {
-        companyId,
-        type: BranchType.HEADQUARTER,
-      },
-    });
-  }
-
-  async getBranchByEmail(contactEmail: string) {
-    return await this.prisma.branch.findUnique({ where: { contactEmail } });
-  }
-  async getBranchByNumber(contactNumber: string) {
-    return await this.prisma.branch.findUnique({ where: { contactNumber } });
-  }
-
-  async isBranchExist(id: string) {
-    return await this.prisma.branch.findFirst({
-      where: { id },
-    });
   }
 
   async createCompanyBranch(
     companyId: string,
     branchInput: CompanyBranchInput,
   ): Promise<CompanyBranchPayload> {
-    if (await this.isCompanyExist(companyId)) {
-      const isHeadOfficeAlreadyExist =
-        branchInput.type === BranchType.HEADQUARTER
-          ? await this.isHeadOfficeAlreadyExist(companyId)
-          : false;
-      if (isHeadOfficeAlreadyExist)
-        return customError(
-          COMPANY_MESSAGE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
-          COMPANY_CODE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
-          STATUS_CODE.BAD_CONFLICT,
+    try {
+      if (await this.companyRepository.isCompanyExist(companyId)) {
+        const isHeadOfficeAlreadyExist =
+          branchInput.type === BranchType.HEADQUARTER
+            ? await this.companyRepository.isHeadOfficeAlreadyExist(companyId)
+            : false;
+        if (isHeadOfficeAlreadyExist)
+          throw new ApolloError(
+            COMPANY_MESSAGE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
+            COMPANY_CODE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
+            { statusCode: STATUS_CODE.BAD_CONFLICT },
+          );
+        if (
+          await this.companyRepository.getBranchByEmail(
+            branchInput.contactEmail,
+          )
+        )
+          throw new ApolloError(
+            COMPANY_MESSAGE.BRANCH_EMAIL_ALREADY_EXIST,
+            COMPANY_CODE.BRANCH_EMAIL_ALREADY_EXIST,
+            { statusCode: STATUS_CODE.NOT_SUPPORTED },
+          );
+        if (
+          await this.companyRepository.getBranchByNumber(
+            branchInput.contactNumber,
+          )
+        )
+          throw new ApolloError(
+            COMPANY_MESSAGE.BRANCH_NUMBER_ALREADY_EXIST,
+            COMPANY_CODE.BRANCH_NUMBER_ALREADY_EXIST,
+            { statusCode: STATUS_CODE.NOT_SUPPORTED },
+          );
+        return await this.companyRepository.createCompanyBranch(
+          companyId,
+          branchInput,
         );
-      if (await this.getBranchByEmail(branchInput.contactEmail))
-        return customError(
-          COMPANY_MESSAGE.BRANCH_EMAIL_ALREADY_EXIST,
-          COMPANY_CODE.BRANCH_EMAIL_ALREADY_EXIST,
-          STATUS_CODE.NOT_SUPPORTED,
+      } else {
+        throw new ApolloError(
+          COMPANY_MESSAGE.NOT_FOUND,
+          COMPANY_CODE.NOT_FOUND,
+          {
+            statusCode: STATUS_CODE.NOT_FOUND,
+          },
         );
-      if (await this.getBranchByNumber(branchInput.contactNumber))
-        return customError(
-          COMPANY_MESSAGE.BRANCH_NUMBER_ALREADY_EXIST,
-          COMPANY_CODE.BRANCH_NUMBER_ALREADY_EXIST,
-          STATUS_CODE.NOT_SUPPORTED,
-        );
-      const branch = await this.prisma.branch.create({
-        data: { ...branchInput, companyId },
+      }
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-      return { branch };
-    } else {
-      return customError(
-        COMPANY_MESSAGE.NOT_FOUND,
-        COMPANY_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
-      );
     }
   }
 
@@ -313,20 +206,19 @@ export class CompanyService {
     companyId: string,
   ): Promise<GetCompanyBranchPayload> {
     try {
-      if (await this.isCompanyExist(companyId)) {
-        const branches = await this.prisma.branch.findMany({
-          where: { companyId },
-        });
-        return { branches };
+      if (await this.companyRepository.isCompanyExist(companyId)) {
+        return await this.companyRepository.getBranchesByCompanyId(companyId);
       } else {
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       }
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -335,30 +227,34 @@ export class CompanyService {
     branchEditInput: CompanyBranchEditInput,
   ): Promise<CompanyBranchPayload> {
     try {
-      const branch = await this.isBranchExist(branchId);
+      const branch = await this.companyRepository.isBranchExist(branchId);
       if (!branch)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.BRANCH_NOT_FOUND,
           COMPANY_CODE.BRANCH_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       const isHeadOfficeAlreadyExist =
         branchEditInput.type === BranchType.HEADQUARTER
-          ? await this.isHeadOfficeAlreadyExist(branch.companyId)
+          ? await this.companyRepository.isHeadOfficeAlreadyExist(
+              branch.companyId,
+            )
           : false;
       if (isHeadOfficeAlreadyExist)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
           COMPANY_CODE.CANNOT_HAVE_MULTIPLE_HEADQUARTER,
-          STATUS_CODE.BAD_CONFLICT,
+          { statusCode: STATUS_CODE.BAD_CONFLICT },
         );
-      const editedBranch = await this.prisma.branch.update({
-        where: { id: branchId },
-        data: { ...branch, ...branchEditInput },
+      return await this.companyRepository.editCompanyBranch(
+        branchId,
+        branchEditInput,
+        branch,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
       });
-      return { branch: editedBranch };
-    } catch (e) {
-      throw new Error(e);
     }
   }
 
@@ -367,31 +263,28 @@ export class CompanyService {
     branchId: string,
   ): Promise<CompanyBranchDeletePayload> {
     try {
-      if (await this.isCompanyExist(companyId)) {
-        const branch = await this.isBranchExist(branchId);
+      if (await this.companyRepository.isCompanyExist(companyId)) {
+        const branch = await this.companyRepository.isBranchExist(branchId);
         if (branch) {
-          await this.prisma.branch.delete({
-            where: {
-              id: branchId,
-            },
-          });
-          return { isDeleted: true };
+          return await this.companyRepository.deleteCompanyBranch(branchId);
         } else {
-          return customError(
+          throw new ApolloError(
             COMPANY_MESSAGE.BRANCH_NOT_FOUND,
             COMPANY_CODE.BRANCH_NOT_FOUND,
-            STATUS_CODE.NOT_FOUND,
+            { statusCode: STATUS_CODE.NOT_FOUND },
           );
         }
       } else {
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       }
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -400,13 +293,11 @@ export class CompanyService {
     accountStatus,
     reason?: string,
   ): Promise<Company> {
-    return await this.prisma.company.update({
-      where: { id },
-      data: {
-        accountStatus,
-        reason,
-      },
-    });
+    return await this.companyRepository.updateAccountStatus(
+      id,
+      accountStatus,
+      reason,
+    );
   }
 
   async companyAccountStatus(
@@ -414,19 +305,19 @@ export class CompanyService {
     id: string,
   ): Promise<CompanyPayload> {
     try {
-      const company = await this.prisma.company.findFirst({ where: { id } });
+      const company = await this.companyRepository.findCompany(id);
       if (!company)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       if (data.accountStatus === 'REJECTED') {
         if (!data.reason)
-          return customError(
+          throw new ApolloError(
             COMPANY_MESSAGE.ACCOUNT_STATUS_REASON,
             COMPANY_CODE.ACCOUNT_STATUS_REASON,
-            STATUS_CODE.BAD_CONFLICT,
+            { statusCode: STATUS_CODE.BAD_CONFLICT },
           );
         const status = await this.updateAccountStatus(
           id,
@@ -442,7 +333,9 @@ export class CompanyService {
       );
       return { company: companyStatus };
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -450,56 +343,36 @@ export class CompanyService {
     try {
       const companyData = await this.getCompanyById(id);
       if (!companyData)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
 
-      let fileUrl;
-      if (avatar) {
-        if (companyData.avatar) {
-          await this.fileUploadService.deleteImage(
-            'company-avatar',
-            this.cloudinary.getPublicId(companyData.avatar),
-          );
-        }
-        fileUrl = await this.fileUploadService.uploadImage(
-          'company-avatar',
-          avatar,
-        );
-        /**check if error exist */
-        if (fileUrl.errors) return { errors: fileUrl.errors };
-      }
-
-      const updatedAvatar = await this.prisma.company.update({
-        where: { id },
-        data: {
-          avatar: fileUrl,
-        },
-      });
-      return { company: updatedAvatar };
+      return await this.companyRepository.uploadAvatar(id, avatar, companyData);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
   async getCompanyDocument(companyId: string): Promise<CompanyDocument[]> {
     try {
-      return await this.prisma.companyDocument.findMany({
-        where: { companyId },
-      });
+      return await this.companyRepository.getCompanyDocument(companyId);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   async getCompanyDocumentById(id: string): Promise<CompanyDocument> {
     try {
-      return await this.prisma.companyDocument.findFirst({
-        where: { id },
-      });
+      return await this.companyRepository.getCompanyDocumentById(id);
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -510,37 +383,25 @@ export class CompanyService {
     try {
       const companyData = await this.getCompanyById(input.companyId);
       if (!companyData)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
       if (!document)
-        return customError(
-          FILE_MESSAGE.REQUIRED,
-          FILE_CODE.REQUIRED,
-          STATUS_CODE.BAD_CONFLICT,
-        );
-      const documentUrl = await this.fileUploadService.uploadImage(
-        'company-document',
-        document,
-      );
-      /**check if error exist */
-      if (documentUrl[0].errors) return { errors: documentUrl[0].errors };
-      const companyDocument = await Promise.all(
-        documentUrl.map(async (document) => {
-          return await this.prisma.companyDocument.create({
-            data: {
-              ...input,
-              document,
-            },
-          });
-        }),
-      );
+        throw new ApolloError(FILE_MESSAGE.REQUIRED, FILE_CODE.REQUIRED, {
+          statusCode: STATUS_CODE.BAD_CONFLICT,
+        });
 
-      return { companyDocument, company: companyData };
+      return await this.companyRepository.companyDocument(
+        input,
+        document,
+        companyData,
+      );
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -553,48 +414,29 @@ export class CompanyService {
     try {
       const company = await this.getCompanyById(companyId);
       if (!company)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.NOT_FOUND,
           COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
-
       const companyDocument = await this.getCompanyDocumentById(documentId);
       if (!companyDocument)
-        return customError(
+        throw new ApolloError(
           COMPANY_MESSAGE.COMPANY_DOCUMENT_NOT_FOUND,
           COMPANY_CODE.COMPANY_DOCUMENT_NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
+          { statusCode: STATUS_CODE.NOT_FOUND },
         );
-      const updateDocument = await this.prisma.$transaction(async (prisma) => {
-        let updatedDocumentURL: any;
-        if (document) {
-          await this.fileUploadService.deleteImage(
-            'company-document',
-            await this.cloudinary.getPublicId(companyDocument.document),
-          );
-          updatedDocumentURL = await this.fileUploadService.uploadImage(
-            'company-document',
-            document,
-          );
-          if (updatedDocumentURL.errors)
-            return { errors: updatedDocumentURL.errors };
-        }
-        const update = await prisma.companyDocument.update({
-          where: { id: documentId },
-          data: {
-            ...editDocument,
-            document: updatedDocumentURL,
-          },
-        });
-        return { update };
-      });
-      return {
-        companyDocument: updateDocument.update,
-        errors: updateDocument.errors,
-      };
+      return await this.companyRepository.editCompanyDocument(
+        companyId,
+        documentId,
+        editDocument,
+        document,
+        companyDocument,
+      );
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 }
