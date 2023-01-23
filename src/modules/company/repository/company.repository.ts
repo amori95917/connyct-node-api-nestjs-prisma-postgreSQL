@@ -145,6 +145,44 @@ export class CompanyRepository {
       },
     });
   }
+  async getCompanyByIds(
+    paginate: ConnectionArgs,
+    order: OrderListCompanies,
+    filter: FilterListCompanies,
+    ids: string[],
+  ) {
+    try {
+      const baseArgs = {
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+        orderBy: { [order.orderBy]: order.direction },
+      };
+      const companies = await findManyCursorConnection(
+        (args) => this.prisma.company.findMany({ ...args, ...baseArgs }),
+        () =>
+          this.prisma.company.count({
+            where: baseArgs.where,
+          }),
+        { ...paginate },
+      );
+      await Promise.all(
+        companies?.edges.map(async (company) => {
+          const followers = await this.getCompanyFollowersCount(
+            company.node.id,
+          );
+          Object.assign(company, { ...company.node, followers });
+        }),
+      );
+      return companies;
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
+  }
 
   async getCompanyById(
     companyId: string,

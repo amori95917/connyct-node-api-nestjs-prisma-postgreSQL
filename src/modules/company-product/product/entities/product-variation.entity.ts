@@ -7,7 +7,7 @@ export class ProductVariation extends BaseEntity {
   title: string;
 
   @Field({ nullable: true })
-  sku: number;
+  sku: string;
 
   @Field({ nullable: true })
   price: number;

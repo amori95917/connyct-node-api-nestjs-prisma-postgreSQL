@@ -11,9 +11,16 @@ import { PostModule } from '../post/post.module';
 import { FilesModule } from '../files/files.module';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { CompanyRepository } from '../company/repository/company.repository';
+import { FollowUnfollowCompanyModule } from '../follow-unfollow-company/follow-unfollow-company.module';
 
 @Module({
-  imports: [PrismaModule, PostModule, FilesModule, CloudinaryModule],
+  imports: [
+    PrismaModule,
+    PostModule,
+    FilesModule,
+    CloudinaryModule,
+    FollowUnfollowCompanyModule,
+  ],
   providers: [
     LikesResolver,
     LikesService,

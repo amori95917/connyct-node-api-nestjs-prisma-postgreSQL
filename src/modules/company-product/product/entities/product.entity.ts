@@ -9,7 +9,7 @@ import { ProductCategory } from '../../product-category/entities/product-categor
 @ObjectType()
 export class Product extends BaseEntity {
   @Field({ nullable: true })
-  sku: number;
+  sku: string;
 
   @Field({ nullable: true })
   productName: string;

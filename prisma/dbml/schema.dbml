@@ -599,7 +599,7 @@ Table ProductCategory {
 
 Table Product {
   id String [pk]
-  sku Float [not null]
+  sku String [not null]
   productName String [not null]
   description String
   price Float [not null]
@@ -663,7 +663,7 @@ Table ProductVariationAttribute {
 Table ProductVariation {
   id String [pk]
   title String [not null]
-  sku Float [not null]
+  sku String [not null]
   price Float [not null]
   size String
   color String

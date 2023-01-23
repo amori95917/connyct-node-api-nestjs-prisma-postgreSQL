@@ -182,7 +182,7 @@ export class ProductService {
   }
   async productEdit(
     productId: string,
-    input: ProductInput,
+    input: ProductEditInput,
   ): Promise<ProductPayload> {
     try {
       const product = await this.productRepository.findProductById(productId);

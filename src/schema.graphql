@@ -447,6 +447,28 @@ type CompanyBranchDeletePayload {
   isDeleted: Boolean
 }
 
+type FollowUserToUser {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  followedToId: String
+  followedById: String
+  isConnected: Boolean
+}
+
+type FollowCompany {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  followedById: String
+  followedToId: String
+  isConnected: Boolean
+}
+
+type UnfollowPayload {
+  isUnfollow: Boolean!
+}
+
 type GetPostFirstLevelCommentPayload {
   errors: [CustomError!]
   data: PostFirstLevelCommentPagination
@@ -527,28 +549,6 @@ type InvitedEmployee {
   isInviteAccepted: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
-}
-
-type FollowUserToUser {
-  id: ID
-  createdAt: DateTime
-  updatedAt: DateTime
-  followedToId: String
-  followedById: String
-  isConnected: Boolean
-}
-
-type FollowCompany {
-  id: ID
-  createdAt: DateTime
-  updatedAt: DateTime
-  followedById: String
-  followedToId: String
-  isConnected: Boolean
-}
-
-type UnfollowPayload {
-  isUnfollow: Boolean!
 }
 
 type Industry {
@@ -1352,7 +1352,7 @@ type ProductVariation {
   createdAt: DateTime
   updatedAt: DateTime
   title: String
-  sku: Float
+  sku: String
   price: Float
   size: String
   color: String
@@ -1364,7 +1364,7 @@ type Product {
   id: ID
   createdAt: DateTime
   updatedAt: DateTime
-  sku: Float
+  sku: String
   productName: String
   description: String
   price: Float
@@ -1522,6 +1522,22 @@ type Query {
     last: Float
     order: OrderListUsers = {direction: desc, orderBy: createdAt}
   ): ConnectedUserPaginated!
+  mutualCompany(
+    """Paginate before opaque cursor"""
+    before: String
+
+    """Paginate after opaque cursor"""
+    after: String
+
+    """Paginate first"""
+    first: Float
+
+    """Paginate last"""
+    last: Float
+    order: OrderListCompanies = {direction: desc, orderBy: name}
+    filter: FilterListCompanies
+    targetUserId: String!
+  ): CompanyPaginated!
   companies(
     """Paginate before opaque cursor"""
     before: String
@@ -2009,6 +2025,10 @@ type Mutation {
   companyAccountStatus(data: CompanyAccountStatus!, companyId: String!): CompanyPayload!
   companyDocumentCreate(input: CompanyDocumentInput!, document: [Upload!]!): CompanyPayload!
   companyDocumentEdit(companyId: String!, documentId: String!, editDocument: CompanyDocumentEditInput!, document: Upload!): CompanyDocumentEditPayload!
+  followCompany(data: FollowCompanyInput!): FollowCompany!
+  unfollowCompany(data: UnfollowCompanyInput!): UnfollowPayload!
+  followUserToUser(data: FollowUserToUserInput!): FollowUserToUser!
+  unfollowUser(data: UnfollowUserInput!): UnfollowPayload!
   post(data: CreatePostInput!, companyId: String!, file: [Upload!]): CreatePostPayload!
   postUpdate(id: String!, imageURL: String, input: UpdatePostInput, file: Upload): UpdatePostPayload!
   postDelete(postId: String!): DeletePostPayload!
@@ -2021,10 +2041,6 @@ type Mutation {
   createPostSecondLevelComment(commentId: String!, input: PostCommentInput!, mention: PostMentionsInput): PostSecondLevelCommentPayload!
   inviteEmployee(data: InvitedEmployeeInput!): InvitedEmployee!
   createEmployee(data: UserEmployeeInput!): User!
-  followCompany(data: FollowCompanyInput!): FollowCompany!
-  unfollowCompany(data: UnfollowCompanyInput!): UnfollowPayload!
-  followUserToUser(data: FollowUserToUserInput!): FollowUserToUser!
-  unfollowUser(data: UnfollowUserInput!): UnfollowPayload!
   createIndustry(data: IndustryInput!): IndustryPayload!
   updateIndustry(id: String!, data: IndustryInput!): IndustryPayload!
   deleteIndustry(id: String!): IndustryPayload!
@@ -2067,7 +2083,7 @@ type Mutation {
   updateProductCategory(input: ProductCategoryInput!, id: String!): ProductCategoryPayload!
   deleteProductCategory(id: String!): ProductCategoryPayload!
   product(productType: ProductTypeInput!, product: ProductInput!, companyId: String!, media: [Upload!], mediaType: ProductMediaInput): ProductPayload!
-  productEditAll(productTypeId: String, productType: ProductTypeEditInput!, productId: String!, product: ProductInput!, image: Upload, mediaId: String, mediaType: ProductMediaInput): ProductPayload!
+  productEditAll(productTypeId: String, productType: ProductTypeEditInput!, productId: String!, product: ProductEditInput!, image: Upload, mediaId: String, mediaType: ProductMediaInput): ProductPayload!
   productCreate(input: ProductInput!, companyId: String!): ProductPayload!
   productEdit(productId: String!, input: ProductEditInput!): ProductPayload!
   productMediaCreate(productId: String!, mediaType: ProductMediaInput!, media: [Upload!]!): ProductMediaPayload!
@@ -2205,6 +2221,22 @@ input CompanyDocumentEditInput {
   type: String!
 }
 
+input FollowCompanyInput {
+  followedToId: String!
+}
+
+input UnfollowCompanyInput {
+  companyId: String!
+}
+
+input FollowUserToUserInput {
+  followedToID: String!
+}
+
+input UnfollowUserInput {
+  userId: String!
+}
+
 input CreatePostInput {
   text: String!
   tags: [String!]
@@ -2239,22 +2271,6 @@ input UserEmployeeInput {
   email: String!
   password: String!
   role: String!
-}
-
-input FollowCompanyInput {
-  followedToId: String!
-}
-
-input UnfollowCompanyInput {
-  companyId: String!
-}
-
-input FollowUserToUserInput {
-  followedToID: String!
-}
-
-input UnfollowUserInput {
-  userId: String!
 }
 
 input IndustryInput {
@@ -2395,7 +2411,7 @@ input ProductInput {
   categoryId: String!
   productName: String!
   description: String
-  sku: Float!
+  sku: String!
   price: Float!
   comparePrice: Float = 0
   costPrice: Float = 0
@@ -2428,7 +2444,7 @@ input ProductAttributeInput {
 
 input ProductVariationInput {
   productId: String!
-  sku: Float!
+  sku: String!
   title: String!
   price: Float!
   size: String!

@@ -116,7 +116,6 @@ export class ProductRepository {
           productMedia,
         };
       });
-      console.log(productCreate, 'inocming [roduct cr');
       return {
         data: Object.assign(productCreate.productData.data, {
           productImage: productCreate.productMedia

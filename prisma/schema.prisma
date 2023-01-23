@@ -724,7 +724,7 @@ enum MediaType {
 
 model Product {
   id               String             @id @default(uuid())
-  sku              Float
+  sku              String
   productName      String
   description      String?
   price            Float
@@ -790,7 +790,7 @@ model ProductVariationAttribute {
 model ProductVariation {
   id                        String                      @id @default(uuid())
   title                     String
-  sku                       Float
+  sku                       String
   price                     Float
   size                      String?
   color                     String?

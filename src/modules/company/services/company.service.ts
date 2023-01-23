@@ -41,10 +41,45 @@ import {
 } from '../dto/company-document.input';
 import { CompanyRepository } from '../repository/company.repository';
 import { ApolloError } from 'apollo-server-express';
+import { FollowUnfollowRepository } from 'src/modules/follow-unfollow-company/repository/followUnfollow.repository';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CompanyService {
-  constructor(private readonly companyRepository: CompanyRepository) {}
+  constructor(
+    private readonly companyRepository: CompanyRepository,
+    private readonly followUnfollowRepository: FollowUnfollowRepository,
+  ) {}
+
+  async mutualCompany(
+    paginate: ConnectionArgs,
+    order: OrderListCompanies,
+    filter: FilterListCompanies,
+    targetUserId: string,
+    userId: string,
+  ) {
+    try {
+      const companyFollowedByTargetUser =
+        await this.followUnfollowRepository.companyFollowedByUser(targetUserId);
+      const companyFollowedByMe =
+        await this.followUnfollowRepository.companyFollowedByUser(userId);
+      const commonCompany =
+        await this.followUnfollowRepository.checkForCommonCompany(
+          companyFollowedByTargetUser,
+          companyFollowedByMe,
+        );
+      const companyIds = commonCompany.map((company) => company.followedToId);
+      return await this.companyRepository.getCompanyByIds(
+        paginate,
+        order,
+        filter,
+        companyIds,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
+  }
 
   async list(
     paginate: ConnectionArgs,

@@ -16,6 +16,7 @@ import { FilesModule } from '../files/files.module';
 import { CloudinaryService } from '../cloudinary/services/cloudinary.service';
 import { LikesRepository } from '../likes/repository/likes.repository';
 import { CompanyRepository } from '../company/repository/company.repository';
+import { FollowUnfollowCompanyModule } from '../follow-unfollow-company/follow-unfollow-company.module';
 
 @Module({
   exports: [PostsService, PostsRepository],
@@ -25,6 +26,7 @@ import { CompanyRepository } from '../company/repository/company.repository';
     forwardRef(() => UserModule),
     forwardRef(() => CommentModule),
     FilesModule,
+    FollowUnfollowCompanyModule,
   ],
   providers: [
     PostsService,

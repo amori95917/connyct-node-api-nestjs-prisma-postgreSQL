@@ -88,7 +88,7 @@ export class ProductResolver {
     @Args('productTypeId', { nullable: true }) productTypeId: string,
     @Args('productType') productType: ProductTypeEditInput,
     @Args('productId') productId: string,
-    @Args('product') product: ProductInput,
+    @Args('product') product: ProductEditInput,
     @Args('image', { type: () => GraphQLUpload, nullable: true })
     media: FileUpload,
     @Args('mediaId', { nullable: true }) mediaId: string,

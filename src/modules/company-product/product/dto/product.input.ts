@@ -29,8 +29,8 @@ export class ProductInput {
 
   @Field()
   @IsNotEmpty()
-  @IsNumber()
-  sku: number;
+  @IsString()
+  sku: string;
 
   @Field()
   @IsNotEmpty()
@@ -135,7 +135,7 @@ export class ProductVariationInput {
   @Field()
   @IsString()
   @IsNotEmpty()
-  sku: number;
+  sku: string;
 
   @Field()
   @IsString()

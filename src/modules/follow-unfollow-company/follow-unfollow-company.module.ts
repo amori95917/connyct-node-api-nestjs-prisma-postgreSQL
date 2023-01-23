@@ -16,6 +16,6 @@ import { FollowUnfollowRepository } from './repository/followUnfollow.repository
     CompanyRepository,
   ],
 
-  exports: [FollowCompanyService],
+  exports: [FollowCompanyService, FollowUnfollowRepository],
 })
 export class FollowUnfollowCompanyModule {}

@@ -44,10 +44,34 @@ import {
 } from '../dto/company-document.input';
 import { UserDecorator } from 'src/modules/user/decorators/user.decorator';
 import { User } from 'src/modules/user/entities/user.entity';
+import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 
 @Resolver(() => Company)
 export class CompanyResolver {
   constructor(private readonly companyService: CompanyService) {}
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => CompanyPaginated)
+  async mutualCompany(
+    @Args() paginate: ConnectionArgs,
+    @Args('order', {
+      nullable: true,
+      defaultValue: { orderBy: 'name', direction: 'desc' },
+    })
+    order: OrderListCompanies,
+    @Args('filter', { nullable: true })
+    filter: FilterListCompanies,
+    @Args('targetUserId') targetUserId: string,
+    @CurrentUser() user: User,
+  ) {
+    return await this.companyService.mutualCompany(
+      paginate,
+      order,
+      filter,
+      targetUserId,
+      user.id,
+    );
+  }
 
   // @Roles(Role.Admin)
   @Query(() => CompanyPaginated)

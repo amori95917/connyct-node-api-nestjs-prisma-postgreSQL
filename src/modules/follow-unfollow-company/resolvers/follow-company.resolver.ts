@@ -15,6 +15,7 @@ import {
 import { FollowUserToUserInput } from '../dto/follow-user.input';
 import { UnfollowUserInput } from '../dto/unfollow-user.input';
 import { UnfollowPayload } from '../entities/unfollow.payload';
+import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 
 @Resolver()
 export class FollowCompanyResolver {

@@ -1,20 +1,10 @@
-import { CompanyService } from './../../company/services/company.service';
-import { OrderFollowedCompanyList } from 'src/modules/follow-unfollow-company/dto/follow-company.input';
-import { Company } from 'src/modules/company/entities/company.entity';
 import { UnfollowUserInput } from './../dto/unfollow-user.input';
 import { UnfollowCompanyInput } from './../dto/unfollow-company.input';
 import { FollowCompanyInput } from '../dto/follow-company.input';
-import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { User } from 'src/modules/user/entities/user.entity';
 import { FollowUnfollowCompany, FollowUserToUser } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { FollowUserToUserInput } from '../dto/follow-user.input';
-import { PaginationArgs } from 'src/modules/prisma/resolvers/pagination/pagination.args';
-import { haveNextPage } from 'src/modules/prisma/resolvers/pagination/pagination';
-import { OrderListCompanies } from 'src/modules/company/dto/order-companies.input';
-import { FilterListCompanies } from 'src/modules/company/dto/filter-company.input';
-import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
-import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 import { UnfollowPayload } from '../entities/unfollow.payload';
 import { ApolloError } from 'apollo-server-express';
 import { CompanyRepository } from 'src/modules/company/repository/company.repository';
@@ -32,6 +22,7 @@ export class FollowCompanyService {
     private readonly followUnfollowRepository: FollowUnfollowRepository,
     private readonly companyRepository: CompanyRepository,
   ) {}
+
   async followCompany(
     followCompany: FollowCompanyInput,
     user: User,
