@@ -20,8 +20,8 @@ import {
 
 import { FileUpload } from 'graphql-upload';
 import { SharpService } from 'nestjs-sharp';
-import { USER_CODE } from 'src/common/errors/error.code';
-import { USER_MESSAGE } from 'src/common/errors/error.message';
+import { COMPANY_CODE, USER_CODE } from 'src/common/errors/error.code';
+import { COMPANY_MESSAGE, USER_MESSAGE } from 'src/common/errors/error.message';
 import { STATUS_CODE } from 'src/common/errors/error.statusCode';
 import { Auth } from 'src/modules/auth/entities/auth.entity';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
@@ -32,6 +32,7 @@ import { UserProfileInput } from '../dto/userProfile.input';
 import { User as UserEntity } from '../entities/user.entity';
 import { UserProfilePayload } from '../entities/userProfile.payload';
 import { UserProfile } from '../userProfile.model';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UserService {
@@ -299,10 +300,20 @@ export class UserService {
         const emailExists = await prisma.user.count({
           where: { email: payload.email },
         });
-        if (emailExists) throw new Error('Email already exists');
+        if (emailExists)
+          throw new ApolloError(
+            USER_MESSAGE.EMAIL_CONFLICT,
+            USER_CODE.EMAIL_ALREADY_EXIST,
+            { statusCode: STATUS_CODE.BAD_CONFLICT },
+          );
         // Individual user signup
         if (!isCompanyAccount) {
-          if (!payload.fullName) throw new Error('Fullname is required');
+          if (!payload.fullName)
+            throw new ApolloError(
+              USER_MESSAGE.FULLNAME_REQUIRED,
+              USER_CODE.FULLNAME_REQUIRED,
+              { statusCode: STATUS_CODE.BAD_CONFLICT },
+            );
           const user = await prisma.user.create({
             data: {
               ...rest,
@@ -321,11 +332,20 @@ export class UserService {
         }
         // company signup
         if (legalName.length < 3)
-          throw new Error('legal name must be at least 3 characters');
+          throw new ApolloError(
+            COMPANY_MESSAGE.INVALID_LEGALNAME_FORMAT,
+            COMPANY_CODE.INVALID_LEGALNAME_FORMAT,
+            { statusCode: STATUS_CODE.NOT_SUPPORTED },
+          );
         const companyNameExists = await prisma.company.count({
           where: { legalName: legalName },
         });
-        if (companyNameExists) throw new Error('Company already exists');
+        if (companyNameExists)
+          throw new ApolloError(
+            COMPANY_MESSAGE.ALREADY_EXIST,
+            COMPANY_CODE.ALREADY_EXIST,
+            { statusCode: STATUS_CODE.BAD_CONFLICT },
+          );
         const user = await this.createCompany(
           legalName,
           payload.email,
@@ -354,10 +374,11 @@ export class UserService {
           company: user.Company,
         };
       });
-      console.log(result, 'incoming user');
       return result;
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -404,46 +425,47 @@ export class UserService {
     userId: string,
   ): Promise<UserProfilePayload> {
     try {
-      const userData = await this.prisma.userProfile.findUnique({
-        where: { userId },
-      });
-      if (!userData)
-        return customError(
-          USER_MESSAGE.NOT_FOUND,
-          USER_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
-        );
-      /**only if file exist */
-      /**TODO */
-      /**1. Image dimension check */
-      let fileUrl;
-      if (file) {
-        if (userData.profileImage) {
-          await this.fileUploadService.deleteImage(
+      const user = await this.prisma.$transaction(async (prisma) => {
+        const userData = await prisma.userProfile.findUnique({
+          where: { userId },
+        });
+        if (!userData)
+          throw new ApolloError(USER_MESSAGE.NOT_FOUND, USER_CODE.NOT_FOUND, {
+            statusCode: STATUS_CODE.NOT_FOUND,
+          });
+        /**only if file exist */
+        /**TODO */
+        /**1. Image dimension check */
+        let fileUrl;
+        if (file) {
+          if (userData.profileImage) {
+            await this.fileUploadService.deleteImage(
+              'user-profile',
+              this.cloudinary.getPublicId(userData.profileImage),
+            );
+          }
+          fileUrl = await this.fileUploadService.uploadImage(
             'user-profile',
-            this.cloudinary.getPublicId(userData.profileImage),
+            file,
           );
         }
-        fileUrl = await this.fileUploadService.uploadImage(
-          'user-profile',
-          file,
-        );
-        /**check if error exist */
-        if (fileUrl.errors) return { errors: fileUrl.errors };
-      }
-      const userProfileData = await this.prisma.userProfile.update({
-        where: {
-          userId,
-        },
-        data: {
-          ...userData,
-          ...userProfile,
-          profileImage: fileUrl,
-        },
+        const userProfileData = await prisma.userProfile.update({
+          where: {
+            userId,
+          },
+          data: {
+            ...userData,
+            ...userProfile,
+            profileImage: fileUrl,
+          },
+        });
+        return userProfileData;
       });
-      return { userProfile: userProfileData };
+      return { data: user };
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 

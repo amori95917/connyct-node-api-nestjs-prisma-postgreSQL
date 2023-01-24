@@ -19,6 +19,7 @@ import { UpdatePostInput } from '../dto/update-post.input';
 import { PostImage } from '../entities/post-image.entity';
 import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.args';
 import { OrderPosts } from '../dto/order-posts.input';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class PostsService {
@@ -41,22 +42,28 @@ export class PostsService {
     file: FileUpload[],
     creatorId: string,
   ): Promise<CreatePostPayload> {
-    /**if check if company exists*/
-    if (companyId) {
-      const company = await this.companyService.getCompanyById(companyId);
-      if (!company)
-        return customError(
-          COMPANY_MESSAGE.NOT_FOUND,
-          COMPANY_CODE.NOT_FOUND,
-          STATUS_CODE.NOT_FOUND,
-        );
+    try {
+      /**if check if company exists*/
+      if (companyId) {
+        const company = await this.companyService.getCompanyById(companyId);
+        if (!company)
+          throw new ApolloError(
+            COMPANY_MESSAGE.NOT_FOUND,
+            COMPANY_CODE.NOT_FOUND,
+            { statusCode: STATUS_CODE.NOT_FOUND },
+          );
+      }
+      return await this.postsRepository.createPost(
+        feedData,
+        companyId,
+        creatorId,
+        file,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-    return await this.postsRepository.createPost(
-      feedData,
-      companyId,
-      creatorId,
-      file,
-    );
   }
 
   public async updatePost(
@@ -66,41 +73,52 @@ export class PostsService {
     file: FileUpload,
     creatorId: string,
   ): Promise<UpdatePostPayload> {
-    const post = await this.postsRepository.findPostByCreatorId(
-      creatorId,
-      postId,
-    );
-    if (!post) {
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const post = await this.postsRepository.findPostByCreatorId(
+        creatorId,
+        postId,
       );
+      if (!post) {
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      }
+      return await this.postsRepository.updatePost(
+        postId,
+        imageURL,
+        input,
+        file,
+        post,
+      );
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
-    return await this.postsRepository.updatePost(
-      postId,
-      imageURL,
-      input,
-      file,
-      post,
-    );
   }
 
   public async deletePost(
     postId: string,
     userId: string,
   ): Promise<DeletePostPayload> {
-    const post = await this.postsRepository.findPostByCreatorId(userId, postId);
-    if (!post)
-      return customError(
-        POST_MESSAGE.NOT_FOUND,
-        POST_CODE.NOT_FOUND,
-        STATUS_CODE.NOT_FOUND,
+    try {
+      const post = await this.postsRepository.findPostByCreatorId(
+        userId,
+        postId,
       );
-    await this.postsRepository.deletePostById(post.id);
-    return {
-      isDeleteSuccessful: true,
-    };
+      if (!post)
+        throw new ApolloError(POST_MESSAGE.NOT_FOUND, POST_CODE.NOT_FOUND, {
+          statusCode: STATUS_CODE.NOT_FOUND,
+        });
+      await this.postsRepository.deletePostById(post.id);
+      return {
+        isDeleteSuccessful: true,
+      };
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   public async findPostsByCompanyId(id: string, paginate: ConnectionArgs) {
     return this.postsRepository.findPostsByCompanyId(id, paginate);

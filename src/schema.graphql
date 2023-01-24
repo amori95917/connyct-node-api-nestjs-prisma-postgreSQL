@@ -359,7 +359,7 @@ type UserConnectionsSummaryEntity {
 
 type UserProfilePayload {
   errors: CustomError
-  userProfile: UserProfile
+  data: UserProfile
 }
 
 type MutualUser {

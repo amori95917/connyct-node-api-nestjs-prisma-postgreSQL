@@ -27,6 +27,7 @@ import ConnectionArgs from 'src/modules/prisma/resolvers/pagination/connection.a
 import { findManyCursorConnection } from 'src/modules/prisma/resolvers/pagination/relay.pagination';
 import { PostPagination } from '../post.models';
 import { OrderPosts } from '../dto/order-posts.input';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class PostsRepository {
@@ -47,99 +48,103 @@ export class PostsRepository {
       let tags: Tag[];
       let postImage: PostImage[];
 
-      const result = await this.prisma.$transaction(async (prisma) => {
-        // let errors;
-        // create post
-        const post = await prisma.post.create({
-          data: {
-            text: feedData.text,
-            creatorId: creatorId,
-            companyId,
-          },
-        });
-        // create tags
-        /**Execute only if tags exist */
-        if (feedData.tags) {
-          tags = await Promise.all(
-            feedData.tags.map(async (tag) => {
-              /**find tags */
-              const isTag = await prisma.tag.findUnique({
-                where: {
-                  name: tag,
-                },
-              });
-              /**if tags exist return tags */
-              if (isTag) return isTag;
-              /**create tag */
-              return await prisma.tag.create({
-                data: {
-                  name: tag,
-                },
-              });
-            }),
-          );
-          /**create tagsId and postId in table tagWithPost */
-          tags.forEach(async (tag) => {
-            await prisma.tagWithPost.create({
-              data: {
-                tagsId: tag.id,
-                postId: post.id,
-              },
-            });
+      const result = await this.prisma.$transaction(
+        async (prisma) => {
+          // let errors;
+          // create post
+          const post = await prisma.post.create({
+            data: {
+              text: feedData.text,
+              creatorId: creatorId,
+              companyId,
+            },
           });
-        }
-        // TODO intercept error message and sent graphql friendly error msg
-        /**check if  title exists but not image*/
-        if (feedData.metaTitle || feedData.description) {
-          if (!files)
-            return {
-              errors: customError(
-                FILE_MESSAGE.NOT_FOUND,
-                FILE_CODE.NOT_FOUND,
-                STATUS_CODE.NOT_FOUND,
-              ),
-            };
-        }
-        /**check if file exists */
-        if (files) {
-          const fileURL = await this.fileUploadService.uploadImage(
-            'company-feeds',
-            files,
-          );
-          /**check if errors exists for file type */
-          if (fileURL[0].errors) return { errors: fileURL[0].errors };
-          // create product
-          postImage = await Promise.all(
-            fileURL.map(async (imageURL) => {
-              return await prisma.postImage.create({
+          // create tags
+          /**Execute only if tags exist */
+          if (feedData.tags) {
+            tags = await Promise.all(
+              feedData.tags.map(async (tag) => {
+                /**find tags */
+                const isTag = await prisma.tag.findUnique({
+                  where: {
+                    name: tag,
+                  },
+                });
+                /**if tags exist return tags */
+                if (isTag) return isTag;
+                /**create tag */
+                return await prisma.tag.create({
+                  data: {
+                    name: tag,
+                  },
+                });
+              }),
+            );
+            /**create tagsId and postId in table tagWithPost */
+            tags.forEach(async (tag) => {
+              await prisma.tagWithPost.create({
                 data: {
-                  metaTitle: feedData.metaTitle,
-                  imageURL,
-                  description: feedData.description,
+                  tagsId: tag.id,
                   postId: post.id,
                 },
               });
-            }),
-          );
-        }
-        return { post, postImage, tags };
-      });
+            });
+          }
+          // TODO intercept error message and sent graphql friendly error msg
+          /**check if  title exists but not image*/
+          if (feedData.metaTitle || feedData.description) {
+            if (!files)
+              throw new ApolloError(
+                FILE_MESSAGE.NOT_FOUND,
+                FILE_CODE.NOT_FOUND,
+                { statusCode: STATUS_CODE.NOT_FOUND },
+              );
+          }
+          /**check if file exists */
+          if (files) {
+            const fileURL = await this.fileUploadService.uploadImage(
+              'company-feeds',
+              files,
+            );
+            /**check if errors exists for file type */
+            // if (fileURL[0].errors) return { errors: fileURL[0].errors };
+            // create product
+            postImage = await Promise.all(
+              fileURL.map(async (imageURL) => {
+                return await prisma.postImage.create({
+                  data: {
+                    metaTitle: feedData.metaTitle,
+                    imageURL,
+                    description: feedData.description,
+                    postId: post.id,
+                  },
+                });
+              }),
+            );
+          }
+          return { post, postImage, tags };
+        },
+        { maxWait: 5000, timeout: 10000 },
+      );
       return {
         post: result.post,
         tags: result.tags,
-        errors: result.errors,
         postImage: result.postImage,
       };
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
   public async findPostById(postId: string): Promise<Post | null> {
     try {
       return this.prisma.post.findUnique({ where: { id: postId } });
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -149,8 +154,10 @@ export class PostsRepository {
   ): Promise<Post | null> {
     try {
       return this.prisma.post.findFirst({ where: { creatorId, id: postId } });
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -159,16 +166,20 @@ export class PostsRepository {
       return this.prisma.post.findMany({
         where: { creatorId: id },
       });
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
   public async findPosts(): Promise<Post[]> {
     try {
       return this.prisma.post.findMany();
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -181,8 +192,10 @@ export class PostsRepository {
           },
         },
       });
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -199,101 +212,101 @@ export class PostsRepository {
       let newPostImage: PostImage;
       let responseURL: any;
 
-      const result = await this.prisma.$transaction(async (prisma) => {
-        if (input.text) {
-          newPost = await prisma.post.update({
-            where: {
-              id: postId,
-            },
-            data: {
-              ...post,
-              text: input.text,
-            },
-          });
-        }
-        /** update tags*/
-        if (input.tags) {
-          tags = await Promise.all(
-            input.tags.map(async (tag) => {
-              const isTag = await prisma.tag.findUnique({
-                where: {
-                  name: tag,
-                },
-              });
-              if (isTag) return isTag;
-              return await prisma.tag.create({
-                data: {
-                  name: tag,
-                },
-              });
-            }),
-          );
-          tags.forEach(async (tag) => {
-            /**delete tags associated with post id */
-            await prisma.tagWithPost.deleteMany({
-              where: { id: tag.id, postId: postId },
-            });
-            /**create new tags */
-            await prisma.tagWithPost.create({
+      const result = await this.prisma.$transaction(
+        async (prisma) => {
+          if (input.text) {
+            newPost = await prisma.post.update({
+              where: {
+                id: postId,
+              },
               data: {
-                tagsId: tag.id,
-                postId: post.id,
+                ...post,
+                text: input.text,
               },
             });
-          });
-        }
-        /**post image update */
-        if (imageURL) {
-          const postImage = await prisma.postImage.findUnique({
-            where: {
-              imageURL,
-            },
-          });
-          if (!postImage)
-            return {
-              errors: customError(
+          }
+          /** update tags*/
+          if (input.tags) {
+            tags = await Promise.all(
+              input.tags.map(async (tag) => {
+                const isTag = await prisma.tag.findUnique({
+                  where: {
+                    name: tag,
+                  },
+                });
+                if (isTag) return isTag;
+                return await prisma.tag.create({
+                  data: {
+                    name: tag,
+                  },
+                });
+              }),
+            );
+            tags.forEach(async (tag) => {
+              /**delete tags associated with post id */
+              await prisma.tagWithPost.deleteMany({
+                where: { id: tag.id, postId: postId },
+              });
+              /**create new tags */
+              await prisma.tagWithPost.create({
+                data: {
+                  tagsId: tag.id,
+                  postId: post.id,
+                },
+              });
+            });
+          }
+          /**post image update */
+          if (imageURL) {
+            const postImage = await prisma.postImage.findUnique({
+              where: {
+                imageURL,
+              },
+            });
+            if (!postImage)
+              throw new ApolloError(
                 POST_IMAGE_MESSAGE.NOT_FOUND,
                 POST_IMAGE_CODE.NOT_FOUND,
-                STATUS_CODE.NOT_FOUND,
-              ),
-            };
-          if (file) {
-            /**add new file to cloudinary */
-            responseURL = await this.fileUploadService.uploadImage(
-              'company-feeds',
-              file,
-            );
-            /**check if errors exists for file type */
-            if (responseURL[0].errors) return { errors: responseURL[0].errors };
-            /**delete existing file from cloudinary */
-            await this.fileUploadService.deleteImage(
-              'company-feeds',
-              this.cloudinary.getPublicId(imageURL),
-            );
+                { statusCode: STATUS_CODE.NOT_FOUND },
+              );
+            if (file) {
+              /**add new file to cloudinary */
+              responseURL = await this.fileUploadService.uploadImage(
+                'company-feeds',
+                file,
+              );
+
+              /**delete existing file from cloudinary */
+              await this.fileUploadService.deleteImage(
+                'company-feeds',
+                this.cloudinary.getPublicId(imageURL),
+              );
+            }
+            newPostImage = await prisma.postImage.update({
+              where: {
+                imageURL,
+              },
+              data: {
+                ...postImage,
+                metaTitle: input.metaTitle,
+                description: input.description,
+                imageURL: responseURL,
+              },
+            });
           }
-          newPostImage = await prisma.postImage.update({
-            where: {
-              imageURL,
-            },
-            data: {
-              ...postImage,
-              metaTitle: input.metaTitle,
-              description: input.description,
-              imageURL: responseURL,
-            },
-          });
-        }
-        return { newPost, tags, newPostImage };
-      });
-      /**if errors exist in transaction return errors else return data*/
-      if (result.errors) return { errors: result.errors.errors };
+          return { newPost, tags, newPostImage };
+        },
+        { maxWait: 5000, timeout: 10000 },
+      );
       return {
         post: result.newPost,
         postImage: result.newPostImage,
         tags: result.tags,
       };
-    } catch (e) {
-      throw new Error(e.message);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -341,8 +354,10 @@ export class PostsRepository {
       });
 
       return { isDeleteSuccessful: true };
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   public async findPostsByCompanyId(
@@ -361,8 +376,10 @@ export class PostsRepository {
       );
       if (!posts.totalCount) return [];
       return posts;
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -371,8 +388,10 @@ export class PostsRepository {
       return await this.prisma.postImage.findMany({
         where: { postId: postId, isDeleted: false },
       });
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -386,8 +405,10 @@ export class PostsRepository {
       });
       const tags = tagWithPost.map((tag) => tag.tags);
       return tags;
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   public async findCompanyPostsFollowedByUser(
@@ -414,8 +435,10 @@ export class PostsRepository {
         { ...paginate },
       );
       return posts;
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -424,8 +447,10 @@ export class PostsRepository {
   ): Promise<PostImage[]> {
     try {
       return this.findPostImage(postId);
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   public async findCompanyPostTagsFollowedByUser(
@@ -433,8 +458,10 @@ export class PostsRepository {
   ): Promise<Tag[]> {
     try {
       return this.findTags(postId);
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 }

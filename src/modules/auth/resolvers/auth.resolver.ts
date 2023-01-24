@@ -30,6 +30,7 @@ import { SwitchAccountInput } from '../dto/switch-account.input';
 import { GqlAnonymousGuard } from '../guards/gql-anonymous.guard';
 import { UseGuards } from '@nestjs/common';
 import { UserDecorator } from 'src/modules/user/decorators/user.decorator';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -74,7 +75,9 @@ export class AuthResolver {
         otp,
       };
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 

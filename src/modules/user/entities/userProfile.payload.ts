@@ -8,5 +8,5 @@ export class UserProfilePayload {
   errors?: CustomError[];
 
   @Field(() => UserProfile, { nullable: true })
-  userProfile?: UserProfile;
+  data?: UserProfile;
 }

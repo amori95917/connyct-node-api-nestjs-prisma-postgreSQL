@@ -28,6 +28,7 @@ import {
 } from '../../entities/post/community-post.payload';
 import { DeleteCommunityPostPayload } from '../../entities/post/delete-post.payload';
 import { UpdateCommunityPostPayload } from '../../entities/post/update-post.payload';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class CommunityPostRepository {
@@ -118,95 +119,97 @@ export class CommunityPostRepository {
     files: FileUpload[],
   ): Promise<CommunityPostPayload> {
     try {
-      const result = await this.prisma.$transaction(async (prisma) => {
-        // let errors;
-        // create post
-        const post = await prisma.communityPost.create({
-          data: {
-            text: input.text,
-            authorId,
-            communityId: input.communityId,
-            slug: generateSlug(),
-          },
-        });
-        // create tags
-        let tags: Tag[];
-        /**Execute only if tags exist */
-        if (input.tags) {
-          tags = await Promise.all(
-            input.tags.map(async (tag) => {
-              /**find tags */
-              const isTag = await prisma.tag.findUnique({
-                where: {
-                  name: tag,
-                },
-              });
-              /**if tags exist return tags */
-              if (isTag) return isTag;
-              /**create tag */
-              return await prisma.tag.create({
-                data: {
-                  name: tag,
-                },
-              });
-            }),
-          );
-          /**create tagsId and postId in table tagWithPost */
-          tags.forEach(async (tag) => {
-            await prisma.tagWithPost.create({
-              data: {
-                tagsId: tag.id,
-                communityPostId: post.id,
-              },
-            });
+      const result = await this.prisma.$transaction(
+        async (prisma) => {
+          // let errors;
+          // create post
+          const post = await prisma.communityPost.create({
+            data: {
+              text: input.text,
+              authorId,
+              communityId: input.communityId,
+              slug: generateSlug(),
+            },
           });
-        }
-        /**check if  title exists but not image*/
-        if (input.metaTitle || input.description) {
-          if (!files)
-            return {
-              errors: customError(
-                FILE_MESSAGE.NOT_FOUND,
-                FILE_CODE.NOT_FOUND,
-                STATUS_CODE.NOT_FOUND,
-              ),
-            };
-        }
-        let postImage: CommunityPostMedia[];
-        /**check if file exists */
-        if (files) {
-          const fileURL = await this.fileUploadService.uploadImage(
-            'community-feeds',
-            files,
-          );
-          /**check if errors exists for file type */
-          if (fileURL[0].errors) return { errors: fileURL[0].errors };
-          // create product
-          postImage = await Promise.all(
-            fileURL.map(async (imageURL) => {
-              return await prisma.communityPostMedia.create({
+          // create tags
+          let tags: Tag[];
+          /**Execute only if tags exist */
+          if (input.tags) {
+            tags = await Promise.all(
+              input.tags.map(async (tag) => {
+                /**find tags */
+                const isTag = await prisma.tag.findUnique({
+                  where: {
+                    name: tag,
+                  },
+                });
+                /**if tags exist return tags */
+                if (isTag) return isTag;
+                /**create tag */
+                return await prisma.tag.create({
+                  data: {
+                    name: tag,
+                  },
+                });
+              }),
+            );
+            /**create tagsId and postId in table tagWithPost */
+            tags.forEach(async (tag) => {
+              await prisma.tagWithPost.create({
                 data: {
-                  metaTitle: input.metaTitle,
-                  imageURL,
-                  description: input.description,
+                  tagsId: tag.id,
                   communityPostId: post.id,
                 },
               });
-            }),
-          );
-        }
-        return { post, postImage, tags };
-      });
+            });
+          }
+          /**check if  title exists but not image*/
+          if (input.metaTitle || input.description) {
+            if (!files)
+              throw new ApolloError(
+                FILE_MESSAGE.NOT_FOUND,
+                FILE_CODE.NOT_FOUND,
+                {
+                  statusCode: STATUS_CODE.NOT_FOUND,
+                },
+              );
+          }
+          let postImage: CommunityPostMedia[];
+          /**check if file exists */
+          if (files) {
+            const fileURL = await this.fileUploadService.uploadImage(
+              'community-feeds',
+              files,
+            );
+            // create product
+            postImage = await Promise.all(
+              fileURL.map(async (imageURL) => {
+                return await prisma.communityPostMedia.create({
+                  data: {
+                    metaTitle: input.metaTitle,
+                    imageURL,
+                    description: input.description,
+                    communityPostId: post.id,
+                  },
+                });
+              }),
+            );
+          }
+          return { post, postImage, tags };
+        },
+        { maxWait: 5000, timeout: 10000 },
+      );
 
       return {
-        errors: result.errors,
         communityPost: Object.assign(result.post, {
           communityPostMedia: result.postImage,
           tags: result.tags,
         }),
       };
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -218,96 +221,99 @@ export class CommunityPostRepository {
     post,
   ): Promise<UpdateCommunityPostPayload> {
     try {
-      const result = await this.prisma.$transaction(async (prisma) => {
-        let newPost: CommunityPost;
-        if (input.text) {
-          newPost = await prisma.communityPost.update({
-            where: {
-              id: postId,
-            },
-            data: {
-              ...post,
-              text: input.text,
-            },
-          });
-        }
-        /** update tags*/
-        let tags: Tag[];
-        if (input.tags) {
-          tags = await Promise.all(
-            input.tags.map(async (tag) => {
-              const isTag = await prisma.tag.findUnique({
-                where: {
-                  name: tag,
-                },
-              });
-              if (isTag) return isTag;
-              return await prisma.tag.create({
-                data: {
-                  name: tag,
-                },
-              });
-            }),
-          );
-          tags.forEach(async (tag) => {
-            /**delete tags associated with post id */
-            await prisma.tagWithPost.deleteMany({
-              where: { id: tag.id, postId: postId },
-            });
-            /**create new tags */
-            await prisma.tagWithPost.create({
+      const result = await this.prisma.$transaction(
+        async (prisma) => {
+          let newPost: CommunityPost;
+          if (input.text) {
+            newPost = await prisma.communityPost.update({
+              where: {
+                id: postId,
+              },
               data: {
-                tagsId: tag.id,
-                communityPostId: post.id,
+                ...post,
+                text: input.text,
               },
             });
-          });
-        }
-        /**post image update */
-        let newPostImage: CommunityPostMedia;
-        if (imageURL) {
-          const postImage = await prisma.communityPostMedia.findUnique({
-            where: {
-              imageURL,
-            },
-          });
-          if (!postImage)
-            return {
-              errors: customError(
-                POST_IMAGE_MESSAGE.NOT_FOUND,
-                POST_IMAGE_CODE.NOT_FOUND,
-                STATUS_CODE.NOT_FOUND,
-              ),
-            };
-          let responseURL;
-          if (file) {
-            /**add new file to cloudinary */
-            responseURL = await this.fileUploadService.uploadImage(
-              'community-feeds',
-              file,
-            );
-            /**check if errors exists for file type */
-            if (responseURL.errors) return { errors: responseURL.errors };
-            /**delete existing file from cloudinary */
-            await this.fileUploadService.deleteImage(
-              'community-feeds',
-              this.cloudinary.getPublicId(imageURL),
-            );
           }
-          newPostImage = await prisma.communityPostMedia.update({
-            where: {
-              imageURL,
-            },
-            data: {
-              ...postImage,
-              metaTitle: input.metaTitle,
-              description: input.description,
-              imageURL: responseURL,
-            },
-          });
-        }
-        return { newPost, tags, newPostImage };
-      });
+          /** update tags*/
+          let tags: Tag[];
+          if (input.tags) {
+            tags = await Promise.all(
+              input.tags.map(async (tag) => {
+                const isTag = await prisma.tag.findUnique({
+                  where: {
+                    name: tag,
+                  },
+                });
+                if (isTag) return isTag;
+                return await prisma.tag.create({
+                  data: {
+                    name: tag,
+                  },
+                });
+              }),
+            );
+            tags.forEach(async (tag) => {
+              /**delete tags associated with post id */
+              await prisma.tagWithPost.deleteMany({
+                where: { id: tag.id, postId: postId },
+              });
+              /**create new tags */
+              await prisma.tagWithPost.create({
+                data: {
+                  tagsId: tag.id,
+                  communityPostId: post.id,
+                },
+              });
+            });
+          }
+          /**post image update */
+          let newPostImage: CommunityPostMedia;
+          if (imageURL) {
+            const postImage = await prisma.communityPostMedia.findUnique({
+              where: {
+                imageURL,
+              },
+            });
+            if (!postImage)
+              return {
+                errors: customError(
+                  POST_IMAGE_MESSAGE.NOT_FOUND,
+                  POST_IMAGE_CODE.NOT_FOUND,
+                  STATUS_CODE.NOT_FOUND,
+                ),
+              };
+            let responseURL;
+            if (file) {
+              /**add new file to cloudinary */
+              responseURL = await this.fileUploadService.uploadImage(
+                'community-feeds',
+                file,
+              );
+              /**check if errors exists for file type */
+              if (responseURL.errors) return { errors: responseURL.errors };
+              /**delete existing file from cloudinary */
+              await this.fileUploadService.deleteImage(
+                'community-feeds',
+                this.cloudinary.getPublicId(imageURL),
+              );
+            }
+            newPostImage = await prisma.communityPostMedia.update({
+              where: {
+                imageURL,
+              },
+              data: {
+                ...postImage,
+                metaTitle: input.metaTitle,
+                description: input.description,
+                imageURL: responseURL,
+              },
+            });
+          }
+          return { newPost, tags, newPostImage };
+        },
+        { maxWait: 5000, timeout: 10000 },
+      );
 
       return {
         errors: result.errors,
@@ -316,8 +322,10 @@ export class CommunityPostRepository {
           tags: result.tags,
         }),
       };
-    } catch (e) {
-      throw new Error(e.message);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 
@@ -327,7 +335,9 @@ export class CommunityPostRepository {
         where: { id, creatorId },
       });
     } catch (err) {
-      throw new Error(err);
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
   async checkOwner(communityPostId: string, userId: string): Promise<any> {
@@ -346,7 +356,11 @@ export class CommunityPostRepository {
         where: { id: communityPost.community.companyId, ownerId: userId },
       });
       if (company) return true;
-    } catch (err) {}
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
+    }
   }
   public async delete(postId: string): Promise<DeleteCommunityPostPayload> {
     try {
@@ -358,8 +372,10 @@ export class CommunityPostRepository {
       });
 
       return { isDeleteSuccessful: true };
-    } catch (e) {
-      throw new Error(e);
+    } catch (err) {
+      throw new ApolloError(err?.message, err?.extensions?.code, {
+        statusCode: err?.extensions?.statusCode,
+      });
     }
   }
 }

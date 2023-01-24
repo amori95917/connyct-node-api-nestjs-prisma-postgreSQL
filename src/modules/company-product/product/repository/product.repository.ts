@@ -90,32 +90,35 @@ export class ProductRepository {
     mediaType: ProductMediaInput,
   ): Promise<ProductPayload> {
     try {
-      const productCreate = await this.prisma.$transaction(async (prisma) => {
-        let productTypeData: ProductType;
-        if (productType.name) {
-          productTypeData = await this.productType(productType, prisma);
-        }
-        const productData = await this.productCreate(
-          product,
-          companyId,
-          authorId,
-          productTypeData.id,
-          prisma,
-        );
-        let productMedia: any;
-        if (media) {
-          productMedia = await this.productMediaCreate(
-            productData.data.id,
-            media,
-            mediaType,
+      const productCreate = await this.prisma.$transaction(
+        async (prisma) => {
+          let productTypeData: ProductType;
+          if (productType.name) {
+            productTypeData = await this.productType(productType, prisma);
+          }
+          const productData = await this.productCreate(
+            product,
+            companyId,
+            authorId,
+            productTypeData.id,
             prisma,
           );
-        }
-        return {
-          productData,
-          productMedia,
-        };
-      });
+          let productMedia: any;
+          if (media) {
+            productMedia = await this.productMediaCreate(
+              productData.data.id,
+              media,
+              mediaType,
+              prisma,
+            );
+          }
+          return {
+            productData,
+            productMedia,
+          };
+        },
+        { maxWait: 5000, timeout: 10000 },
+      );
       return {
         data: Object.assign(productCreate.productData.data, {
           productImage: productCreate.productMedia

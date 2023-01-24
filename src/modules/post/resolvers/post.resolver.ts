@@ -53,7 +53,7 @@ export class PostsResolver {
 
   @Mutation(() => CreatePostPayload)
   @UseGuards(GqlAuthGuard)
-  @Roles(Role.Owner, Role.Manager, Role.Editor)
+  // @Roles(Role.Owner, Role.Manager, Role.Editor)
   /**TODO */
   /**check if the owner,manager or editor are associated with actual company or not */
   async post(
